@@ -26,7 +26,7 @@ GBT Player is open source, and it is licensed under the BSD license. That means 
 How to compile examples
 -----------------------
 
--RGBDS: Put rgbasm, rgbfix and xlink in the source folder and double clic the bat file. Compiled binary included.
+-RGBDS: Put rgbasm, rgbfix and rgblink in the source folder and double clic the bat file. Compiled binary included.
 -GBDK: Open the bat file, change it to set the correct path to your lcc binary and double clic the bat.
 
 Notes
@@ -45,13 +45,13 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
-v1.2 (2014/5/1)
--Fixed lots of things regarding the mod file template and mod2gbt, the converter. Old songs won't be converted right with this new version. You should copy pattern data into the new mod template and transpose it 17 semitones to make it work again.
--Fixed a typo in a variable name.
+-v1.2 (2014/5/1)
+ - Fixed lots of things regarding the mod file template and mod2gbt, the converter. Old songs won't be converted right with this new version. You should copy pattern data into the new mod template and transpose it 17 semitones to make it work again.
+ - Fixed a typo in a variable name.
 
-v1.1 (2013)
--Fixed definitions for enabling and disabling channels.
--Changed email address.
+-v1.1 (2013)
+ - Fixed definitions for enabling and disabling channels.
+ - Changed email address.
 
-v1.0 (2009)
--Initial release
+-v1.0 (2009)
+ - Initial release
