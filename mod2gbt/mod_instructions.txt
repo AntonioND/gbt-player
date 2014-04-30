@@ -1,0 +1,34 @@
+                         FREQUENCIES
+                         -----------
+
+You can use notes from C3 to B8.
+
+                         INSTRUMENTS
+                         -----------
+
++----------------------------------------------------------------+
+|CHANNEL|RANGE|                      NOTES                       |
++-------+-----+--------------------------------------------------+
+|   1   | 1-4 |                                                  |
+|   2   | 1-4 |                                                  |
+|   3   | 8-15|Volume is usually a bit lower than other channels.|
+|   4   |16-31|Doesn't change with frequency.                    |
++-------+-----+--------------------------------------------------+
+
+                           EFFECTS
+                           -------
+
+Bnn - Jump to pattern in order nn (in hexadecimal).
+Cnn - Sets the volume to nn (in hexadecimal). Valid values from 00h to 40h.
+      Channel 3 can only be set to 0%, 25%, 50% and 100%. Others can be set
+      in a range of 0-Fh.
+Dnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
+E8n - Sets the panning to n (in hexadecimal). 
+      Left --- Both --- Right
+      0123   456789AB    CDEF
+Fnn - Sets speed to nn (in hexadecimal). Valid values from 01h to 1Fh.
+      The higher the value, the slower the song.
+
+**********************************************************************
+* You should set volume and instrument whenever you put a new note!! *
+**********************************************************************
