@@ -8,8 +8,9 @@ Email: antonio_nd@outlook.com
 
 A music player library for Game Boy that can be used with RGBDS or GBDK:
 
-[https://github.com/bentley/rgbds](https://github.com/bentley/rgbds)
-[http://gbdk.sourceforge.net/](http://gbdk.sourceforge.net/)
+RGBDS: [https://github.com/bentley/rgbds](https://github.com/bentley/rgbds)
+
+GBDK: [http://gbdk.sourceforge.net/](http://gbdk.sourceforge.net/)
 
 Introduction
 ------------
@@ -45,13 +46,13 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
--v1.2 (2014/5/1)
+- Version 1.2 (2014/5/1)
  - Fixed lots of things regarding the mod file template and mod2gbt, the converter. Old songs won't be converted right with this new version. You should copy pattern data into the new mod template and transpose it 17 semitones to make it work again.
  - Fixed a typo in a variable name.
 
--v1.1 (2013)
+- Version 1.1 (2013)
  - Fixed definitions for enabling and disabling channels.
  - Changed email address.
 
--v1.0 (2009)
+- Version 1.0 (2009)
  - Initial release
