@@ -45,13 +45,13 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
-v1.2
+v1.2 (2014/5/1)
 -Fixed lots of things regarding the mod file template and mod2gbt, the converter. Old songs won't be converted right with this new version. You should copy pattern data into the new mod template and transpose it 17 semitones to make it work again.
 -Fixed a typo in a variable name.
 
-v1.1 
+v1.1 (2013)
 -Fixed definitions for enabling and disabling channels.
 -Changed email address.
 
-v1.0
+v1.0 (2009)
 -Initial release
