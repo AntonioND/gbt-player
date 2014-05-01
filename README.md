@@ -10,6 +10,7 @@ GBDK: [http://gbdk.sourceforge.net/](http://gbdk.sourceforge.net/)
 Licensed under the BSD license.
 
 Copyright (C) 2009-2014 Antonio Niño Díaz.
+
 All rights reserved.
 
 Email: antonio_nd@outlook.com
@@ -39,8 +40,9 @@ GBT Player is open source, and it is licensed under the BSD license. That means 
 How to compile examples
 -----------------------
 
--RGBDS: Put rgbasm, rgbfix and rgblink in the source folder and double clic the bat file. Compiled binary included.
--GBDK: Open the bat file, change it to set the correct path to your lcc binary and double clic the bat.
+- RGBDS: Put rgbasm, rgbfix and rgblink in the source folder and double clic the bat file. Compiled binary included.
+
+- GBDK: Open the bat file, change it to set the correct path to your lcc binary and double clic the bat.
 
 Notes
 -----
