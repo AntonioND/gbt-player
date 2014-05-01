@@ -1,7 +1,7 @@
 GBT PLAYER  v1.2
 ================
  
-Copyright (C) 2009-2014 Antonio Niño Díaz
+Copyright (C) 2009-2014 Antonio Niño Díaz.
 All rights reserved.
  
 Email: antonio_nd@outlook.com
