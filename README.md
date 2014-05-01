@@ -53,6 +53,8 @@ I don't use bat files in my projects, I use makefiles, but I thought that the ex
 
 instr_test.gb is a sample of the default sounds.
 
+range_test.gb is just a test of what notes can the GB reach (C3 - B8).
+
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones, so you should make roms and test them in emulators or real GB often.
 
 Changelog
