@@ -108,11 +108,11 @@ void unpack_info(u8 * info, u8 * sample_num, u16 * sample_period, u8 * effect_nu
 
 const u16 mod_period[6*12] = {
     1712,1616,1524,1440,1356,1280,1208,1140,1076,1016, 960, 907,
-    856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
-    428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
-    214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113,
-    107, 101,  95,  90,  85,  80,  75,  71,  67,  63,  60,  56,
-     53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28 //from modplug tracker
+     856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
+     428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
+     214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113,
+     107, 101,  95,  90,  85,  80,  75,  71,  67,  63,  60,  56,
+      53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28
 };
 
 u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
@@ -208,7 +208,7 @@ Octave 5:  53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28  // C8 to B
 
 //From C3 to B8  |  A5 = 1750 = 440.00Hz  |  C5 = 1546
 const UWORD GB_frequencies[] = {
-	44, 156, 262, 363, 457, 547, 631, 710, 786, 854, 923, 986,               // C3 to B3
+	  44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986,  // C3 to B3
 	1046, 1102, 1155, 1205, 1253, 1297, 1339, 1379, 1417, 1452, 1486, 1517,  // C4 to B4
 	1546, 1575, 1602, 1627, 1650, 1673, 1694, 1714, 1732, 1750, 1767, 1783,  // C5 to B5
 	1798, 1812, 1825, 1837, 1849, 1860, 1871, 1881, 1890, 1899, 1907, 1915,  // C6 to B6
@@ -551,6 +551,14 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
 //--------------------------------------------------------------------------------
 
+void print_usage(void)
+{
+    printf("Usage: mod2gtb modfile.mod label_name [-c/-a] N\n\n");
+    printf("       -c: Write GBDK output.c file.\n");
+    printf("       -a: Write RGBDS output.asm file.\n");
+    printf("       N: Set output to ROM bank N. If not defined, it will be %d.",DEFAULT_ROM_BANK);
+    printf("\n\n");
+}
 
 int main(int argc, char * argv[])
 {
@@ -565,16 +573,12 @@ int main(int argc, char * argv[])
 	printf("     |                   antonio_nd@outlook.com  |\n");
     printf("     |                                           |\n");
     printf("     +-------------------------------------------+\n");
-	
+
     printf("\n");
 
     if( (argc != 4) && (argc != 5))
     {
-        printf("Usage: mod2gtb modfile.mod label_name [-c/-a] N\n\n");
-        printf("       -c: Write GBDK output.c file.\n");
-        printf("       -a: Write RGBDS output.asm file.\n");
-        printf("       N: Set output to ROM bank N. If not defined, it will be %d.",DEFAULT_ROM_BANK);
-        printf("\n\n");
+        print_usage();
         return -1;
     }
 
@@ -584,9 +588,14 @@ int main(int argc, char * argv[])
     {
         output_asm = 1;
     }
-    else
+    else if(strcmp(argv[3],"-c") == 0)
     {
         output_asm = 0;
+    }
+    else
+    {
+        print_usage();
+        return -1;
     }
 
     int output_bank = DEFAULT_ROM_BANK;
@@ -596,6 +605,7 @@ int main(int argc, char * argv[])
         if(sscanf(argv[4],"%d",&output_bank) != 1)
         {
             printf("Invalid bank: %s\n\n",argv[4]);
+            print_usage();
             return -2;
         }
         else
