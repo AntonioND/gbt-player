@@ -89,6 +89,7 @@ void * load_file(const char * filename)
 	{
         printf("\n\nERROR: Error while reading.\n\n");
         fclose(datafile);
+		free(buffer);
         return NULL;
     }
 
