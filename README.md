@@ -1,9 +1,8 @@
 GBT PLAYER  v1.2
 ================
- 
-Copyright (C) 2009-2014 Antonio Niño Díaz.
-All rights reserved.
- 
+
+Copyright (C) 2009-2014 Antonio Niño Díaz. All rights reserved.
+
 Email: antonio_nd@outlook.com
 
 A music player library for Game Boy that can be used with RGBDS or GBDK:
@@ -11,6 +10,8 @@ A music player library for Game Boy that can be used with RGBDS or GBDK:
 RGBDS: [https://github.com/bentley/rgbds](https://github.com/bentley/rgbds)
 
 GBDK: [http://gbdk.sourceforge.net/](http://gbdk.sourceforge.net/)
+
+Licensed under the BSD license.
 
 Introduction
 ------------
