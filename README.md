@@ -36,7 +36,6 @@ GBT Player is writen in 100% assembler. That means that it is FAST, it won't nee
 
 GBT Player is open source, and it is licensed under the BSD license. That means that you can use and modify it but you have to give credit for the original work. It would be nice to you tell me if you use it, anyway. :)
 
-
 How to compile examples
 -----------------------
 
@@ -55,7 +54,7 @@ I don't use bat files in my projects, I use makefiles, but I thought that the ex
 
 instr_test.gb is a sample of the default sounds.
 
-range_test.gb is just a test of what notes can the GB reach (C3 - B8).
+range_test.gb is just a test of what notes the GB can reach (C3 - B8).
 
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones, so you should make roms and test them in emulators or real GB often.
 
