@@ -1,5 +1,5 @@
-GBT PLAYER  v1.2
-================
+GBT PLAYER  v1.2.1
+==================
 
 A music player library for Game Boy that can be used with RGBDS or GBDK:
 
@@ -60,6 +60,9 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 
 Changelog
 ---------
+
+- Version 1.2.1 (2014/5/15)
+ - Fixed Bnn command.
 
 - Version 1.2 (2014/5/1)
  - Fixed lots of things regarding the mod file template and mod2gbt, the converter. Old songs won't be converted right with this new version. You should copy pattern data into the new mod template and transpose it 17 semitones to make it work again.

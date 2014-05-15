@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  v1.2                 ---
+;        ---                       GBT PLAYER  v1.2.1               ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2014 Antonio Niño Díaz ---
@@ -151,6 +151,8 @@ channel1_ctrl$:
 	; jump
 	ld	a,c
 	ld	(gbt_current_pattern_order),a
+	ld	a,#0
+	ld	(gbt_current_step),a
 	ld	a,#1
 	ld	(_gbt_ignore_step_update),a
 	jr	channel1_end$
@@ -283,6 +285,8 @@ channel2_ctrl$:
 	; jump
 	ld	a,c
 	ld	(gbt_current_pattern_order),a
+	ld	a,#0
+	ld	(gbt_current_step),a
 	ld	a,#1
 	ld	(_gbt_ignore_step_update),a
 	jr	channel2_end$
@@ -433,6 +437,8 @@ channel3_ctrl$:
 	; jump
 	ld	a,c
 	ld	(gbt_current_pattern_order),a
+	ld	a,#0
+	ld	(gbt_current_step),a
 	ld	a,#1
 	ld	(_gbt_ignore_step_update),a
 	jr	channel3_end$
@@ -559,6 +565,8 @@ channel4_ctrl$:
 	; jump
 	ld	a,c
 	ld	(gbt_current_pattern_order),a
+	ld	a,#0
+	ld	(gbt_current_step),a
 	ld	a,#1
 	ld	(_gbt_ignore_step_update),a
 	jr	channel4_end$
