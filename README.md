@@ -1,7 +1,7 @@
-GBT PLAYER  v1.2.1
+GBT PLAYER  v2.0.0
 ==================
 
-A music player library for Game Boy that can be used with RGBDS or GBDK:
+A music player library and converter kit for Game Boy that can be used with RGBDS or GBDK:
 
 RGBDS: [https://github.com/bentley/rgbds](https://github.com/bentley/rgbds)
 
@@ -36,6 +36,8 @@ GBT Player is writen in 100% assembler. That means that it is FAST, it won't nee
 
 GBT Player is open source, and it is licensed under the BSD license. That means that you can use and modify it but you have to give credit for the original work. It would be nice to you tell me if you use it, anyway. :)
 
+IMPORTANT NOTE: Version 1.x.x converted songs won't work with player version 2.0.0 or higher. They have to be converted again.
+
 How to compile examples
 -----------------------
 
@@ -56,10 +58,18 @@ instr_test.gb is a sample of the default sounds.
 
 range_test.gb is just a test of what notes the GB can reach (C3 - B8).
 
+arpeggio_test.gb tests arpeggio effects.
+
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones, so you should make roms and test them in emulators or real GB often.
 
 Changelog
 ---------
+
+- Version 2.0.0 (2014/5/22)
+ - Rewritten library and converter.
+ - Arpeggio effect added.
+ - Song size should be reduced to about 60-75% (but it can go as high as 150% if it uses effects all time in all channels).
+ - Old converted song data won't work, songs have to be converted again.
 
 - Version 1.2.1 (2014/5/15)
  - Fixed Bnn command.
@@ -74,3 +84,9 @@ Changelog
 
 - Version 1.0 (2009)
  - Initial release
+
+To Do
+-----
+
+- Store channel 3 samples in RAM to be able to change them in execution time by the user?
+- End song callback? Special effect for callback? To synchronize game events or things like that.

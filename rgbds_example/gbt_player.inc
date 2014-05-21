@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  v1.2.1               ---
+;        ---                       GBT PLAYER  v2.0.0               ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2014 Antonio Niño Díaz ---
@@ -20,6 +20,7 @@ GBT_PLAYER_INC  SET  1
                        ; de = pointer to song data 
                        ; b = default speed
                        ; c = data bank
+					   ; THIS WILL CHANGE TO BANK IN REGISTER c!!!
 ; ------------------------------------------------------------------------
 	GLOBAL	gbt_pause  ; Pauses or unpauses the song.
 	                   ; -------------------------------------------------
@@ -42,7 +43,7 @@ GBT_PLAYER_INC  SET  1
 	GLOBAL	gbt_update  ; Updates the player, must be called each VBL.
 	                    ; THIS WILL CHANGE TO BANK 1!!!
 ; -------------------------------------------------------------------------
-	
+
 	ENDC    ;GBT_PLAYER_INC
 	
 	

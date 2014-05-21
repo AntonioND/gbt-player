@@ -66,14 +66,15 @@ StartPoint:
 	ld	a,$01
 	ld	[rIE],a
 	
-	ei
-	
 	ld	de,song_Data
 	ld	b,$05
 	ld	c,$02
 	call	gbt_play
 	
+	ei
+	
 .loopme:
+	halt
 	jr	.loopme
 	
 	
