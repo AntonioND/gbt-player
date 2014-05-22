@@ -65,7 +65,7 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
-- Version 2.0.0 (2014/5/23)
+- Version 2.0.1 (2014/5/23)
  - Fixed effects in channels 1, 2 and 3 in GBDK version.
 
 - Version 2.0.0 (2014/5/22)
