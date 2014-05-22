@@ -90,3 +90,13 @@ To Do
 
 - Store channel 3 samples in RAM to be able to change them in execution time by the user?
 - End song callback? Special effect for callback? To synchronize game events or things like that.
+
+Known bugs
+----------
+
+- Effect Dxx, when used the last step of a pattern, will jump 2 patterns instead of 1.
+- Arpeggio, at speeds lower than 4 (faster than 4) won't work correctly. The normal beaviour is to cycle through the notes once and stop.
+ - Speed 3 -> It won't stop by itself, it has to be stopped manually by setting a new note or setting volume to 0 with effect C00.
+ - Speed 2 -> It won't stop at the correct tone (the original tone).
+ - Speed 1 -> It will only sound the first note.
+ - Speed 0 -> Prohibited in mod format.
