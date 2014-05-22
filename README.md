@@ -1,4 +1,4 @@
-GBT PLAYER  v2.0.0
+GBT PLAYER  v2.0.1
 ==================
 
 A music player library and converter kit for Game Boy that can be used with RGBDS or GBDK:
@@ -65,6 +65,9 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
+- Version 2.0.0 (2014/5/23)
+ - Fixed effects in channels 1, 2 and 3 in GBDK version.
+
 - Version 2.0.0 (2014/5/22)
  - Rewritten library and converter.
  - Arpeggio effect added.
@@ -90,6 +93,7 @@ To Do
 
 - Store channel 3 samples in RAM to be able to change them in execution time by the user?
 - End song callback? Special effect for callback? To synchronize game events or things like that.
+- WLA-DX version.
 
 Known bugs
 ----------

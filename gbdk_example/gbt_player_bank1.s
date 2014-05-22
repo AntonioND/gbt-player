@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  v2.0.0               ---
+;        ---                       GBT PLAYER  v2.0.1               ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2014 Antonio Niño Díaz ---
@@ -337,7 +337,7 @@ ch1_not_tick_3$:
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 	
-	ld	h,#gbt_ch1_jump_table$
+	ld	hl,#gbt_ch1_jump_table$
 	ld	c,a
 	ld	b,#0
 	add	hl,bc
@@ -661,7 +661,7 @@ ch2_not_tick_3$:
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 	
-	ld	h,#gbt_ch2_jump_table$
+	ld	hl,#gbt_ch2_jump_table$
 	ld	c,a
 	ld	b,#0
 	add	hl,bc
@@ -1009,7 +1009,7 @@ ch3_not_tick_3$:
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 	
-	ld	h,#gbt_ch3_jump_table$
+	ld	hl,#gbt_ch3_jump_table$
 	ld	c,a
 	ld	b,#0
 	add	hl,bc
