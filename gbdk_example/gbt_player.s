@@ -80,6 +80,8 @@ gbt_arpeggio_freq_index::
 	.ds 3*3 ; { base index, base index + x, base index + y } * 3
 gbt_arpeggio_enabled::
 	.ds 3*1 ; if 0, disabled
+gbt_arpeggio_tick::
+	.ds	3*1
 
 ; Cut note
 gbt_cut_note_tick::
@@ -340,6 +342,24 @@ gbt_update:
 	
 .dontexit:
 	ld	(hl),#0x00 ; reset tick counter
+	
+	; Clear tick-based effects
+	; ------------------------
+	
+	xor	a,a
+	ld	hl,#gbt_arpeggio_enabled ; Disable arpeggio
+	ld	(hl+),a
+	ld	(hl+),a
+	ld	(hl),a
+	dec	a ; a = 0xFF
+	ld	hl,#gbt_cut_note_tick ; Disable cut note
+	ld	(hl+),a
+	ld	(hl+),a
+	ld	(hl+),a
+	ld	(hl),a
+	
+	; Update effects
+	; --------------
 	
 	ld	a,#0x01
 	ld	(#0x2000),a ; MBC1, MBC3, MBC5 - Set bank 1

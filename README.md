@@ -58,7 +58,7 @@ instr_test.gb is a sample of the default sounds.
 
 range_test.gb is just a test of what notes the GB can reach (C3 - B8).
 
-arpeggio_test.gb tests arpeggio effects.
+effects_test.gb tests arpeggio and "cut note" effects.
 
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones, so you should make roms and test them in emulators or real GB often.
 
@@ -66,8 +66,9 @@ Changelog
 ---------
 
 - Version 2.1.0 (2014/5/24)
- - Fixed arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once).
+ - Fixed arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once). Loops 3 steps, not 4.
  - Added "Cut Note" effect.
+ - Effects optimizations.
 
 - Version 2.0.1 (2014/5/23)
  - Fixed effects in channels 1, 2 and 3 in GBDK version.

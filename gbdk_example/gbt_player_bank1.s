@@ -80,12 +80,7 @@ _gbt_get_freq_from_index: ; a = index, bc = returned freq
 ; -----------------------------------------------------------------------
 
 gbt_channel_1_handle:: ; de = info
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+0),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+0),a ; Disable cut note
-	
+
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x01
 	jr	nz,channel1_enabled$
@@ -138,10 +133,7 @@ channel1_enabled$:
 	
 	; NOP
 
-	call	channel1_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	refresh_channel1_regs$
+	ret
 	
 ch1_just_set_volume$:
 	
@@ -231,8 +223,6 @@ ch1_freq_instr_and_effect$:
 
 refresh_channel1_regs$:
 	
-	call	channel1_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -268,7 +258,7 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = 0xFF
 	ld	(gbt_cut_note_tick+0),a ; disable cut note
 	
-	ld	a,#0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	(#.NR12),a
 	ld	a,#0x80 ; start
 	ld	(#.NR14),a
@@ -284,9 +274,8 @@ ch1_dont_cut$:
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,(gbt_ticks_elapsed)
-	and	a,#3
-	cp	a,#0
+	ld	a,(gbt_arpeggio_tick+0)
+	and	a,a
 	jr	nz,ch1_not_tick_0$
 
 	; Tick 0 - Set original frequency
@@ -301,7 +290,9 @@ ch1_dont_cut$:
 	ld	(gbt_freq+0*2+1),a ; Set frequency
 	
 	ld	a,#1
-	ret
+	ld	(gbt_arpeggio_tick+0),a
+
+	ret ; ret 1
 
 ch1_not_tick_0$:
 
@@ -319,14 +310,14 @@ ch1_not_tick_0$:
 	ld	a,b
 	ld	(gbt_freq+0*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
+	ld	a,#2
+	ld	(gbt_arpeggio_tick+0),a
+	
+	dec	a
+	ret ; ret 1
 	
 ch1_not_tick_1$:
 
-	cp	a,#2
-	jr	nz,ch1_not_tick_2$
-	
 	; Tick 2
 	
 	ld	a,(gbt_arpeggio_freq_index+0*3+2)
@@ -338,13 +329,11 @@ ch1_not_tick_1$:
 	ld	a,b
 	ld	(gbt_freq+0*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
-
-ch1_not_tick_2$: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	(gbt_arpeggio_tick+0),a
+	
+	inc	a
+	ret ; ret 1
 
 ; -----------------
 
@@ -412,6 +401,7 @@ gbt_ch1_arpeggio$:
 	
 	ld	a,#1
 	ld	(gbt_arpeggio_enabled+0),a
+	ld	(gbt_arpeggio_tick+0),a
 	
 	ret ; ret 1
 
@@ -425,12 +415,7 @@ gbt_ch1_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_2_handle:: ; de = info
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+1),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+1),a ; Disable cut note
-	
+
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x02
 	jr	nz,channel2_enabled$
@@ -483,10 +468,7 @@ channel2_enabled$:
 	
 	; NOP
 
-	call	channel2_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	refresh_channel2_regs$
+	ret
 	
 ch2_just_set_volume$:
 	
@@ -576,8 +558,6 @@ ch2_freq_instr_and_effect$:
 
 refresh_channel2_regs$:
 	
-	call	channel2_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -611,7 +591,7 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = 0xFF
 	ld	(gbt_cut_note_tick+1),a ; disable cut note
 	
-	ld	a,#0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	(#.NR22),a
 	ld	a,#0x80 ; start
 	ld	(#.NR24),a
@@ -627,9 +607,8 @@ ch2_dont_cut$:
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,(gbt_ticks_elapsed)
-	and	a,#3
-	cp	a,#0
+	ld	a,(gbt_arpeggio_tick+1)
+	and	a,a
 	jr	nz,ch2_not_tick_0$
 
 	; Tick 0 - Set original frequency
@@ -644,7 +623,9 @@ ch2_dont_cut$:
 	ld	(gbt_freq+1*2+1),a ; Set frequency
 	
 	ld	a,#1
-	ret
+	ld	(gbt_arpeggio_tick+1),a
+	
+	ret ; ret 1
 
 ch2_not_tick_0$:
 
@@ -662,14 +643,14 @@ ch2_not_tick_0$:
 	ld	a,b
 	ld	(gbt_freq+1*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
+	ld	a,#2
+	ld	(gbt_arpeggio_tick+1),a
+	
+	dec	a
+	ret ; ret 1
 	
 ch2_not_tick_1$:
 
-	cp	a,#2
-	jr	nz,ch2_not_tick_2$
-	
 	; Tick 2
 	
 	ld	a,(gbt_arpeggio_freq_index+1*3+2)
@@ -681,13 +662,11 @@ ch2_not_tick_1$:
 	ld	a,b
 	ld	(gbt_freq+1*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
-
-ch2_not_tick_2$: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	(gbt_arpeggio_tick+1),a
+	
+	inc	a
+	ret ; ret 1
 
 ; -----------------
 
@@ -755,6 +734,7 @@ gbt_ch2_arpeggio$:
 	
 	ld	a,#1
 	ld	(gbt_arpeggio_enabled+1),a
+	ld	(gbt_arpeggio_tick+1),a
 	
 	ret ; ret 1
 
@@ -768,12 +748,7 @@ gbt_ch2_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_3_handle:: ; de = info
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+2),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+2),a ; Disable cut note
-	
+
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x04
 	jr	nz,channel3_enabled$
@@ -826,10 +801,7 @@ channel3_enabled$:
 	
 	; NOP
 
-	call	channel3_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	refresh_channel3_regs$
+	ret
 	
 ch3_just_set_volume$:
 	
@@ -908,8 +880,6 @@ ch3_freq_instr_and_effect$:
 
 refresh_channel3_regs$:
 	
-	call	channel3_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -981,7 +951,7 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,#0x80
 	ld	(#.NR30),a ; enable
 	
-	ld	a,#0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	(#.NR32),a
 	ld	a,#0x80 ; start
 	ld	(#.NR34),a
@@ -997,9 +967,8 @@ ch3_dont_cut$:
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,(gbt_ticks_elapsed)
-	and	a,#3
-	cp	a,#0
+	ld	a,(gbt_arpeggio_tick+2)
+	and	a,a
 	jr	nz,ch3_not_tick_0$
 
 	; Tick 0 - Set original frequency
@@ -1014,7 +983,9 @@ ch3_dont_cut$:
 	ld	(gbt_freq+2*2+1),a ; Set frequency
 	
 	ld	a,#1
-	ret
+	ld	(gbt_arpeggio_tick+2),a
+	
+	ret ; ret 1
 
 ch3_not_tick_0$:
 
@@ -1032,14 +1003,14 @@ ch3_not_tick_0$:
 	ld	a,b
 	ld	(gbt_freq+2*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
+	ld	a,#2
+	ld	(gbt_arpeggio_tick+2),a
+	
+	dec	a
+	ret ; ret 1
 	
 ch3_not_tick_1$:
 
-	cp	a,#2
-	jr	nz,ch3_not_tick_2$
-	
 	; Tick 2
 	
 	ld	a,(gbt_arpeggio_freq_index+2*3+2)
@@ -1051,13 +1022,11 @@ ch3_not_tick_1$:
 	ld	a,b
 	ld	(gbt_freq+2*2+1),a ; Set frequency
 	
-	ld	a,#1
-	ret
-
-ch3_not_tick_2$: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	(gbt_arpeggio_tick+2),a
+	
+	inc	a
+	ret ; ret 1
 
 ; -----------------
 
@@ -1125,6 +1094,7 @@ gbt_ch3_arpeggio$:
 	
 	ld	a,#1
 	ld	(gbt_arpeggio_enabled+2),a
+	ld	(gbt_arpeggio_tick+2),a
 	
 	ret ; ret 1
 
@@ -1138,10 +1108,7 @@ gbt_ch3_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_4_handle:: ; de = info
-	
-	ld	a,#0xFF
-	ld	(gbt_cut_note_tick+3),a ; Disable cut note
-	
+
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x08
 	jr	nz,channel4_enabled$
@@ -1194,10 +1161,7 @@ channel4_enabled$:
 	
 	; NOP
 	
-	call	channel4_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	refresh_channel4_regs$
+	ret
 	
 ch4_just_set_volume$:
 	
@@ -1261,8 +1225,6 @@ ch4_instr_and_effect$:
 
 refresh_channel4_regs$:
 	
-	call	channel4_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -1295,7 +1257,7 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = 0xFF
 	ld	(gbt_cut_note_tick+3),a ; disable cut note
 	
-	ld	a,#0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	(#.NR42),a
 	ld	a,#0x80 ; start
 	ld	(#.NR44),a

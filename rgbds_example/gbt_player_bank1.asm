@@ -63,11 +63,6 @@ _gbt_get_freq_from_index: ; a = index, bc = returned freq
 
 gbt_channel_1_handle:: ; de = info
 	
-	xor	a,a
-	ld	[gbt_arpeggio_enabled+0],a ; Disable arpeggio
-	dec	a ; a = $FF
-	ld	[gbt_cut_note_tick+0],a ; Disable cut note
-	
 	ld	a,[gbt_channels_enabled]
 	and	a,$01
 	jr	nz,.channel1_enabled
@@ -120,10 +115,7 @@ gbt_channel_1_handle:: ; de = info
 	
 	; NOP
 
-	call	channel1_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	.refresh_channel1_regs
+	ret
 	
 .just_set_volume:
 	
@@ -213,8 +205,6 @@ gbt_channel_1_handle:: ; de = info
 
 .refresh_channel1_regs:
 	
-	call	channel1_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -250,7 +240,7 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = $FF
 	ld	[gbt_cut_note_tick+0],a ; disable cut note
 	
-	ld	a,0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	[rNR12],a
 	ld	a,$80 ; start
 	ld	[rNR14],a
@@ -266,9 +256,8 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,[gbt_ticks_elapsed]
-	and	a,3
-	cp	a,0
+	ld	a,[gbt_arpeggio_tick+0]
+	and	a,a
 	jr	nz,.not_tick_0
 
 	; Tick 0 - Set original frequency
@@ -283,7 +272,9 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	[gbt_freq+0*2+1],a ; Set frequency
 	
 	ld	a,1
-	ret
+	ld	[gbt_arpeggio_tick+0],a
+	
+	ret ; ret 1
 
 .not_tick_0:
 
@@ -301,14 +292,14 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+0*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
+	ld	a,2
+	ld	[gbt_arpeggio_tick+0],a
+	
+	dec	a
+	ret ; ret 1
 	
 .not_tick_1:
 
-	cp	a,2
-	jr	nz,.not_tick_2
-	
 	; Tick 2
 	
 	ld	a,[gbt_arpeggio_freq_index+0*3+2]
@@ -320,13 +311,11 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+0*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
-
-.not_tick_2: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	[gbt_arpeggio_tick+0],a
+	
+	inc	a ; ret 1
+	ret
 
 ; -----------------
 
@@ -394,6 +383,7 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 	
 	ld	a,1
 	ld	[gbt_arpeggio_enabled+0],a
+	ld	[gbt_arpeggio_tick+0],a
 	
 	ret ; ret 1
 
@@ -407,12 +397,7 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 ; -----------------------------------------------------------------------
 
 gbt_channel_2_handle:: ; de = info
-	
-	xor	a,a
-	ld	[gbt_arpeggio_enabled+1],a ; Disable arpeggio
-	dec	a ; a = $FF
-	ld	[gbt_cut_note_tick+1],a ; Disable cut note
-	
+
 	ld	a,[gbt_channels_enabled]
 	and	a,$02
 	jr	nz,.channel2_enabled
@@ -465,10 +450,7 @@ gbt_channel_2_handle:: ; de = info
 	
 	; NOP
 
-	call	channel2_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	.refresh_channel2_regs
+	ret
 	
 .just_set_volume:
 	
@@ -558,8 +540,6 @@ gbt_channel_2_handle:: ; de = info
 
 .refresh_channel2_regs:
 	
-	call	channel2_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -593,7 +573,7 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = $FF
 	ld	[gbt_cut_note_tick+1],a ; disable cut note
 	
-	ld	a,0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	[rNR22],a
 	ld	a,$80 ; start
 	ld	[rNR24],a
@@ -609,9 +589,8 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,[gbt_ticks_elapsed]
-	and	a,3
-	cp	a,0
+	ld	a,[gbt_arpeggio_tick+1]
+	and	a,a
 	jr	nz,.not_tick_0
 
 	; Tick 0 - Set original frequency
@@ -626,7 +605,9 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	[gbt_freq+1*2+1],a ; Set frequency
 	
 	ld	a,1
-	ret
+	ld	[gbt_arpeggio_tick+1],a
+	
+	ret ; ret 1
 
 .not_tick_0:
 
@@ -644,14 +625,14 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+1*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
+	ld	a,2
+	ld	[gbt_arpeggio_tick+1],a
+	
+	dec	a
+	ret ; ret 1
 	
 .not_tick_1:
 
-	cp	a,2
-	jr	nz,.not_tick_2
-	
 	; Tick 2
 	
 	ld	a,[gbt_arpeggio_freq_index+1*3+2]
@@ -663,13 +644,11 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+1*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
-
-.not_tick_2: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	[gbt_arpeggio_tick+1],a
+	
+	inc	a ; ret 1
+	ret
 
 ; -----------------
 
@@ -737,6 +716,7 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 	
 	ld	a,1
 	ld	[gbt_arpeggio_enabled+1],a
+	ld	[gbt_arpeggio_tick+1],a
 	
 	ret ; ret 1
 
@@ -750,12 +730,7 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 ; -----------------------------------------------------------------------
 
 gbt_channel_3_handle:: ; de = info
-	
-	xor	a,a
-	ld	[gbt_arpeggio_enabled+2],a ; Disable arpeggio
-	dec	a ; a = $FF
-	ld	[gbt_cut_note_tick+2],a ; Disable cut note
-	
+
 	ld	a,[gbt_channels_enabled]
 	and	a,$04
 	jr	nz,.channel3_enabled
@@ -808,10 +783,7 @@ gbt_channel_3_handle:: ; de = info
 	
 	; NOP
 
-	call	channel3_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	.refresh_channel3_regs
+	ret
 	
 .just_set_volume:
 	
@@ -890,8 +862,6 @@ gbt_channel_3_handle:: ; de = info
 
 .refresh_channel3_regs:
 	
-	call	channel3_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -963,7 +933,7 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,$80
 	ld	[rNR30],a ; enable
 	
-	ld	a,0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	[rNR32],a
 	ld	a,$80 ; start
 	ld	[rNR34],a
@@ -979,9 +949,8 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	
 	; If enabled arpeggio, handle it
 	
-	ld	a,[gbt_ticks_elapsed]
-	and	a,3
-	cp	a,0
+	ld	a,[gbt_arpeggio_tick+2]
+	and	a,a
 	jr	nz,.not_tick_0
 
 	; Tick 0 - Set original frequency
@@ -996,7 +965,9 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	[gbt_freq+2*2+1],a ; Set frequency
 	
 	ld	a,1
-	ret
+	ld	[gbt_arpeggio_tick+2],a
+	
+	ret ; ret 1
 
 .not_tick_0:
 
@@ -1014,13 +985,13 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+2*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
+	ld	a,2
+	ld	[gbt_arpeggio_tick+2],a
+	
+	dec	a
+	ret ; ret 1
 	
 .not_tick_1:
-
-	cp	a,2
-	jr	nz,.not_tick_2
 	
 	; Tick 2
 	
@@ -1033,13 +1004,11 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,b
 	ld	[gbt_freq+2*2+1],a ; Set frequency
 	
-	ld	a,1
-	ret
-
-.not_tick_2: ; ?????
-
 	xor	a,a
-	ret ; a is 0, return 0
+	ld	[gbt_arpeggio_tick+2],a
+	
+	inc	a
+	ret ; ret 1
 
 ; -----------------
 
@@ -1107,6 +1076,7 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 	
 	ld	a,1
 	ld	[gbt_arpeggio_enabled+2],a
+	ld	[gbt_arpeggio_tick+2],a
 	
 	ret ; ret 1
 
@@ -1120,10 +1090,7 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 ; -----------------------------------------------------------------------
 
 gbt_channel_4_handle:: ; de = info
-	
-	ld	a,$FF
-	ld	[gbt_cut_note_tick+3],a ; Disable cut note
-	
+
 	ld	a,[gbt_channels_enabled]
 	and	a,$08
 	jr	nz,.channel4_enabled
@@ -1176,10 +1143,7 @@ gbt_channel_4_handle:: ; de = info
 	
 	; NOP
 	
-	call	channel4_update_effects
-	and	a,a ; returns 1 in a if it is needed to update sound registers
-	ret	z
-	jr	.refresh_channel4_regs
+	ret
 	
 .just_set_volume:
 	
@@ -1243,8 +1207,6 @@ gbt_channel_4_handle:: ; de = info
 
 .refresh_channel4_regs:
 	
-	call	channel4_update_effects
-	
 	; fall through!!!!! 
 
 ; -----------------
@@ -1277,7 +1239,7 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
 	dec	a ; a = $FF
 	ld	[gbt_cut_note_tick+3],a ; disable cut note
 
-	ld	a,0 ; vol = 0
+	xor	a,a ; vol = 0
 	ld	[rNR42],a
 	ld	a,$80 ; start
 	ld	[rNR44],a
@@ -1415,7 +1377,7 @@ gbt_update_effects_bank1::
 	call	nz,channel3_refresh_registers
 	
 	call	channel4_update_effects
-	and	a,a  ; there are no effects in channel 4 that need updating
+	and	a,a
 	call	nz,channel4_refresh_registers
 	
 	ret

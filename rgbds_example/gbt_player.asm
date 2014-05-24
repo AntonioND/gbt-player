@@ -49,6 +49,7 @@ gbt_channel3_loaded_instrument::	DS	1 ; current loaded instrument ($FF if none)
 ; Arpeggio -> Ch 1-3
 gbt_arpeggio_freq_index::	DS	3*3 ; { base index, base index + x, base index + y } * 3
 gbt_arpeggio_enabled::	DS	3*1 ; if 0, disabled
+gbt_arpeggio_tick::	DS	3*1
 
 ; Cut note
 gbt_cut_note_tick::	DS	4*1 ; If tick == gbt_cut_note_tick, stop note.
@@ -270,6 +271,24 @@ gbt_update::
 	
 .dontexit:
 	ld	[hl],$00 ; reset tick counter
+	
+	; Clear tick-based effects
+	; ------------------------
+	
+	xor	a,a
+	ld	hl,gbt_arpeggio_enabled ; Disable arpeggio
+	ld	[hl+],a
+	ld	[hl+],a
+	ld	[hl],a
+	dec	a ; a = $FF
+	ld	hl,gbt_cut_note_tick ; Disable cut note
+	ld	[hl+],a
+	ld	[hl+],a
+	ld	[hl+],a
+	ld	[hl],a
+	
+	; Update effects
+	; --------------
 	
 	ld	a,$01
 	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
