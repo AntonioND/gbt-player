@@ -66,7 +66,7 @@ Changelog
 ---------
 
 - Version 2.1.0 (2014/5/24)
- - Fixed effects arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once).
+ - Fixed arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once).
  - Added "Cut Note" effect.
 
 - Version 2.0.1 (2014/5/23)
