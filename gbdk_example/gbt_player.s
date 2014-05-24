@@ -81,6 +81,10 @@ gbt_arpeggio_freq_index::
 gbt_arpeggio_enabled::
 	.ds 3*1 ; if 0, disabled
 
+; Cut note
+gbt_cut_note_tick::
+	.ds	4*1 ; If tick == gbt_cut_note_tick, stop note.
+
 ; Last step of last pattern this is set to 1
 gbt_have_to_stop_next_step::
 	.ds 1
@@ -213,6 +217,12 @@ _gbt_play::
 	ld	(gbt_arpeggio_enabled+0),a
 	ld	(gbt_arpeggio_enabled+1),a
 	ld	(gbt_arpeggio_enabled+2),a
+	
+	ld	a,#0xFF
+	ld	(gbt_cut_note_tick+0),a
+	ld	(gbt_cut_note_tick+1),a
+	ld	(gbt_cut_note_tick+2),a
+	ld	(gbt_cut_note_tick+3),a
 	
 	ld	a,#0x80
 	ldh	(#.NR52),a

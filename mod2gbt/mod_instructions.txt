@@ -28,6 +28,7 @@ Dnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
 E8n - Sets the panning to n (in hexadecimal). 
       Left --- Both --- Right
       0123   456789AB    CDEF
+ECn - Cut Note after n ticks. If n > speed or n = 0, it won't work.
 Fnn - Sets speed to nn (in hexadecimal). Valid values from 01h to 1Fh.
       The higher the value, the slower the song. BPM speed not supported.
 

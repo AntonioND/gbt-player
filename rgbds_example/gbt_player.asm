@@ -50,6 +50,9 @@ gbt_channel3_loaded_instrument::	DS	1 ; current loaded instrument ($FF if none)
 gbt_arpeggio_freq_index::	DS	3*3 ; { base index, base index + x, base index + y } * 3
 gbt_arpeggio_enabled::	DS	3*1 ; if 0, disabled
 
+; Cut note
+gbt_cut_note_tick::	DS	4*1 ; If tick == gbt_cut_note_tick, stop note.
+
 ; Last step of last pattern this is set to 1
 gbt_have_to_stop_next_step::	DS	1
 
@@ -164,6 +167,12 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[gbt_arpeggio_enabled+0],a
 	ld	[gbt_arpeggio_enabled+1],a
 	ld	[gbt_arpeggio_enabled+2],a
+	
+	ld	a,$FF
+	ld	[gbt_cut_note_tick+0],a
+	ld	[gbt_cut_note_tick+1],a
+	ld	[gbt_cut_note_tick+2],a
+	ld	[gbt_cut_note_tick+3],a
 	
 	ld	a,$80
 	ld	[rNR52],a

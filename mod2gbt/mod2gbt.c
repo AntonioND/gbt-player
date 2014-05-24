@@ -297,6 +297,12 @@ inline int EFFECT_MOD_TO_GB(u8 pattern_number, u8 step_number, u8 channel,
                 *converted_params = (left<<(3+channel))|(right<<(channel-1)); // channel 1-4
                 return 1;
             }
+            if((effectparams&0xF0) == 0xC0) // Cut note
+            {
+                *converted_num = 2;
+                *converted_params = (effectparams & 0xF);
+                return 1;
+            }
             else // Error
             {
                 printf("Unsupported effect at pattern %d, step %d, channel %d: %01X%02X\n",
