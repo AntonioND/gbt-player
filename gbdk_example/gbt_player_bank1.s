@@ -261,7 +261,7 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 	; --------
 	
 	ld	a,(gbt_cut_note_tick+0)
-	ld	hl,gbt_ticks_elapsed
+	ld	hl,#gbt_ticks_elapsed
 	cp	a,(hl)
 	jp	nz,ch1_dont_cut$
 	
@@ -613,7 +613,7 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 	; --------
 	
 	ld	a,(gbt_cut_note_tick+1)
-	ld	hl,gbt_ticks_elapsed
+	ld	hl,#gbt_ticks_elapsed
 	cp	a,(hl)
 	jp	nz,ch2_dont_cut$
 	
@@ -989,7 +989,7 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	; --------
 	
 	ld	a,(gbt_cut_note_tick+2)
-	ld	hl,gbt_ticks_elapsed
+	ld	hl,#gbt_ticks_elapsed
 	cp	a,(hl)
 	jp	nz,ch3_dont_cut$
 	
@@ -1004,7 +1004,7 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,#0x80 ; start
 	ld	(#.NR34),a
 
-ch3_dont_cut$
+ch3_dont_cut$:
 
 	; Arpeggio
 	; --------
@@ -1221,7 +1221,7 @@ channel4_enabled$:
 	call	channel4_update_effects
 	and	a,a ; returns 1 in a if it is needed to update sound registers
 	ret	z
-	jr	ch4_refresh_channel4_regs$
+	jr	refresh_channel4_regs$
 	
 ch4_just_set_volume$:
 	
@@ -1315,7 +1315,7 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
 	; --------
 	
 	ld	a,(gbt_cut_note_tick+3)
-	ld	hl,gbt_ticks_elapsed
+	ld	hl,#gbt_ticks_elapsed
 	cp	a,(hl)
 	jp	nz,ch4_dont_cut$
 	
@@ -1327,7 +1327,7 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
 	ld	a,#0x80 ; start
 	ld	(#.NR44),a
 
-ch4_dont_cut$
+ch4_dont_cut$:
 	
 	xor	a,a
 	ret ; a is 0, return
