@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  v2.0.1               ---
+;        ---                       GBT PLAYER  v2.1.0               ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2014 Antonio Niño Díaz ---
@@ -80,7 +80,12 @@ _gbt_get_freq_from_index: ; a = index, bc = returned freq
 ; -----------------------------------------------------------------------
 
 gbt_channel_1_handle:: ; de = info
-
+	
+	xor	a,a
+	ld	(gbt_arpeggio_enabled+0),a ; Disable arpeggio
+	dec	a ; a = 0xFF
+	ld	(gbt_cut_note_tick+0),a ; Disable cut note
+	
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x01
 	jr	nz,channel1_enabled$
@@ -175,11 +180,6 @@ ch1_has_frequency$:
 	ld	(gbt_arpeggio_freq_index+0*3),a
 	; This destroys hl and a. Returns freq in bc
 	call	_gbt_get_freq_from_index
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+0),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+0),a ; Disable cut note
 	
 	ld	a,c
 	ld	(gbt_freq+0*2+0),a
@@ -285,9 +285,26 @@ ch1_dont_cut$:
 	; If enabled arpeggio, handle it
 	
 	ld	a,(gbt_ticks_elapsed)
+	and	a,#3
 	cp	a,#0
-	ret	z ; if tick 0, do nothing
+	jr	nz,ch1_not_tick_0$
+
+	; Tick 0 - Set original frequency
 	
+	ld	a,(gbt_arpeggio_freq_index+0*3+0)
+	
+	call	_gbt_get_freq_from_index
+
+	ld	a,c
+	ld	(gbt_freq+0*2+0),a
+	ld	a,b
+	ld	(gbt_freq+0*2+1),a ; Set frequency
+	
+	ld	a,#1
+	ret
+
+ch1_not_tick_0$:
+
 	cp	a,#1
 	jr	nz,ch1_not_tick_1$
 	
@@ -324,35 +341,9 @@ ch1_not_tick_1$:
 	ld	a,#1
 	ret
 
-ch1_not_tick_2$:
-	
-	cp	a,#3
-	jr	nz,ch1_not_tick_3$
-	
-	; Tick 3 - Set original frequency
-	
-	ld	a,(gbt_arpeggio_freq_index+0*3+0)
-	
-	call	_gbt_get_freq_from_index
+ch1_not_tick_2$: ; ?????
 
-	ld	a,c
-	ld	(gbt_freq+0*2+0),a
-	ld	a,b
-	ld	(gbt_freq+0*2+1),a ; Set frequency
-	
 	xor	a,a
-	ld	(gbt_arpeggio_enabled+0), a
-	
-	ld	a,#1
-	ret
-
-ch1_not_tick_3$:
-	
-	; Tick > 3, do nothing (disable arpeggio)
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+0), a
-	
 	ret ; a is 0, return 0
 
 ; -----------------
@@ -434,7 +425,12 @@ gbt_ch1_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_2_handle:: ; de = info
-
+	
+	xor	a,a
+	ld	(gbt_arpeggio_enabled+1),a ; Disable arpeggio
+	dec	a ; a = 0xFF
+	ld	(gbt_cut_note_tick+1),a ; Disable cut note
+	
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x02
 	jr	nz,channel2_enabled$
@@ -530,11 +526,6 @@ ch2_has_frequency$:
 	; This destroys hl and a. Returns freq in bc
 	call	_gbt_get_freq_from_index
 	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+1),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+1),a ; Disable cut note
-	
 	ld	a,c
 	ld	(gbt_freq+1*2+0),a
 	ld	a,b
@@ -629,7 +620,7 @@ ch2_dont_cut$:
 
 	; Arpeggio
 	; --------
-
+	
 	ld	a,(gbt_arpeggio_enabled+1)
 	and	a,a
 	ret	z ; a is 0, return 0
@@ -637,9 +628,26 @@ ch2_dont_cut$:
 	; If enabled arpeggio, handle it
 	
 	ld	a,(gbt_ticks_elapsed)
+	and	a,#3
 	cp	a,#0
-	ret	z ; if tick 0, do nothing
+	jr	nz,ch2_not_tick_0$
+
+	; Tick 0 - Set original frequency
 	
+	ld	a,(gbt_arpeggio_freq_index+1*3+0)
+	
+	call	_gbt_get_freq_from_index
+
+	ld	a,c
+	ld	(gbt_freq+1*2+0),a
+	ld	a,b
+	ld	(gbt_freq+1*2+1),a ; Set frequency
+	
+	ld	a,#1
+	ret
+
+ch2_not_tick_0$:
+
 	cp	a,#1
 	jr	nz,ch2_not_tick_1$
 	
@@ -676,35 +684,9 @@ ch2_not_tick_1$:
 	ld	a,#1
 	ret
 
-ch2_not_tick_2$:
-	
-	cp	a,#3
-	jr	nz,ch2_not_tick_3$
-	
-	; Tick 3 - Set original frequency
-	
-	ld	a,(gbt_arpeggio_freq_index+1*3+0)
-	
-	call	_gbt_get_freq_from_index
+ch2_not_tick_2$: ; ?????
 
-	ld	a,c
-	ld	(gbt_freq+1*2+0),a
-	ld	a,b
-	ld	(gbt_freq+1*2+1),a ; Set frequency
-	
 	xor	a,a
-	ld	(gbt_arpeggio_enabled+1), a
-	
-	ld	a,#1
-	ret
-
-ch2_not_tick_3$:
-	
-	; Tick > 3, do nothing (disable arpeggio)
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+1), a
-	
 	ret ; a is 0, return 0
 
 ; -----------------
@@ -786,7 +768,12 @@ gbt_ch2_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_3_handle:: ; de = info
-
+	
+	xor	a,a
+	ld	(gbt_arpeggio_enabled+2),a ; Disable arpeggio
+	dec	a ; a = 0xFF
+	ld	(gbt_cut_note_tick+2),a ; Disable cut note
+	
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x04
 	jr	nz,channel3_enabled$
@@ -874,11 +861,6 @@ ch3_has_frequency$:
 	ld	(gbt_arpeggio_freq_index+2*3),a
 	; This destroys hl and a. Returns freq in bc
 	call	_gbt_get_freq_from_index
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+2),a ; Disable arpeggio
-	dec	a ; a = 0xFF
-	ld	(gbt_cut_note_tick+2),a ; Disable cut note
 	
 	ld	a,c
 	ld	(gbt_freq+2*2+0),a
@@ -1008,7 +990,7 @@ ch3_dont_cut$:
 
 	; Arpeggio
 	; --------
-
+	
 	ld	a,(gbt_arpeggio_enabled+2)
 	and	a,a
 	ret	z ; a is 0, return 0
@@ -1016,9 +998,26 @@ ch3_dont_cut$:
 	; If enabled arpeggio, handle it
 	
 	ld	a,(gbt_ticks_elapsed)
+	and	a,#3
 	cp	a,#0
-	ret	z ; if tick 0, do nothing
+	jr	nz,ch3_not_tick_0$
+
+	; Tick 0 - Set original frequency
 	
+	ld	a,(gbt_arpeggio_freq_index+2*3+0)
+	
+	call	_gbt_get_freq_from_index
+
+	ld	a,c
+	ld	(gbt_freq+2*2+0),a
+	ld	a,b
+	ld	(gbt_freq+2*2+1),a ; Set frequency
+	
+	ld	a,#1
+	ret
+
+ch3_not_tick_0$:
+
 	cp	a,#1
 	jr	nz,ch3_not_tick_1$
 	
@@ -1055,35 +1054,9 @@ ch3_not_tick_1$:
 	ld	a,#1
 	ret
 
-ch3_not_tick_2$:
-	
-	cp	a,#3
-	jr	nz,ch3_not_tick_3$
-	
-	; Tick 3 - Set original frequency
-	
-	ld	a,(gbt_arpeggio_freq_index+2*3+0)
-	
-	call	_gbt_get_freq_from_index
+ch3_not_tick_2$: ; ?????
 
-	ld	a,c
-	ld	(gbt_freq+2*2+0),a
-	ld	a,b
-	ld	(gbt_freq+2*2+1),a ; Set frequency
-	
 	xor	a,a
-	ld	(gbt_arpeggio_enabled+2), a
-	
-	ld	a,#1
-	ret
-
-ch3_not_tick_3$:
-	
-	; Tick > 3, do nothing (disable arpeggio)
-	
-	xor	a,a
-	ld	(gbt_arpeggio_enabled+2), a
-	
 	ret ; a is 0, return 0
 
 ; -----------------
@@ -1165,7 +1138,10 @@ gbt_ch3_cut_note$:
 ; -----------------------------------------------------------------------
 
 gbt_channel_4_handle:: ; de = info
-
+	
+	ld	a,#0xFF
+	ld	(gbt_cut_note_tick+3),a ; Disable cut note
+	
 	ld	a,(gbt_channels_enabled)
 	and	a,#0x08
 	jr	nz,channel4_enabled$
@@ -1257,9 +1233,6 @@ ch4_has_instrument$:
 	ld	a,(hl) ; a = instrument data
 	
 	ld	(gbt_instr+3),a
-	
-	ld	a,#0xFF
-	ld	(gbt_cut_note_tick+3),a ; Disable cut note
 	
 	ld	a,(de)
 	inc	de

@@ -2,7 +2,7 @@
 *        --------------------------------------------------------------
 *        ---                                                        ---
 *        ---                                                        ---
-*        ---            mod2gbt v2.0 (part of GBT Player)           ---
+*        ---            mod2gbt v2.1 (part of GBT Player)           ---
 *        ---                                                        ---
 *        ---                                                        ---
 *        ---              Copyright (C) 2009-2014 Antonio Niño Díaz ---

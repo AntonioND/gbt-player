@@ -1,4 +1,4 @@
-GBT PLAYER  v2.0.1
+GBT PLAYER  v2.1.0
 ==================
 
 A music player library and converter kit for Game Boy that can be used with RGBDS or GBDK:
@@ -65,6 +65,10 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 Changelog
 ---------
 
+- Version 2.1.0 (2014/5/24)
+ - Fixed effects arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once).
+ - Added "Cut Note" effect.
+
 - Version 2.0.1 (2014/5/23)
  - Fixed effects in channels 1, 2 and 3 in GBDK version.
 
@@ -99,8 +103,3 @@ Known bugs
 ----------
 
 - Effect Dxx, when used the last step of a pattern, will jump 2 patterns instead of 1.
-- Arpeggio, at speeds lower than 4 (faster than 4) won't work correctly. The normal beaviour is to cycle through the notes once and stop.
- - Speed 3 -> It won't stop by itself, it has to be stopped manually by setting a new note or setting volume to 0 with effect C00.
- - Speed 2 -> It won't stop at the correct tone (the original tone).
- - Speed 1 -> It will only sound the first note.
- - Speed 0 -> Prohibited in mod format.
