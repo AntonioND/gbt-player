@@ -160,6 +160,8 @@ gbt_channel_1_handle:: ; de = info
 	
 	xor	a,a
 	ld	[gbt_arpeggio_enabled+0],a ; Disable arpeggio
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+0],a ; Disable cut note
 	
 	ld	a,c
 	ld	[gbt_freq+0*2+0],a
@@ -236,7 +238,28 @@ channel1_refresh_registers:
 ; ------------------
 
 channel1_update_effects: ; returns 1 in a if it is needed to update sound registers
+	
+	; Cut note
+	; --------
+	
+	ld	a,[gbt_cut_note_tick+0]
+	ld	hl,gbt_ticks_elapsed
+	cp	a,[hl]
+	jp	nz,.dont_cut
+	
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+0],a ; disable cut note
+	
+	ld	a,0 ; vol = 0
+	ld	[rNR12],a
+	ld	a,$80 ; start
+	ld	[rNR14],a
 
+.dont_cut:
+
+	; Arpeggio
+	; --------
+	
 	ld	a,[gbt_arpeggio_enabled+0]
 	and	a,a
 	ret	z ; a is 0, return 0
@@ -337,7 +360,7 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 .gbt_ch1_jump_table:
 	DW	.gbt_ch1_pan
 	DW	.gbt_ch1_arpeggio
-	DW	gbt_ch1234_nop
+	DW	.gbt_ch1_cut_note
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
@@ -383,6 +406,11 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 	
 	ret ; ret 1
 
+.gbt_ch1_cut_note:
+	ld	[gbt_cut_note_tick+0],a
+	xor	a,a ; ret 0
+	ret
+	
 ; -----------------------------------------------------------------------
 ; ------------------------------ Channel 2 ------------------------------
 ; -----------------------------------------------------------------------
@@ -486,7 +514,9 @@ gbt_channel_2_handle:: ; de = info
 	
 	xor	a,a
 	ld	[gbt_arpeggio_enabled+1],a ; Disable arpeggio
-	
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+1],a ; Disable cut note
+
 	ld	a,c
 	ld	[gbt_freq+1*2+0],a
 	ld	a,b
@@ -560,7 +590,28 @@ channel2_refresh_registers:
 ; ------------------
 
 channel2_update_effects: ; returns 1 in a if it is needed to update sound registers
+	
+	; Cut note
+	; --------
+	
+	ld	a,[gbt_cut_note_tick+1]
+	ld	hl,gbt_ticks_elapsed
+	cp	a,[hl]
+	jp	nz,.dont_cut
+	
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+1],a ; disable cut note
+	
+	ld	a,0 ; vol = 0
+	ld	[rNR22],a
+	ld	a,$80 ; start
+	ld	[rNR24],a
 
+.dont_cut:
+
+	; Arpeggio
+	; --------
+	
 	ld	a,[gbt_arpeggio_enabled+1]
 	and	a,a
 	ret	z ; a is 0, return 0
@@ -661,7 +712,7 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 .gbt_ch2_jump_table:
 	DW	.gbt_ch2_pan
 	DW	.gbt_ch2_arpeggio
-	DW	gbt_ch1234_nop
+	DW	.gbt_ch2_cut_note
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
@@ -706,6 +757,11 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 	ld	[gbt_arpeggio_enabled+1],a
 	
 	ret ; ret 1
+
+.gbt_ch2_cut_note:
+	ld	[gbt_cut_note_tick+1],a
+	xor	a,a ; ret 0
+	ret
 
 ; -----------------------------------------------------------------------
 ; ------------------------------ Channel 3 ------------------------------
@@ -803,6 +859,8 @@ gbt_channel_3_handle:: ; de = info
 	
 	xor	a,a
 	ld	[gbt_arpeggio_enabled+2],a ; Disable arpeggio
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+2],a ; Disable cut note
 	
 	ld	a,c
 	ld	[gbt_freq+2*2+0],a
@@ -908,7 +966,31 @@ gbt_channel3_load_instrument:
 ; ------------------
 
 channel3_update_effects: ; returns 1 in a if it is needed to update sound registers
+	
+	; Cut note
+	; --------
+	
+	ld	a,[gbt_cut_note_tick+2]
+	ld	hl,gbt_ticks_elapsed
+	cp	a,[hl]
+	jp	nz,.dont_cut
+	
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+2],a ; disable cut note
+	
+	ld	a,$80
+	ld	[rNR30],a ; enable
+	
+	ld	a,0 ; vol = 0
+	ld	[rNR32],a
+	ld	a,$80 ; start
+	ld	[rNR34],a
 
+.dont_cut:
+
+	; Arpeggio
+	; --------
+	
 	ld	a,[gbt_arpeggio_enabled+2]
 	and	a,a
 	ret	z ; a is 0, return 0
@@ -1009,7 +1091,7 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 .gbt_ch3_jump_table:
 	DW	.gbt_ch3_pan
 	DW	.gbt_ch3_arpeggio
-	DW	gbt_ch1234_nop
+	DW	.gbt_ch3_cut_note
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
@@ -1054,6 +1136,11 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 	ld	[gbt_arpeggio_enabled+2],a
 	
 	ret ; ret 1
+
+.gbt_ch3_cut_note:
+	ld	[gbt_cut_note_tick+2],a
+	xor	a,a ; ret 0
+	ret
 
 ; -----------------------------------------------------------------------
 ; ------------------------------ Channel 4 ------------------------------
@@ -1113,11 +1200,10 @@ gbt_channel_4_handle:: ; de = info
 	
 	; NOP
 	
-	;call	channel4_update_effects
-	;and	a,a ; returns 1 in a if it is needed to update sound registers
-	;ret	z
-	;jr	.refresh_channel4_regs
-	ret ; there are no effects in channel 4 that need updating
+	call	channel4_update_effects
+	and	a,a ; returns 1 in a if it is needed to update sound registers
+	ret	z
+	jr	.refresh_channel4_regs
 	
 .just_set_volume:
 	
@@ -1154,6 +1240,9 @@ gbt_channel_4_handle:: ; de = info
 	
 	ld	[gbt_instr+3],a
 	
+	ld	a,$FF
+	ld	[gbt_cut_note_tick+3],a ; Disable cut note
+
 	ld	a,[de]
 	inc	de
 	
@@ -1181,7 +1270,7 @@ gbt_channel_4_handle:: ; de = info
 
 .refresh_channel4_regs:
 	
-	;call	channel4_update_effects
+	call	channel4_update_effects
 	
 	; fall through!!!!! 
 
@@ -1202,9 +1291,28 @@ channel4_refresh_registers:
 
 ; ------------------
 
-;channel4_update_effects: ; returns 1 in a if it is needed to update sound registers
-;	xor	a,a
-;	ret ; a is 0, return 0  ; there are no effects in channel 4 that need updating
+channel4_update_effects: ; returns 1 in a if it is needed to update sound registers
+	
+	; Cut note
+	; --------
+	
+	ld	a,[gbt_cut_note_tick+3]
+	ld	hl,gbt_ticks_elapsed
+	cp	a,[hl]
+	jp	nz,.dont_cut
+	
+	dec	a ; a = $FF
+	ld	[gbt_cut_note_tick+3],a ; disable cut note
+
+	ld	a,0 ; vol = 0
+	ld	[rNR42],a
+	ld	a,$80 ; start
+	ld	[rNR44],a
+
+.dont_cut:
+
+	xor	a,a
+	ret ; a is 0, return 0
 
 ; -----------------
 
@@ -1229,7 +1337,7 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
 .gbt_ch4_jump_table:
 	DW	.gbt_ch4_pan
 	DW	gbt_ch1234_nop ; gbt_ch4_arpeggio
-	DW	gbt_ch1234_nop
+	DW	.gbt_ch4_cut_note
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
 	DW	gbt_ch1234_nop
@@ -1249,6 +1357,11 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
 	ld	[gbt_pan+3],a
 	ld	a,1
 	ret ; ret 1
+
+.gbt_ch4_cut_note:
+	ld	[gbt_cut_note_tick+3],a
+	xor	a,a ; ret 0
+	ret
 
 ; -----------------------------------------------------------------------
 
@@ -1328,9 +1441,9 @@ gbt_update_effects_bank1::
 	and	a,a
 	call	nz,channel3_refresh_registers
 	
-	;call	channel4_update_effects
-	;and	a,a  ; there are no effects in channel 4 that need updating
-	;call	nz,channel4_refresh_registers
+	call	channel4_update_effects
+	and	a,a  ; there are no effects in channel 4 that need updating
+	call	nz,channel4_refresh_registers
 	
 	ret
 	
