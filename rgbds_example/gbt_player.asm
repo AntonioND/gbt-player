@@ -79,7 +79,7 @@ gbt_get_pattern_ptr:: ; a = pattern number
 	ld	h,a
 	
 	; hl = pointer to list of pointers
-	; de = patter number
+	; de = pattern number
 	
 	add	hl,de
 	add	hl,de
