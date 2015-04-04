@@ -32,7 +32,7 @@ GBT Player is a music creation environment for GB and GBC. It is composed by mod
 
 mod2gbt is writen in C, and should compile in every machine where you can code in C. Only a windows binary is included.
 
-GBT Player is writen in 100% assembler. That means that it is FAST, it won't need a lot of CPU time (around 7%?), and you will have a lot of time for your game logic. There is source code for GBDK and RGBDS, the main free alternatives for GameBoy developement (in my opinion).
+GBT Player is writen in 100% assembler. That means that it is FAST, it won't need a lot of CPU time (around 7%?), and you will have a lot of time for your game logic. There is source code for GBDK and RGBDS, the main free alternatives for GameBoy development (in my opinion).
 
 GBT Player is open source, and it is licensed under the BSD license. That means that you can use and modify it but you have to give credit for the original work. It would be nice to you tell me if you use it, anyway. :)
 
