@@ -11,10 +11,13 @@ void main()
 	gbt_play(song_Data, 2, 7);
 	gbt_loop(0);
 
-	add_VBL(gbt_update);
-	
 	set_interrupts(VBL_IFLAG);
 	enable_interrupts();
 	
-	while(1) wait_vbl_done();
+	while(1)
+	{
+		wait_vbl_done();
+		
+		gbt_update(); // This will change to ROM bank 1.
+	}
 }
