@@ -1,4 +1,4 @@
-GBT PLAYER  v2.1.0
+GBT PLAYER  v2.1.1
 ==================
 
 A music player library and converter kit for Game Boy that can be used with RGBDS or GBDK:
@@ -9,7 +9,7 @@ GBDK: [http://gbdk.sourceforge.net/](http://gbdk.sourceforge.net/)
 
 Licensed under the BSD license.
 
-Copyright (C) 2009-2014 Antonio Niño Díaz.
+Copyright (C) 2009-2015 Antonio Niño Díaz.
 
 All rights reserved.
 
@@ -64,6 +64,9 @@ The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 
 Changelog
 ---------
+
+- Version 2.1.1 (2015/4/7)
+ - Simplified GBDK example because it was confusing a lot of people...
 
 - Version 2.1.0 (2014/5/24)
  - Fixed arpeggio effect. Now it keeps looping until tick = 0 (previously it only looped once). Loops 3 steps, not 4.
