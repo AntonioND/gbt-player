@@ -25,6 +25,8 @@ Latest version:
 
 [https://github.com/AntonioND/gbt-player](https://github.com/AntonioND/gbt-player)
 
+IMPORTANT NOTE: Please, GBDK users, read this: [http://antoniond_blog.drunkencoders.com/?p=392] http://antoniond_blog.drunkencoders.com/?p=392
+
 Introduction
 ------------
 
