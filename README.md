@@ -30,7 +30,7 @@ IMPORTANT NOTE: Please, GBDK users, read this: [http://antoniond_blog.drunkencod
 Introduction
 ------------
 
-GBT Player is a music creation environment for GB and GBC. It is composed by mod2gbt, which converts a mod file into a gbt (GameBoy Tracker) file, and gbt player, which will be used to play that song in the GB.
+GBT Player is a music creation environment for GB and GBC. It is composed by mod2gbt, which converts a mod file into a gbt (GameBoy Tracker) file, and gbt player, which will be used to play that song in the GB. It's the same idea as the old Lemon player, but greatly improved.
 
 mod2gbt is writen in C, and should compile in every machine where you can code in C. Only a windows binary is included.
 
