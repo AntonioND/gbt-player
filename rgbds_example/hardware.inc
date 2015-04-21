@@ -18,6 +18,7 @@
 ;* Rev 2.1 -           : Added MBC5 & cart RAM enable/disable defines
 ;* Rev 2.2 -           : Fixed NR42,NR43, & NR44 equates
 ;* Rev 2.3 -           : Fixed incorrect _HRAM equate
+;* Rev 2.4 - 27-Apr-13 : Added some cart defines (AntonioND)
 
 ; If all of these are already defined, don't do it again.
 
@@ -27,7 +28,7 @@ HARDWARE_INC  SET  1
 rev_Check_hardware_inc: MACRO
 ;NOTE: REVISION NUMBER CHANGES MUST BE ADDED
 ;TO SECOND PARAMETER IN FOLLOWING LINE.
-        IF      \1 > 2.2      ;PUT REVISION NUMBER HERE
+        IF      \1 > 2.4      ;PUT REVISION NUMBER HERE
         WARN    "Version \1 or later of 'hardware.inc' is required."
         ENDC
         ENDM
@@ -643,14 +644,27 @@ rAUD4GO EQU rNR44 ; silly name!
 ;*
 ;***************************************************************************
 
-CART_ROM               EQU 0
-CART_ROM_MBC1          EQU 1
-CART_ROM_MBC1_RAM      EQU 2
-CART_ROM_MBC1_RAM_BAT  EQU 3
-CART_ROM_MBC2          EQU 5
-CART_ROM_MBC2_BAT      EQU 6
-CART_ROM_RAM           EQU 8
-CART_ROM_RAM_BAT       EQU 9
+CART_ROM                      EQU $00
+CART_ROM_MBC1                 EQU $01
+CART_ROM_MBC1_RAM             EQU $02
+CART_ROM_MBC1_RAM_BAT         EQU $03
+CART_ROM_MBC2                 EQU $05
+CART_ROM_MBC2_BAT             EQU $06
+CART_ROM_RAM                  EQU $08
+CART_ROM_RAM_BAT              EQU $09
+CART_ROM_MBC3_BAT_RTC         EQU $0F
+CART_ROM_MBC3_RAM_BAT_RTC     EQU $10
+CART_ROM_MBC3                 EQU $11
+CART_ROM_MBC3_RAM             EQU $12
+CART_ROM_MBC3_RAM_BAT         EQU $13
+CART_ROM_MBC5                 EQU $19
+CART_ROM_MBC5_BAT             EQU $1A
+CART_ROM_MBC5_RAM_BAT         EQU $1B
+CART_ROM_MBC5_RUMBLE          EQU $1C
+CART_ROM_MBC5_RAM_RUMBLE      EQU $1D
+CART_ROM_MBC5_RAM_BAT_RUMBLE  EQU $1E
+CART_ROM_MBC7_RAM_BAT_GYRO    EQU $22
+CART_ROM_POCKET_CAMERA        EQU $FC
 
 CART_ROM_256K  EQU 0
 CART_ROM_512K  EQU 1
@@ -659,13 +673,15 @@ CART_ROM_2M    EQU 3
 CART_ROM_4M    EQU 4
 CART_ROM_8M    EQU 5
 CART_ROM_16M   EQU 6
+CART_ROM_32M   EQU 7
+CART_ROM_64M   EQU 8
 
 CART_RAM_NONE  EQU 0
 CART_RAM_16K   EQU 1
 CART_RAM_64K   EQU 2
 CART_RAM_256K  EQU 3
 
-CART_RAM_ENABLE   EQU $0a
+CART_RAM_ENABLE   EQU $0A
 CART_RAM_DISABLE  EQU $00
 
 ;***************************************************************************
@@ -712,7 +728,7 @@ NINTENDO_LOGO:   MACRO
 ;*
 ;* Nintendo scrolling logo
 ;* (Code won't work on a real GameBoy)
-;* (if next six lines are altered.)
+;* (if next three lines are altered.)
  DB $CE,$ED,$66,$66,$CC,$0D,$00,$0B,$03,$73,$00,$83,$00,$0C,$00,$0D
  DB $00,$08,$11,$1F,$88,$89,$00,$0E,$DC,$CC,$6E,$E6,$DD,$DD,$D9,$99
  DB $BB,$BB,$67,$63,$6E,$0E,$EC,$CC,$DD,$DC,$99,$9F,$BB,$B9,$33,$3E
