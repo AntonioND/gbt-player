@@ -1,7 +1,7 @@
 GBT PLAYER  v3.0.0
 ==================
 
-A music player library and converter kit for Game Boy that can be used with RGBDS [RGBDS](https://github.com/bentley/rgbds).
+A music player library and converter kit for Game Boy that can be used with [RGBDS](https://github.com/bentley/rgbds).
 
 Licensed under the BSD license.
 
@@ -69,7 +69,7 @@ GBDK default assembler (as-gbz80) is no longer supported. RGBDS must be used, an
 
 Since new functionality needs advanced macros like BANK(), which are only supported by RGBDS, the GBDK version is discontinued. The latest version that can be used with GBDK default assembler (2.1.1) is in the folder "legacy_gbdk", as well as the corresponding converter. I don't really know if the same effect can be obtained with as-gbz80. If it can be done, open an issue and I may update GBDK version again.
 
-Reading related to bank switching: [http://antoniond_blog.drunkencoders.com/?p=392] http://antoniond_blog.drunkencoders.com/?p=392
+Reading related to bank switching: [] (http://antoniond_blog.drunkencoders.com/?p=392)
 
 To compile the GBDK example: Open the bat file, change it to set the correct path to your lcc binary and double clic the bat.
 
