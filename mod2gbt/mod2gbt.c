@@ -2,7 +2,7 @@
 *        --------------------------------------------------------------
 *        ---                                                        ---
 *        ---                                                        ---
-*        ---            mod2gbt v2.1 (part of GBT Player)           ---
+*        ---            mod2gbt v3.0 (part of GBT Player)           ---
 *        ---                                                        ---
 *        ---                                                        ---
 *        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
@@ -15,10 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define DEFAULT_ROM_BANK (2)
-
-unsigned int current_output_bank;
 
 typedef unsigned char u8;
 typedef signed   char s8;
@@ -164,17 +160,16 @@ u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
 //--------------------------------------------------------------------------------
 
 FILE * output_file;
-int output_asm;
 char label_name[64];
 
-void out_open(void)
+void out_open(const char * filename)
 {
-    output_file = fopen(output_asm ? "output.asm" : "output.c","w");
+    output_file = fopen(filename,"w");
 }
 
-void out_write_str(const char * c_str, const char * asm_str)
+void out_write_str(const char * asm_str)
 {
-    fprintf(output_file,output_asm ? asm_str : c_str);
+    fprintf(output_file,"%s",asm_str);
 }
 
 void out_write_dec(u8 number)
@@ -184,7 +179,7 @@ void out_write_dec(u8 number)
 
 void out_write_hex(u8 number)
 {
-    fprintf(output_file,"%02x",number);
+    fprintf(output_file,"%02X",number);
 }
 
 void out_close(void)
@@ -222,12 +217,12 @@ That means... MOD C0 (period 1712) = GB C3 (freq 44, index 0)
 Anyway, they don't sound the same...
 */
 
-inline int VOLUME_MOD_TO_GB(int v) // channels 1,2,4
+int VOLUME_MOD_TO_GB(int v) // channels 1,2,4
 {
     return ((v) == 64 ? 0xF : ( (v) >> 2 ));
 }
 
-inline int VOLUME_MOD_TO_GB_CH3(int v) // channel 3
+int VOLUME_MOD_TO_GB_CH3(int v) // channel 3
 {
     int vol = VOLUME_MOD_TO_GB(v);
     switch(vol)
@@ -242,14 +237,18 @@ inline int VOLUME_MOD_TO_GB_CH3(int v) // channel 3
     return 0;
 }
 
-inline int SPEED_MOD_TO_GB(int s)
+int perform_speed_convertion = 1;
+
+int SPEED_MOD_TO_GB(int s)
 {
-	// Amiga's 50 Hz to GB's 60 Hz
-    return (s*60)/50;
+    if(perform_speed_convertion) // Amiga's 50 Hz to GB's 60 Hz
+        return (s*60)/50;
+    else
+        return s;
 }
 
 //returns 1 if ok
-inline int EFFECT_MOD_TO_GB(u8 pattern_number, u8 step_number, u8 channel,
+int EFFECT_MOD_TO_GB(u8 pattern_number, u8 step_number, u8 channel,
                             u8 effectnum, u8 effectparams, u8 * converted_num, u8 * converted_params)
 {
     switch(effectnum)
@@ -417,17 +416,17 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         }
     }
 
-    out_write_str("0x","$");
+    out_write_str("$");
     out_write_hex(result[0]);
 
     if(command_len > 1)
     {
-        out_write_str(",0x",",$");
+        out_write_str(",$");
         out_write_hex(result[1]);
 
         if(command_len > 2)
         {
-            out_write_str(",0x",",$");
+            out_write_str(",$");
             out_write_hex(result[2]);
         }
     }
@@ -514,17 +513,17 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         }
     }
 
-    out_write_str("0x","$");
+    out_write_str("$");
     out_write_hex(result[0]);
 
     if(command_len > 1)
     {
-        out_write_str(",0x",",$");
+        out_write_str(",$");
         out_write_hex(result[1]);
 
         if(command_len > 2)
         {
-            out_write_str(",0x",",$");
+            out_write_str(",$");
             out_write_hex(result[2]);
         }
     }
@@ -620,17 +619,17 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         }
     }
 
-    out_write_str("0x","$");
+    out_write_str("$");
     out_write_hex(result[0]);
 
     if(command_len > 1)
     {
-        out_write_str(",0x",",$");
+        out_write_str(",$");
         out_write_hex(result[1]);
 
         if(command_len > 2)
         {
-            out_write_str(",0x",",$");
+            out_write_str(",$");
             out_write_hex(result[2]);
         }
     }
@@ -717,17 +716,17 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         }
     }
 
-    out_write_str("0x","$");
+    out_write_str("$");
     out_write_hex(result[0]);
 
     if(command_len > 1)
     {
-        out_write_str(",0x",",$");
+        out_write_str(",$");
         out_write_hex(result[1]);
 
         if(command_len > 2)
         {
-            out_write_str(",0x",",$");
+            out_write_str(",$");
             out_write_hex(result[2]);
         }
     }
@@ -735,15 +734,21 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
 
 void convert_pattern(_pattern_t * pattern, u8 number)
 {
-    out_write_str("const unsigned char ","");
-    out_write_str(label_name,label_name);
+    out_write_str("    SECTION \"");
+    out_write_str(label_name);
+    out_write_str("_");
     out_write_dec(number);
-    out_write_str("[] = {\n",":\n");
+    out_write_str("\",ROMX\n");
+
+    out_write_str(label_name);
+    out_write_str("_");
+    out_write_dec(number);
+    out_write_str(":\n");
 
     int step;
     for(step = 0; step < 64; step ++)
     {
-        out_write_str("  ","  DB  ");
+        out_write_str("    DB  ");
 
         u8 data[4]; //packed data
         u8 samplenum; u16 sampleperiod; u8 effectnum, effectparams; //unpacked data
@@ -757,7 +762,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
         convert_channel1(number,step,
                          note_index,samplenum,sampleperiod,effectnum,effectparams);
-        out_write_str(", ",", ");
+        out_write_str(", ");
 
         //Channel 2
         memcpy(data,pattern->info[step][1],4);
@@ -766,7 +771,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
         convert_channel2(number,step,
                          note_index,samplenum,sampleperiod,effectnum,effectparams);
-        out_write_str(", ",", ");
+        out_write_str(", ");
 
         //Channel 3
         memcpy(data,pattern->info[step][2],4);
@@ -775,7 +780,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
         convert_channel3(number,step,
                          note_index,samplenum,sampleperiod,effectnum,effectparams);
-        out_write_str(", ",", ");
+        out_write_str(", ");
 
         //Channel 4
         memcpy(data,pattern->info[step][3],4);
@@ -785,11 +790,10 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         convert_channel4(number,step,
                          note_index,samplenum,sampleperiod,effectnum,effectparams);
 
-        if(step == 63) out_write_str("\n","\n");
-        else out_write_str(",\n","\n");
+        out_write_str("\n");
     }
 
-    out_write_str("};\n\n","\n\n");
+    out_write_str("\n");
 }
 
 //--------------------------------------------------------------------------------
@@ -800,68 +804,52 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
 void print_usage(void)
 {
-    printf("Usage: mod2gtb modfile.mod label_name [-c/-a] N\n\n");
-    printf("       -c: Write GBDK output.c file.\n");
-    printf("       -a: Write RGBDS output.asm file.\n");
-    printf("       N: Set output to ROM bank N. If not defined, it will be %d.",DEFAULT_ROM_BANK);
+    printf("Usage: mod2gbt modfile.mod song_name [-speed]\n\n");
+    printf("       -speed: Don't convert from 50 Hz to 60 Hz\n");
     printf("\n\n");
 }
 
 int main(int argc, char * argv[])
 {
-    printf("     +-------------------------------------------+\n");
-    printf("     |                                           |\n");
-    printf("     |     mod2gbt v2.0 (part of GBT Player)     |\n");
-    printf("     |                                           |\n");
-    printf("     |                                           |\n");
-    printf("     | Copyright (C) 2009-2014 Antonio Niño Díaz |\n");
-    printf("     |                      All rights reserved. |\n");
-    printf("     |                                           |\n");
-	printf("     |                   antonio_nd@outlook.com  |\n");
-    printf("     |                                           |\n");
-    printf("     +-------------------------------------------+\n");
+    int i;
 
     printf("\n");
+    printf("     +-------------------------------------------+\n");
+    printf("     |                                           |\n");
+    printf("     |     mod2gbt v3.0 (part of GBT Player)     |\n");
+    printf("     |                                           |\n");
+    printf("     |                                           |\n");
+    printf("     | Copyright (C) 2009-2015 Antonio Niño Díaz |\n");
+    printf("     |                      All rights reserved. |\n");
+    printf("     |                                           |\n");
+    printf("     |                   antonio_nd@outlook.com  |\n");
+    printf("     |                                           |\n");
+    printf("     +-------------------------------------------+\n");
+    printf("\n");
 
-    if( (argc != 4) && (argc != 5))
+    if( (argc != 3) && (argc != 4) )
     {
         print_usage();
         return -1;
     }
 
-    strcpy(label_name,argv[2]);
+    strncpy(label_name,argv[2],sizeof(label_name));
 
-    if(strcmp(argv[3],"-a") == 0)
+    if(argc == 4)
     {
-        output_asm = 1;
-    }
-    else if(strcmp(argv[3],"-c") == 0)
-    {
-        output_asm = 0;
-    }
-    else
-    {
-        print_usage();
-        return -1;
-    }
-
-    current_output_bank = DEFAULT_ROM_BANK;
-
-    if(argc == 5)
-    {
-        if(sscanf(argv[4],"%d",&current_output_bank) != 1)
+        if(strcmp(argv[3],"-speed") == 0)
         {
-            printf("Invalid bank: %s\n\n",argv[4]);
-            print_usage();
-            return -2;
+            perform_speed_convertion = 0;
+            printf("Disabled speed convertion.\n\n");
         }
         else
         {
-            printf("Output to bank: %d\n",current_output_bank);
+            print_usage();
+            return -1;
         }
     }
 
-    int i;
+
     mod_file_t * modfile = load_file(argv[1]);
     if(modfile == NULL) return -2;
 
@@ -893,15 +881,19 @@ int main(int argc, char * argv[])
 
     printf("Number of patterns: %d\n",num_patterns);
 
-    out_open();
+    char * filename = malloc(strlen(label_name)+strlen(".asm"));
+    if(filename)
+    {
+        sprintf(filename,"%s.asm",label_name);
+        out_open(filename);
+        free(filename);
+    }
+    else
+    {
+        out_open("output.asm");
+    }
 
-    out_write_str("\n// File created by mod2gbt\n\n","\n; File created by mod2gbt\n\n");
-
-    out_write_str("#pragma bank=","\tSECTION \"");
-    out_write_str("",label_name);
-    out_write_str("","\", DATA, BANK[");
-    out_write_dec(current_output_bank);
-    out_write_str("\n\n","]\n\n");
+    out_write_str("\n; File created by mod2gbt\n\n");
 
     printf("\nConverting patterns.\n\n");
     for(i = 0; i < num_patterns; i++)
@@ -912,18 +904,27 @@ int main(int argc, char * argv[])
 
     printf("\nPattern order...\n");
 
-    out_write_str("const unsigned char * ","");
-    out_write_str(label_name,label_name);
-    out_write_str("_Data[] = {\n","_Data::\n");
+    out_write_str("  SECTION \"");
+    out_write_str(label_name);
+    out_write_str("_data\",ROMX\n");
+
+    out_write_str(label_name);
+    out_write_str("_data::\n");
+
     for(i = 0; i < modfile->song_lenght; i ++)
     {
-        out_write_str("    ","    DW  ");
-        out_write_str(label_name,label_name);
+        out_write_str("  DW  BANK(");
+        out_write_str(label_name);
+        out_write_str("_");
         out_write_dec(modfile->pattern_table[i]);
-        out_write_str(",\n","\n");
+        out_write_str("), ");
+
+        out_write_str(label_name);
+        out_write_str("_");
+        out_write_dec(modfile->pattern_table[i]);
+        out_write_str("\n");
     }
-    out_write_str("    0x0000\n","    DW  $0000\n");
-    out_write_str("};\n\n","\n\n");
+    out_write_str("  DW  $0000, $0000\n\n");
 
     out_close();
 
