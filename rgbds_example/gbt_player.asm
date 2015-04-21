@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  v2.1.1               ---
+;        ---                       GBT PLAYER  3.0.0                ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
@@ -12,30 +12,38 @@
 ;                                          antonio_nd@outlook.com
 
 	INCLUDE	"hardware.inc"
+	INCLUDE	"gbt_player.inc"
 
 ; -----------------------------------------------------------------------
 
-	SECTION "GBT_VAR_1", BSS
-	
-gbt_playing::	DS	1
+	SECTION "GBT_VAR_1",WRAM0
 
-; pointer to the pointer array
-gbt_song::	DS	2
+gbt_playing:	DS	1
 
-; bank with the data
-gbt_bank:: 	DS	1
+; pointer to the pattern pointer array
+gbt_pattern_array_ptr:		DS	2 ; LSB first
+IF DEF(GBT_USE_MBC5_512BANKS)
+gbt_pattern_array_bank:		DS	2 ; LSB first
+ELSE
+gbt_pattern_array_bank: 	DS	1
+ENDC
 
 ; playing speed
 gbt_speed::	DS	1
 
-; Up to 12 bytes per step are copied here to be handled in bank 1
+; Up to 12 bytes per step are copied here to be handled in functions in bank 1
 gbt_temp_play_data::	DS	12
-	
-gbt_loop_enabled::	DS	1
+
+gbt_loop_enabled:	DS	1
 gbt_ticks_elapsed::	DS	1
 gbt_current_step::	DS	1
 gbt_current_pattern::	DS	1
-gbt_current_step_data_ptr::	DS	2 ; pointer to next step data
+gbt_current_step_data_ptr::	DS	2 ; pointer to next step data - LSB first
+IF DEF(GBT_USE_MBC5_512BANKS)
+gbt_current_step_data_bank::	DS	2 ; bank of current pattern data - LSB first
+ELSE
+gbt_current_step_data_bank::	DS	1 ; bank of current pattern data
+ENDC
 
 gbt_channels_enabled::	DS	1
 
@@ -61,61 +69,90 @@ gbt_update_pattern_pointers:: 	DS	1 ; set to 1 by jump effects
 
 ; -----------------------------------------------------------------------
 
-	SECTION "GBT_BANK0", HOME
+	SECTION "GBT_BANK0",ROM0
 
 gbt_get_pattern_ptr:: ; a = pattern number
-	
-	; loads a pointer to pattern a into gbt_current_step_data_ptr
-	
+
+	; loads a pointer to pattern a into gbt_current_step_data_ptr and gbt_current_step_data_bank
+
 	ld	e,a
 	ld	d,0
-	
-	ld	a,[gbt_bank]
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,[gbt_pattern_array_bank+0]
+	ld	[$2000],a ; MBC5 - Set bank
+	ld	a,[gbt_pattern_array_bank+1]
+	ld	[$3000],a ; MBC5 - Set bank
+ELSE
+	ld	a,[gbt_pattern_array_bank]
 	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank
-	
-	ld	hl,gbt_song
+ENDC
+
+	ld	hl,gbt_pattern_array_ptr
 	ld	a,[hl+]
-	ld	l,[hl]
-	ld	h,a
-	
+	ld	h,[hl]
+	ld	l,a
+
 	; hl = pointer to list of pointers
 	; de = pattern number
-	
+
 	add	hl,de
 	add	hl,de
-	
-	; hl = pointer to pattern a pointer
+	add	hl,de
+	add	hl,de
+
+	; hl = pointer to pattern bank
+
+	ld	e,[hl]
+	inc	hl
+	ld	d,[hl]
+	inc	hl
+
+	; hl = pointer to pattern bank
+
+	ld	a,e
+	ld	[gbt_current_step_data_bank],a
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,d
+	ld	[gbt_current_step_data_bank+1],a
+ENDC
+
+	; hl = pointer to pattern data
 	
 	ld	a,[hl+]
 	ld	h,[hl]
 	ld	l,a
-	
-	; hl = pointer to pattern a data
-	
+
+	; hl = pointer to pattern data
+
 	ld	a,l
 	ld	[gbt_current_step_data_ptr],a
 	ld	a,h
 	ld	[gbt_current_step_data_ptr+1],a
-	
+
 	ret
 
 ; -----------------------------------------------------------------------
 
-gbt_play:: ; de = data, b = speed, c = bank
+gbt_play:: ; de = data, bc = bank, a = speed
 
-	ld	hl,gbt_song
-	ld	[hl],d
-	inc	hl
+	ld	hl,gbt_pattern_array_ptr
 	ld	[hl],e
-	
-	ld	a,c
-	ld	[gbt_bank],a
-	ld	a,b
+	inc	hl
+	ld	[hl],d
+
 	ld	[gbt_speed],a
-	
+
+	ld	a,c
+	ld	[gbt_pattern_array_bank+0],a
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,b
+	ld	[gbt_pattern_array_bank+1],a
+ENDC
+
 	ld	a,0
 	call	gbt_get_pattern_ptr
-	
+
 	xor	a,a
 	ld	[gbt_current_step],a
 	ld	[gbt_current_pattern],a
@@ -123,13 +160,13 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[gbt_loop_enabled],a
 	ld	[gbt_have_to_stop_next_step],a
 	ld	[gbt_update_pattern_pointers],a
-	
+
 	ld	a,$FF
 	ld	[gbt_channel3_loaded_instrument],a
-	
+
 	ld	a,$0F
 	ld	[gbt_channels_enabled],a
-	
+
 	ld	hl,gbt_pan
 	ld	a,$11 ; L and R
 	ld	[hl+],a
@@ -139,7 +176,7 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[hl+],a
 	sla	a
 	ld	[hl],a
-	
+
 	ld	hl,gbt_vol
 	ld	a,$F0 ; 100%
 	ld	[hl+],a
@@ -148,15 +185,15 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[hl+],a
 	ld	a,$F0 ; 100%
 	ld	[hl+],a
-	
+
 	ld	a,0
-	
+
 	ld	hl,gbt_instr
 	ld	[hl+],a
 	ld	[hl+],a
 	ld	[hl+],a
 	ld	[hl+],a
-	
+
 	ld	hl,gbt_freq
 	ld	[hl+],a
 	ld	[hl+],a
@@ -164,24 +201,24 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[hl+],a
 	ld	[hl+],a
 	ld	[hl+],a
-	
+
 	ld	[gbt_arpeggio_enabled+0],a
 	ld	[gbt_arpeggio_enabled+1],a
 	ld	[gbt_arpeggio_enabled+2],a
-	
+
 	ld	a,$FF
 	ld	[gbt_cut_note_tick+0],a
 	ld	[gbt_cut_note_tick+1],a
 	ld	[gbt_cut_note_tick+2],a
 	ld	[gbt_cut_note_tick+3],a
-	
+
 	ld	a,$80
 	ld	[rNR52],a
 	ld	a,$00
 	ld	[rNR51],a
 	ld	a,$00 ; 0%
 	ld	[rNR50],a
-	
+
 	xor	a,a
 	ld	[rNR10],a
 	ld	[rNR11],a
@@ -201,13 +238,13 @@ gbt_play:: ; de = data, b = speed, c = bank
 	ld	[rNR42],a
 	ld	[rNR43],a
 	ld	[rNR44],a
-	
+
 	ld	a,$77 ; 100%
 	ld	[rNR50],a
-	
+
 	ld	a,$01
 	ld	[gbt_playing],a
-	
+
 	ret
 
 ; -----------------------------------------------------------------------
@@ -221,7 +258,7 @@ gbt_pause:: ; a = pause/unpause
 	ret
 
 ; -----------------------------------------------------------------------
-	
+
 gbt_loop:: ; a = loop/don't loop
 	ld	[gbt_loop_enabled],a
 	ret
@@ -235,7 +272,7 @@ gbt_stop::
 	ld	[rNR51],a
 	ld	[rNR52],a
 	ret
-	
+
 ; -----------------------------------------------------------------------
 
 gbt_enable_channels:: ; a = channel flags (channel flag = (1<<(channel_num-1)))
@@ -243,17 +280,17 @@ gbt_enable_channels:: ; a = channel flags (channel flag = (1<<(channel_num-1)))
 	ret
 
 ; -----------------------------------------------------------------------
-	
+
 	GLOBAL	gbt_update_bank1
-	
+
 gbt_update::
 
 	ld	a,[gbt_playing]
 	or	a,a
 	ret	z ; If not playing, return
-	
+
 	; Handle tick counter
-	
+
 	ld	hl,gbt_ticks_elapsed
 	ld	a,[gbt_speed] ; a = total ticks
 	ld	b,[hl] ; b = ticks elapsed
@@ -261,20 +298,24 @@ gbt_update::
 	ld	[hl],b
 	cp	a,b
 	jr	z,.dontexit
-	
+
 	; Tick != Speed, update effects and exit
+IF DEF(GBT_USE_MBC5_512BANKS)
+	xor	a,a
+	ld	[$3000],a
+ENDC
 	ld	a,$01
 	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
 	call	gbt_update_effects_bank1 ; Call update function in bank 1 (in gbt_player_bank1.s)
-	
+
 	ret
-	
+
 .dontexit:
 	ld	[hl],$00 ; reset tick counter
-	
+
 	; Clear tick-based effects
 	; ------------------------
-	
+
 	xor	a,a
 	ld	hl,gbt_arpeggio_enabled ; Disable arpeggio
 	ld	[hl+],a
@@ -286,48 +327,59 @@ gbt_update::
 	ld	[hl+],a
 	ld	[hl+],a
 	ld	[hl],a
-	
+
 	; Update effects
 	; --------------
-	
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+	xor	a,a
+	ld	[$3000],a
+ENDC
 	ld	a,$01
 	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
 	call	gbt_update_effects_bank1 ; Call update function in bank 1 (in gbt_player_bank1.s)
-	
+
 	; Check if last step
 	; ------------------
-	
+
 	ld	a,[gbt_have_to_stop_next_step]
 	or	a,a
 	jr	z,.dont_stop
-	
+
 	call	gbt_stop
 	ld	a,0
 	ld	[gbt_have_to_stop_next_step],a
 	ret
-	
+
 .dont_stop:
-	
+
 	; Get this step data
 	; ------------------
-	
+
 	; Change to bank with song data
-	
-	ld	a,[gbt_bank]
-	ld	[$2000],a ; MBC1, MBC3, MBC5
-	
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,[gbt_current_step_data_bank+0]
+	ld	[$2000],a ; MBC5 - Set bank
+	ld	a,[gbt_current_step_data_bank+1]
+	ld	[$3000],a ; MBC5 - Set bank
+ELSE
+	ld	a,[gbt_current_step_data_bank]
+	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank
+ENDC
+
 	; Get step data
-	
+
 	ld	a,[gbt_current_step_data_ptr]
 	ld	l,a
 	ld	a,[gbt_current_step_data_ptr+1]
 	ld	h,a ; hl = pointer to data
-	
+
 	ld	de,gbt_temp_play_data
-	
+
 	ld	b,4
 .copy_loop:	; copy as bytes as needed for this step
-	
+
 	ld	a,[hl+]
 	ld	[de],a
 	inc	de
@@ -335,9 +387,9 @@ gbt_update::
 	jr	nz,.more_bytes
 	bit	6,a
 	jr	z,.no_more_bytes_this_channel
-	
+
 	jr	.one_more_byte
-	
+
 .more_bytes:
 
 	ld	a,[hl+]
@@ -355,116 +407,124 @@ gbt_update::
 .no_more_bytes_this_channel:
 	dec	b
 	jr	nz,.copy_loop
-	
+
 	ld	a,l
 	ld	[gbt_current_step_data_ptr],a
 	ld	a,h
 	ld	[gbt_current_step_data_ptr+1],a ; save pointer to data
-	
+
 	; Increment step/pattern
 	; ----------------------
-	
+
 	; Increment step
-	
+
 	ld	a,[gbt_current_step]
 	inc	a
 	ld	[gbt_current_step],a
 	cp	a,64
 	jr	nz,.dont_increment_pattern
-	
+
 	; Increment pattern
-	
+
 	ld	a,0
 	ld	[gbt_current_step],a ; Step 0
-	
+
 	ld	a,[gbt_current_pattern]
 	inc	a
 	ld	[gbt_current_pattern],a
-	
+
 	call	gbt_get_pattern_ptr
-	
+
 	ld	a,[gbt_current_step_data_ptr]
 	ld	b,a
 	ld	a,[gbt_current_step_data_ptr+1]
 	or	a,b
 	jr	nz,.not_ended ; if pointer is 0, song has ended
-	
+
 	ld	a,[gbt_loop_enabled]
 	and	a,a
-	
+
 	jr	z,.loop_disabled
-	
+
 	; If loop is enabled, jump to pattern 0
-	
+
 	ld	a,0
 	ld	[gbt_current_pattern],a
-	
+
 	call	gbt_get_pattern_ptr
-	
+
 	jr	.end_handling_steps_pattern
 
 .loop_disabled:
-	
+
 	; If loop is disabled, stop song
 	; Stop it next step, if not this step won't be played
-	
+
 	ld	a,1
 	ld	[gbt_have_to_stop_next_step],a
-	
+
 .not_ended:
 
 .dont_increment_pattern:
 
 .end_handling_steps_pattern:
-	
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+	xor	a,a
+	ld	[$3000],a ; MBC5
+ENDC
 	ld	a,$01
 	ld	[$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
 	call	gbt_update_bank1 ; Call update function in bank 1 (in gbt_player_bank1.s)
-	
+
 	; Check if any effect has changed the pattern or step
-	
+
 	ld	a,[gbt_update_pattern_pointers]
 	and	a,a
 	ret	z
 	; if any effect has changed the pattern or step, update
-	
+
 	xor	a,a
 	ld	[gbt_update_pattern_pointers],a ; clear update flag
-	
+
 	ld	[gbt_have_to_stop_next_step],a ; clear stop flag
-	
+
 	ld	a,[gbt_current_pattern]
 	call	gbt_get_pattern_ptr ; set ptr to start of the pattern
-	
+
 	; Search the step
-	
+
 	; Change to bank with song data
-	
-	ld	a,[gbt_bank]
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,[gbt_pattern_array_bank+1]
+	ld	[$3000],a ; MBC5
+ENDC
+	ld	a,[gbt_pattern_array_bank+0]
 	ld	[$2000],a ; MBC1, MBC3, MBC5
-	
+
 	ld	a,[gbt_current_step_data_ptr]
 	ld	l,a
 	ld	a,[gbt_current_step_data_ptr+1]
 	ld	h,a ; hl = pointer to data
-	
+
 	ld	a,[gbt_current_step]
 	and	a,a
 	ret	z ; if changing to step 0, exit
-	
+
 	sla	a
 	sla	a
 	ld	b,a ; b = iterations = step * 4 (number of channels)
 .next_channel:
-	
+
 	ld	a,[hl+]
 	bit	7,a
 	jr	nz,.next_channel_more_bytes
 	bit	6,a
 	jr	z,.next_channel_no_more_bytes_this_channel
-	
+
 	jr	.next_channel_one_more_byte
-	
+
 .next_channel_more_bytes:
 
 	ld	a,[hl+]
@@ -478,11 +538,11 @@ gbt_update::
 .next_channel_no_more_bytes_this_channel:
 	dec	b
 	jr	nz,.next_channel
-	
+
 	ld	a,l
 	ld	[gbt_current_step_data_ptr],a
 	ld	a,h
 	ld	[gbt_current_step_data_ptr+1],a ; save pointer to data
-	
+
 	ret
-	
+
