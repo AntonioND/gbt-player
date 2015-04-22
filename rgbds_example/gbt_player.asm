@@ -96,24 +96,19 @@ ENDC
 	; hl = pointer to list of pointers
 	; de = pattern number
 
-	add	hl,de
-	add	hl,de
-	add	hl,de
-	add	hl,de
-
-	; hl = pointer to pattern bank
-
-	ld	e,[hl]
-	inc	hl
-	ld	d,[hl]
-	inc	hl
-
-	; hl = pointer to pattern bank
-
-	ld	a,e
-	ld	[gbt_current_step_data_bank],a
 IF DEF(GBT_USE_MBC5_512BANKS)
-	ld	a,d
+	add	hl,de
+ENDC
+	add	hl,de
+	add	hl,de
+	add	hl,de
+
+	; hl = pointer to pattern bank
+
+	ld	a,[hl+]
+	ld	[gbt_current_step_data_bank+0],a
+IF DEF(GBT_USE_MBC5_512BANKS)
+	ld	a,[hl+]
 	ld	[gbt_current_step_data_bank+1],a
 ENDC
 
@@ -122,8 +117,6 @@ ENDC
 	ld	a,[hl+]
 	ld	h,[hl]
 	ld	l,a
-
-	; hl = pointer to pattern data
 
 	ld	a,l
 	ld	[gbt_current_step_data_ptr],a
