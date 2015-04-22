@@ -805,12 +805,15 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 void print_usage(void)
 {
     printf("Usage: mod2gbt modfile.mod song_name [-speed]\n\n");
-    printf("       -speed: Don't convert from 50 Hz to 60 Hz\n");
+    printf("       -speed      Don't convert speed from 50 Hz to 60 Hz.\n");
+    printf("       -512-banks  Output data for a ROM with more than 256 banks.\n");
     printf("\n\n");
 }
 
 int main(int argc, char * argv[])
 {
+    int more_than_256_banks = 0;
+
     int i;
 
     printf("\n");
@@ -827,7 +830,7 @@ int main(int argc, char * argv[])
     printf("     +-------------------------------------------+\n");
     printf("\n");
 
-    if( (argc != 3) && (argc != 4) )
+    if( !((argc >= 3)&&(argc <= 5)) )
     {
         print_usage();
         return -1;
@@ -835,12 +838,17 @@ int main(int argc, char * argv[])
 
     strncpy(label_name,argv[2],sizeof(label_name));
 
-    if(argc == 4)
+    for(i = 3; i < argc; i++)
     {
-        if(strcmp(argv[3],"-speed") == 0)
+        if(strcmp(argv[i],"-speed") == 0)
         {
             perform_speed_convertion = 0;
             printf("Disabled speed convertion.\n\n");
+        }
+        else if(strcmp(argv[i],"-512-banks") == 0)
+        {
+            more_than_256_banks = 1;
+            printf("Output for a rom with more than 256 banks.\n\n");
         }
         else
         {
@@ -848,7 +856,6 @@ int main(int argc, char * argv[])
             return -1;
         }
     }
-
 
     mod_file_t * modfile = load_file(argv[1]);
     if(modfile == NULL) return -2;
@@ -911,20 +918,38 @@ int main(int argc, char * argv[])
     out_write_str(label_name);
     out_write_str("_data::\n");
 
-    for(i = 0; i < modfile->song_lenght; i ++)
+    if(more_than_256_banks)
     {
-        out_write_str("  DW  BANK(");
-        out_write_str(label_name);
-        out_write_str("_");
-        out_write_dec(modfile->pattern_table[i]);
-        out_write_str("), ");
-
-        out_write_str(label_name);
-        out_write_str("_");
-        out_write_dec(modfile->pattern_table[i]);
-        out_write_str("\n");
+        for(i = 0; i < modfile->song_lenght; i ++)
+        {
+            out_write_str("  DW  BANK(");
+            out_write_str(label_name);
+            out_write_str("_");
+            out_write_dec(modfile->pattern_table[i]);
+            out_write_str("), ");
+            out_write_str(label_name);
+            out_write_str("_");
+            out_write_dec(modfile->pattern_table[i]);
+            out_write_str("\n");
+        }
+        out_write_str("  DW  $0000, $0000\n\n");
     }
-    out_write_str("  DW  $0000, $0000\n\n");
+    else
+    {
+        for(i = 0; i < modfile->song_lenght; i ++)
+        {
+            out_write_str("  DB  BANK(");
+            out_write_str(label_name);
+            out_write_str("_");
+            out_write_dec(modfile->pattern_table[i]);
+            out_write_str(")\n  DW  ");
+            out_write_str(label_name);
+            out_write_str("_");
+            out_write_dec(modfile->pattern_table[i]);
+            out_write_str("\n");
+        }
+        out_write_str("  DB  $00\n  DW  $0000\n\n");
+    }
 
     out_close();
 
