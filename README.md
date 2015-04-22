@@ -56,9 +56,11 @@ effects_test.gb tests arpeggio and "cut note" effects.
 
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones, so you should make roms and test them in emulators or real GB often.
 
-When creating REALLY BIG ROMs (more than 4 MBytes), the define GBT_USE_MBC5_512BANKS in gbt_player.inc should be uncommented to allow allocation of the music data in banks higher than 255.
+When creating REALLY BIG ROMs (more than 4 MBytes), the define GBT_USE_MBC5_512BANKS in gbt_player.inc should be uncommented to allow allocation of the music data in banks higher than 255. Also, songs must be converted adding -512-banks to the mod2gbt command line.
 
 There is one bug in rgblink in bentley's fork when using more than 256 ROM banks. If needed, use my fork with the corresponding bug fix: [https://github.com/AntonioND/rgbds](https://github.com/AntonioND/rgbds).
+
+If you don't like the speed convertion done by mod2gbt (from 50 Hz to 60 Hz) you can use the -speed argument for mod2gbt. Speed will be faster and it will probably have to be adjusted manually.
 
 GBDK notes
 ----------
@@ -76,7 +78,7 @@ To compile the GBDK example: Open the bat file, change it to set the correct pat
 Changelog
 ---------
 
-- Version 3.0.0 (2015/4/21)
+- Version 3.0.0 (2015/4/22)
  - Added support for multiple bank songs.
  - GBDK default assembler (as-gbz80) version discontinued. Version 2.1.1 will be kept in case someone wants to use it.
  - Previously converted songs must be converted again.
