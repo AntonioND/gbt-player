@@ -804,7 +804,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
 
 void print_usage(void)
 {
-    printf("Usage: mod2gbt modfile.mod song_name [-speed]\n\n");
+    printf("Usage: mod2gbt modfile.mod song_name [-speed][-512-banks]\n\n");
     printf("       -speed      Don't convert speed from 50 Hz to 60 Hz.\n");
     printf("       -512-banks  Output data for a ROM with more than 256 banks.\n");
     printf("\n\n");
