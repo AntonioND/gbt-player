@@ -18,13 +18,13 @@
 		;0123456789ABC
 	DB	"GBT Tester"
 	DW	$0000
-	DB	$00 ;GBC flag
+	DB	$00     ;GBC flag
 	DB	0,0,0	;SuperGameboy
-	DB	$19 ;CARTTYPE (MBC5)
+	DB	CART_ROM_MBC5 ;CARTTYPE (MBC5)
 	DB	0	;ROMSIZE
 	DB	0	;RAMSIZE
 
-	DB	$01 ;Destination (0 = Japan, 1 = Non Japan)
+	DB	$01     ;Destination (0 = Japan, 1 = Non Japan)
 	DB	$00	;Manufacturer
 
 	DB	0	;Version
