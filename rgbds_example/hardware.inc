@@ -33,7 +33,7 @@ rev_Check_hardware_inc: MACRO
         ENDC
         ENDM
 
-_HW	EQU $FF00
+_HW           EQU  $FF00
 
 _VRAM         EQU  $8000 ; $8000->$A000
 _SCRN0        EQU  $9800 ; $9800->$9BFF
@@ -386,7 +386,7 @@ IEF_VBLANK  EQU  %00000001 ; V-Blank
 ; -- Bit 2-0 - SO1 output level (volume) (# 0-7)
 ; --
 rNR50 EQU $FF24
-rAUDVOL	EQU rNR50
+rAUDVOL EQU rNR50
 
 
 ; --
@@ -403,7 +403,7 @@ rAUDVOL	EQU rNR50
 ; -- Bit 0   - Output sound 0 to SO1 terminal
 ; --
 rNR51 EQU $FF25
-rAUDTERM	EQU rNR51
+rAUDTERM EQU rNR51
 
 
 ; --
@@ -417,7 +417,7 @@ rAUDTERM	EQU rNR51
 ; -- Bit 0   - Sound 1 ON flag (doesn't work!)
 ; --
 rNR52 EQU $FF26
-rAUDENA	EQU rNR52
+rAUDENA EQU rNR52
 
 
 ;***************************************************************************
@@ -438,7 +438,7 @@ rAUDENA	EQU rNR52
 ; -- Sweep Time: (n*7.8ms)
 ; --
 rNR10 EQU $FF10
-rAUD1SWEEP	EQU rNR10
+rAUD1SWEEP EQU rNR10
 
 
 ; --
@@ -449,7 +449,7 @@ rAUD1SWEEP	EQU rNR10
 ; -- Bit 5-0 - Sound length data (# 0-63)
 ; --
 rNR11 EQU $FF11
-rAUD1LEN	EQU rNR11
+rAUD1LEN EQU rNR11
 
 
 ; --
@@ -463,7 +463,7 @@ rAUD1LEN	EQU rNR11
 ; -- Bit 2-0 - Number of envelope sweep (# 0-7)
 ; --
 rNR12 EQU $FF12
-rAUD1ENV	EQU rNR12
+rAUD1ENV EQU rNR12
 
 
 ; --
@@ -471,7 +471,7 @@ rAUD1ENV	EQU rNR12
 ; -- Frequency lo (W)
 ; --
 rNR13 EQU $FF13
-rAUD1LOW	EQU rNR13
+rAUD1LOW EQU rNR13
 
 
 ; --
@@ -483,7 +483,7 @@ rAUD1LOW	EQU rNR13
 ; -- Bit 2-0 - Frequency's higher 3 bits
 ; --
 rNR14 EQU $FF14
-rAUD1HIGH	EQU rNR14
+rAUD1HIGH EQU rNR14
 
 
 ;***************************************************************************
@@ -499,7 +499,7 @@ rAUD1HIGH	EQU rNR14
 ; -- see AUD1LEN for info
 ; --
 rNR21 EQU $FF16
-rAUD2LEN	EQU rNR21
+rAUD2LEN EQU rNR21
 
 
 ; --
@@ -509,7 +509,7 @@ rAUD2LEN	EQU rNR21
 ; -- see AUD1ENV for info
 ; --
 rNR22 EQU $FF17
-rAUD2ENV	EQU rNR22
+rAUD2ENV EQU rNR22
 
 
 ; --
@@ -517,7 +517,7 @@ rAUD2ENV	EQU rNR22
 ; -- Frequency lo (W)
 ; --
 rNR23 EQU $FF18
-rAUD2LOW	EQU rNR23
+rAUD2LOW EQU rNR23
 
 
 ; --
@@ -527,7 +527,7 @@ rAUD2LOW	EQU rNR23
 ; -- see AUD1HIGH for info
 ; --
 rNR24 EQU $FF19
-rAUD2HIGH	EQU rNR24
+rAUD2HIGH EQU rNR24
 
 
 ;***************************************************************************
@@ -543,7 +543,7 @@ rAUD2HIGH	EQU rNR24
 ; -- Bit 7   - Sound ON/OFF (1EQUON,0EQUOFF)
 ; --
 rNR30 EQU $FF1A
-rAUD3ENA	EQU rNR30
+rAUD3ENA EQU rNR30
 
 
 ; --
@@ -553,7 +553,7 @@ rAUD3ENA	EQU rNR30
 ; -- Bit 7-0 - Sound length
 ; --
 rNR31 EQU $FF1B
-rAUD3LEN	EQU rNR31
+rAUD3LEN EQU rNR31
 
 
 ; --
@@ -567,7 +567,7 @@ rAUD3LEN	EQU rNR31
 ; --           11: 1/4
 ; --
 rNR32 EQU $FF1C
-rAUD3LEVEL	EQU rNR32
+rAUD3LEVEL EQU rNR32
 
 
 ; --
@@ -577,7 +577,7 @@ rAUD3LEVEL	EQU rNR32
 ; -- see AUD1LOW for info
 ; --
 rNR33 EQU $FF1D
-rAUD3LOW	EQU rNR33
+rAUD3LOW EQU rNR33
 
 
 ; --
@@ -587,7 +587,7 @@ rAUD3LOW	EQU rNR33
 ; -- see AUD1HIGH for info
 ; --
 rNR34 EQU $FF1E
-rAUD3HIGH	EQU rNR34
+rAUD3HIGH EQU rNR34
 
 
 ; --
@@ -597,7 +597,7 @@ rAUD3HIGH	EQU rNR34
 ; -- Bit 5-0 - Sound length data (# 0-63)
 ; --
 rNR41 EQU $FF20
-rAUD4LEN	EQU rNR41
+rAUD4LEN EQU rNR41
 
 
 ; --
@@ -607,7 +607,7 @@ rAUD4LEN	EQU rNR41
 ; -- see AUD1ENV for info
 ; --
 rNR42 EQU $FF21
-rAUD4ENV	EQU rNR42
+rAUD4ENV EQU rNR42
 
 
 ; --
