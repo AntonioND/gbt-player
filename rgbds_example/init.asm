@@ -11,7 +11,7 @@
     SECTION "Cartridge Header",ROM0[$0100]
 
     nop
-    jp  StartPoint
+    jp      StartPoint
 
     NINTENDO_LOGO
 
@@ -40,21 +40,21 @@ StartPoint:
 
     di
 
-    ld  sp,$D000 ; Set stack
+    ld      sp,$D000 ; Set stack
 
-    ld  a,$01
-    ld  [rIE],a ; Enable VBL interrupt
+    ld      a,$01
+    ld      [rIE],a ; Enable VBL interrupt
 
-    ld  de,song_data
-    ld  bc,BANK(song_data)
-    ld  a,$05
-    call gbt_play ; Play song
+    ld      de,song_data
+    ld      bc,BANK(song_data)
+    ld      a,$05
+    call    gbt_play ; Play song
 
 .loop:
     halt
-    xor a,a
-    ld  [rIF],a
+    xor     a,a
+    ld      [rIF],a
 
-    call gbt_update ; Update player
-    jr  .loop
+    call    gbt_update ; Update player
+    jr      .loop
 

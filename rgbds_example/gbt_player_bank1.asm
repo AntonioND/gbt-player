@@ -2,7 +2,7 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  3.0.1                ---
+;        ---                       GBT PLAYER  3.0.2                ---
 ;        ---                                                        ---
 ;        ---                                                        ---
 ;        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
@@ -48,14 +48,14 @@ gbt_frequencies:
 ; -----------------------------------------------------------------------
 
 _gbt_get_freq_from_index: ; a = index, bc = returned freq
-    ld  hl,gbt_frequencies
-    ld  c,a
-    ld  b,$00
-    add hl,bc
-    add hl,bc
-    ld  c,[hl]
-    inc hl
-    ld  b,[hl]
+    ld      hl,gbt_frequencies
+    ld      c,a
+    ld      b,$00
+    add     hl,bc
+    add     hl,bc
+    ld      c,[hl]
+    inc     hl
+    ld      b,[hl]
     ret
 
 ; -----------------------------------------------------------------------
@@ -64,31 +64,31 @@ _gbt_get_freq_from_index: ; a = index, bc = returned freq
 
 gbt_channel_1_handle:: ; de = info
 
-    ld  a,[gbt_channels_enabled]
-    and a,$01
-    jr  nz,.channel1_enabled
+    ld      a,[gbt_channels_enabled]
+    and     a,$01
+    jr      nz,.channel1_enabled
 
     ; Channel is disabled. Increment pointer as needed
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  nz,.more_bytes
-    bit 6,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      nz,.more_bytes
+    bit     6,a
+    jr      z,.no_more_bytes_this_channel
 
-    jr  .one_more_byte
+    jr      .one_more_byte
 
 .more_bytes:
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      z,.no_more_bytes_this_channel
 
 .one_more_byte:
 
-    inc de
+    inc     de
 
 .no_more_bytes_this_channel:
 
@@ -98,21 +98,21 @@ gbt_channel_1_handle:: ; de = info
 
     ; Channel 1 is enabled
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.has_frequency
+    bit     7,a
+    jr      nz,.has_frequency
 
     ; Not frequency
 
-    bit 6,a
-    jr  nz,.instr_effects
+    bit     6,a
+    jr      nz,.instr_effects
 
     ; Set volume or NOP
 
-    bit 5,a
-    jr  nz,.just_set_volume
+    bit     5,a
+    jr      nz,.just_set_volume
 
     ; NOP
 
@@ -122,87 +122,87 @@ gbt_channel_1_handle:: ; de = info
 
     ; Set volume
 
-    and a,$0F
-    swap a
-    ld  [gbt_vol+0],a
+    and     a,$0F
+    swap    a
+    ld      [gbt_vol+0],a
 
-    jr  .refresh_channel1_regs
+    jr      .refresh_channel1_regs
 
 .instr_effects:
 
     ; Set instrument and effect
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+0],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+0],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_1_set_effect
+    call    gbt_channel_1_set_effect
 
-    jr  .refresh_channel1_regs
+    jr      .refresh_channel1_regs
 
 .has_frequency:
 
     ; Has frequency
 
-    and a,$7F
-    ld  [gbt_arpeggio_freq_index+0*3],a
-    ; This destroys hl and a. Returns freq in bc
-    call _gbt_get_freq_from_index
+    and     a,$7F
+    ld      [gbt_arpeggio_freq_index+0*3],a
+    ; This destroys hl and     a. Returns freq in bc
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+0*2+0],a
-    ld  a,b
-    ld  [gbt_freq+0*2+1],a ; Get frequency
+    ld      a,c
+    ld      [gbt_freq+0*2+0],a
+    ld      a,b
+    ld      [gbt_freq+0*2+1],a ; Get frequency
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.freq_instr_and_effect
+    bit     7,a
+    jr      nz,.freq_instr_and_effect
 
     ; Freq + Instr + Volume
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+0],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+0],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = volume
+    and     a,$0F ; a = volume
 
-    swap a
-    ld  [gbt_vol+0],a
+    swap    a
+    ld      [gbt_vol+0],a
 
-    jr  .refresh_channel1_regs
+    jr      .refresh_channel1_regs
 
 .freq_instr_and_effect:
 
     ; Freq + Instr + Effect
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+0],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+0],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_1_set_effect
+    call    gbt_channel_1_set_effect
 
-    ;jr  .refresh_channel1_regs
+    ;jr      .refresh_channel1_regs
 
 .refresh_channel1_regs:
 
@@ -212,17 +212,17 @@ gbt_channel_1_handle:: ; de = info
 
 channel1_refresh_registers:
 
-    xor a,a
-    ld  [rNR10],a
-    ld  a,[gbt_instr+0]
-    ld  [rNR11],a
-    ld  a,[gbt_vol+0]
-    ld  [rNR12],a
-    ld  a,[gbt_freq+0*2+0]
-    ld  [rNR13],a
-    ld  a,[gbt_freq+0*2+1]
-    or  a,$80 ; start
-    ld  [rNR14],a
+    xor     a,a
+    ld      [rNR10],a
+    ld      a,[gbt_instr+0]
+    ld      [rNR11],a
+    ld      a,[gbt_vol+0]
+    ld      [rNR12],a
+    ld      a,[gbt_freq+0*2+0]
+    ld      [rNR13],a
+    ld      a,[gbt_freq+0*2+1]
+    or      a,$80 ; start
+    ld      [rNR14],a
 
     ret
 
@@ -233,89 +233,89 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
     ; Cut note
     ; --------
 
-    ld  a,[gbt_cut_note_tick+0]
-    ld  hl,gbt_ticks_elapsed
-    cp  a,[hl]
-    jp  nz,.dont_cut
+    ld      a,[gbt_cut_note_tick+0]
+    ld      hl,gbt_ticks_elapsed
+    cp      a,[hl]
+    jp      nz,.dont_cut
 
-    dec a ; a = $FF
-    ld  [gbt_cut_note_tick+0],a ; disable cut note
+    dec     a ; a = $FF
+    ld      [gbt_cut_note_tick+0],a ; disable cut note
 
-    xor a,a ; vol = 0
-    ld  [rNR12],a
-    ld  a,$80 ; start
-    ld  [rNR14],a
+    xor     a,a ; vol = 0
+    ld      [rNR12],a
+    ld      a,$80 ; start
+    ld      [rNR14],a
 
 .dont_cut:
 
     ; Arpeggio
     ; --------
 
-    ld  a,[gbt_arpeggio_enabled+0]
-    and a,a
-    ret z ; a is 0, return 0
+    ld      a,[gbt_arpeggio_enabled+0]
+    and     a,a
+    ret     z ; a is 0, return 0
 
     ; If enabled arpeggio, handle it
 
-    ld  a,[gbt_arpeggio_tick+0]
-    and a,a
-    jr  nz,.not_tick_0
+    ld      a,[gbt_arpeggio_tick+0]
+    and     a,a
+    jr      nz,.not_tick_0
 
     ; Tick 0 - Set original frequency
 
-    ld  a,[gbt_arpeggio_freq_index+0*3+0]
+    ld      a,[gbt_arpeggio_freq_index+0*3+0]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+0*2+0],a
-    ld  a,b
-    ld  [gbt_freq+0*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+0*2+0],a
+    ld      a,b
+    ld      [gbt_freq+0*2+1],a ; Set frequency
 
-    ld  a,1
-    ld  [gbt_arpeggio_tick+0],a
+    ld      a,1
+    ld      [gbt_arpeggio_tick+0],a
 
     ret ; ret 1
 
 .not_tick_0:
 
-    cp  a,1
-    jr  nz,.not_tick_1
+    cp      a,1
+    jr      nz,.not_tick_1
 
     ; Tick 1
 
-    ld  a,[gbt_arpeggio_freq_index+0*3+1]
+    ld      a,[gbt_arpeggio_freq_index+0*3+1]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+0*2+0],a
-    ld  a,b
-    ld  [gbt_freq+0*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+0*2+0],a
+    ld      a,b
+    ld      [gbt_freq+0*2+1],a ; Set frequency
 
-    ld  a,2
-    ld  [gbt_arpeggio_tick+0],a
+    ld      a,2
+    ld      [gbt_arpeggio_tick+0],a
 
-    dec a
+    dec     a
     ret ; ret 1
 
 .not_tick_1:
 
     ; Tick 2
 
-    ld  a,[gbt_arpeggio_freq_index+0*3+2]
+    ld      a,[gbt_arpeggio_freq_index+0*3+2]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+0*2+0],a
-    ld  a,b
-    ld  [gbt_freq+0*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+0*2+0],a
+    ld      a,b
+    ld      [gbt_freq+0*2+1],a ; Set frequency
 
-    xor a,a
-    ld  [gbt_arpeggio_tick+0],a
+    xor     a,a
+    ld      [gbt_arpeggio_tick+0],a
 
-    inc a ; ret 1
+    inc     a ; ret 1
     ret
 
 ; -----------------
@@ -323,20 +323,20 @@ channel1_update_effects: ; returns 1 in a if it is needed to update sound regist
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 
-    ld  hl,.gbt_ch1_jump_table
-    ld  c,a
-    ld  b,0
-    add hl,bc
-    add hl,bc
+    ld      hl,.gbt_ch1_jump_table
+    ld      c,a
+    ld      b,0
+    add     hl,bc
+    add     hl,bc
 
-    ld  a,[hl+]
-    ld  h,[hl]
-    ld  l,a
+    ld      a,[hl+]
+    ld      h,[hl]
+    ld      l,a
 
-    ld  a,[de] ; load args
-    inc de
+    ld      a,[de] ; load args
+    inc     de
 
-    jp  hl
+    jp      hl
 
 .gbt_ch1_jump_table:
     DW  .gbt_ch1_pan
@@ -357,40 +357,40 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
     DW  gbt_ch1234_nop
 
 .gbt_ch1_pan:
-    and a,$11
-    ld  [gbt_pan+0],a
-    ld  a,1
+    and     a,$11
+    ld      [gbt_pan+0],a
+    ld      a,1
     ret ; ret 1
 
 .gbt_ch1_arpeggio:
-    ld  b,a ; b = params
+    ld      b,a ; b = params
 
-    ld  hl,gbt_arpeggio_freq_index+0*3
-    ld  c,[hl] ; c = base index
-    inc hl
+    ld      hl,gbt_arpeggio_freq_index+0*3
+    ld      c,[hl] ; c = base index
+    inc     hl
 
-    ld  a,b
-    swap a
-    and a,$0F
-    add a,c
+    ld      a,b
+    swap    a
+    and     a,$0F
+    add     a,c
 
-    ld  [hl+],a ; save first increment
+    ld      [hl+],a ; save first increment
 
-    ld  a,b
-    and a,$0F
-    add a,c
+    ld      a,b
+    and     a,$0F
+    add     a,c
 
-    ld  [hl],a ; save second increment
+    ld      [hl],a ; save second increment
 
-    ld  a,1
-    ld  [gbt_arpeggio_enabled+0],a
-    ld  [gbt_arpeggio_tick+0],a
+    ld      a,1
+    ld      [gbt_arpeggio_enabled+0],a
+    ld      [gbt_arpeggio_tick+0],a
 
     ret ; ret 1
 
 .gbt_ch1_cut_note:
-    ld  [gbt_cut_note_tick+0],a
-    xor a,a ; ret 0
+    ld      [gbt_cut_note_tick+0],a
+    xor     a,a ; ret 0
     ret
 
 ; -----------------------------------------------------------------------
@@ -399,31 +399,31 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
 
 gbt_channel_2_handle:: ; de = info
 
-    ld  a,[gbt_channels_enabled]
-    and a,$02
-    jr  nz,.channel2_enabled
+    ld      a,[gbt_channels_enabled]
+    and     a,$02
+    jr      nz,.channel2_enabled
 
     ; Channel is disabled. Increment pointer as needed
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  nz,.more_bytes
-    bit 6,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      nz,.more_bytes
+    bit     6,a
+    jr      z,.no_more_bytes_this_channel
 
-    jr  .one_more_byte
+    jr      .one_more_byte
 
 .more_bytes:
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      z,.no_more_bytes_this_channel
 
 .one_more_byte:
 
-    inc de
+    inc     de
 
 .no_more_bytes_this_channel:
 
@@ -433,21 +433,21 @@ gbt_channel_2_handle:: ; de = info
 
     ; Channel 2 is enabled
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.has_frequency
+    bit     7,a
+    jr      nz,.has_frequency
 
     ; Not frequency
 
-    bit 6,a
-    jr  nz,.instr_effects
+    bit     6,a
+    jr      nz,.instr_effects
 
     ; Set volume or NOP
 
-    bit 5,a
-    jr  nz,.just_set_volume
+    bit     5,a
+    jr      nz,.just_set_volume
 
     ; NOP
 
@@ -457,87 +457,87 @@ gbt_channel_2_handle:: ; de = info
 
     ; Set volume
 
-    and a,$0F
-    swap a
-    ld  [gbt_vol+1],a
+    and     a,$0F
+    swap    a
+    ld      [gbt_vol+1],a
 
-    jr  .refresh_channel2_regs
+    jr      .refresh_channel2_regs
 
 .instr_effects:
 
     ; Set instrument and effect
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+1],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+1],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_2_set_effect
+    call    gbt_channel_2_set_effect
 
-    jr  .refresh_channel2_regs
+    jr      .refresh_channel2_regs
 
 .has_frequency:
 
     ; Has frequency
 
-    and a,$7F
-    ld  [gbt_arpeggio_freq_index+1*3],a
-    ; This destroys hl and a. Returns freq in bc
-    call _gbt_get_freq_from_index
+    and     a,$7F
+    ld      [gbt_arpeggio_freq_index+1*3],a
+    ; This destroys hl and     a. Returns freq in bc
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+1*2+0],a
-    ld  a,b
-    ld  [gbt_freq+1*2+1],a ; Get frequency
+    ld      a,c
+    ld      [gbt_freq+1*2+0],a
+    ld      a,b
+    ld      [gbt_freq+1*2+1],a ; Get frequency
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.freq_instr_and_effect
+    bit     7,a
+    jr      nz,.freq_instr_and_effect
 
     ; Freq + Instr + Volume
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+1],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+1],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = volume
+    and     a,$0F ; a = volume
 
-    swap a
-    ld  [gbt_vol+1],a
+    swap    a
+    ld      [gbt_vol+1],a
 
-    jr  .refresh_channel2_regs
+    jr      .refresh_channel2_regs
 
 .freq_instr_and_effect:
 
     ; Freq + Instr + Effect
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$30
-    sla a
-    sla a
-    ld  [gbt_instr+1],a ; Instrument
+    and     a,$30
+    sla     a
+    sla     a
+    ld      [gbt_instr+1],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_2_set_effect
+    call    gbt_channel_2_set_effect
 
-    ;jr  .refresh_channel2_regs
+    ;jr      .refresh_channel2_regs
 
 .refresh_channel2_regs:
 
@@ -547,15 +547,15 @@ gbt_channel_2_handle:: ; de = info
 
 channel2_refresh_registers:
 
-    ld  a,[gbt_instr+1]
-    ld  [rNR21],a
-    ld  a,[gbt_vol+1]
-    ld  [rNR22],a
-    ld  a,[gbt_freq+1*2+0]
-    ld  [rNR23],a
-    ld  a,[gbt_freq+1*2+1]
-    or  a,$80 ; start
-    ld  [rNR24],a
+    ld      a,[gbt_instr+1]
+    ld      [rNR21],a
+    ld      a,[gbt_vol+1]
+    ld      [rNR22],a
+    ld      a,[gbt_freq+1*2+0]
+    ld      [rNR23],a
+    ld      a,[gbt_freq+1*2+1]
+    or      a,$80 ; start
+    ld      [rNR24],a
 
     ret
 
@@ -566,89 +566,89 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
     ; Cut note
     ; --------
 
-    ld  a,[gbt_cut_note_tick+1]
-    ld  hl,gbt_ticks_elapsed
-    cp  a,[hl]
-    jp  nz,.dont_cut
+    ld      a,[gbt_cut_note_tick+1]
+    ld      hl,gbt_ticks_elapsed
+    cp      a,[hl]
+    jp      nz,.dont_cut
 
-    dec a ; a = $FF
-    ld  [gbt_cut_note_tick+1],a ; disable cut note
+    dec     a ; a = $FF
+    ld      [gbt_cut_note_tick+1],a ; disable cut note
 
-    xor a,a ; vol = 0
-    ld  [rNR22],a
-    ld  a,$80 ; start
-    ld  [rNR24],a
+    xor     a,a ; vol = 0
+    ld      [rNR22],a
+    ld      a,$80 ; start
+    ld      [rNR24],a
 
 .dont_cut:
 
     ; Arpeggio
     ; --------
 
-    ld  a,[gbt_arpeggio_enabled+1]
-    and a,a
-    ret z ; a is 0, return 0
+    ld      a,[gbt_arpeggio_enabled+1]
+    and     a,a
+    ret     z ; a is 0, return 0
 
     ; If enabled arpeggio, handle it
 
-    ld  a,[gbt_arpeggio_tick+1]
-    and a,a
-    jr  nz,.not_tick_0
+    ld      a,[gbt_arpeggio_tick+1]
+    and     a,a
+    jr      nz,.not_tick_0
 
     ; Tick 0 - Set original frequency
 
-    ld  a,[gbt_arpeggio_freq_index+1*3+0]
+    ld      a,[gbt_arpeggio_freq_index+1*3+0]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+1*2+0],a
-    ld  a,b
-    ld  [gbt_freq+1*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+1*2+0],a
+    ld      a,b
+    ld      [gbt_freq+1*2+1],a ; Set frequency
 
-    ld  a,1
-    ld  [gbt_arpeggio_tick+1],a
+    ld      a,1
+    ld      [gbt_arpeggio_tick+1],a
 
     ret ; ret 1
 
 .not_tick_0:
 
-    cp  a,1
-    jr  nz,.not_tick_1
+    cp      a,1
+    jr      nz,.not_tick_1
 
     ; Tick 1
 
-    ld  a,[gbt_arpeggio_freq_index+1*3+1]
+    ld      a,[gbt_arpeggio_freq_index+1*3+1]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+1*2+0],a
-    ld  a,b
-    ld  [gbt_freq+1*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+1*2+0],a
+    ld      a,b
+    ld      [gbt_freq+1*2+1],a ; Set frequency
 
-    ld  a,2
-    ld  [gbt_arpeggio_tick+1],a
+    ld      a,2
+    ld      [gbt_arpeggio_tick+1],a
 
-    dec a
+    dec     a
     ret ; ret 1
 
 .not_tick_1:
 
     ; Tick 2
 
-    ld  a,[gbt_arpeggio_freq_index+1*3+2]
+    ld      a,[gbt_arpeggio_freq_index+1*3+2]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+1*2+0],a
-    ld  a,b
-    ld  [gbt_freq+1*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+1*2+0],a
+    ld      a,b
+    ld      [gbt_freq+1*2+1],a ; Set frequency
 
-    xor a,a
-    ld  [gbt_arpeggio_tick+1],a
+    xor     a,a
+    ld      [gbt_arpeggio_tick+1],a
 
-    inc a ; ret 1
+    inc     a ; ret 1
     ret
 
 ; -----------------
@@ -656,20 +656,20 @@ channel2_update_effects: ; returns 1 in a if it is needed to update sound regist
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 
-    ld  hl,.gbt_ch2_jump_table
-    ld  c,a
-    ld  b,0
-    add hl,bc
-    add hl,bc
+    ld      hl,.gbt_ch2_jump_table
+    ld      c,a
+    ld      b,0
+    add     hl,bc
+    add     hl,bc
 
-    ld  a,[hl+]
-    ld  h,[hl]
-    ld  l,a
+    ld      a,[hl+]
+    ld      h,[hl]
+    ld      l,a
 
-    ld  a,[de] ; load args
-    inc de
+    ld      a,[de] ; load args
+    inc     de
 
-    jp  hl
+    jp      hl
 
 .gbt_ch2_jump_table:
     DW  .gbt_ch2_pan
@@ -690,40 +690,40 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
     DW  gbt_ch1234_nop
 
 .gbt_ch2_pan:
-    and a,$22
-    ld  [gbt_pan+1],a
-    ld  a,1
+    and     a,$22
+    ld      [gbt_pan+1],a
+    ld      a,1
     ret ; ret 1
 
 .gbt_ch2_arpeggio:
-    ld  b,a ; b = params
+    ld      b,a ; b = params
 
-    ld  hl,gbt_arpeggio_freq_index+1*3
-    ld  c,[hl] ; c = base index
-    inc hl
+    ld      hl,gbt_arpeggio_freq_index+1*3
+    ld      c,[hl] ; c = base index
+    inc     hl
 
-    ld  a,b
-    swap a
-    and a,$0F
-    add a,c
+    ld      a,b
+    swap    a
+    and     a,$0F
+    add     a,c
 
-    ld  [hl+],a ; save first increment
+    ld      [hl+],a ; save first increment
 
-    ld  a,b
-    and a,$0F
-    add a,c
+    ld      a,b
+    and     a,$0F
+    add     a,c
 
-    ld  [hl],a ; save second increment
+    ld      [hl],a ; save second increment
 
-    ld  a,1
-    ld  [gbt_arpeggio_enabled+1],a
-    ld  [gbt_arpeggio_tick+1],a
+    ld      a,1
+    ld      [gbt_arpeggio_enabled+1],a
+    ld      [gbt_arpeggio_tick+1],a
 
     ret ; ret 1
 
 .gbt_ch2_cut_note:
-    ld  [gbt_cut_note_tick+1],a
-    xor a,a ; ret 0
+    ld      [gbt_cut_note_tick+1],a
+    xor     a,a ; ret 0
     ret
 
 ; -----------------------------------------------------------------------
@@ -732,31 +732,31 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
 
 gbt_channel_3_handle:: ; de = info
 
-    ld  a,[gbt_channels_enabled]
-    and a,$04
-    jr  nz,.channel3_enabled
+    ld      a,[gbt_channels_enabled]
+    and     a,$04
+    jr      nz,.channel3_enabled
 
     ; Channel is disabled. Increment pointer as needed
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  nz,.more_bytes
-    bit 6,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      nz,.more_bytes
+    bit     6,a
+    jr      z,.no_more_bytes_this_channel
 
-    jr  .one_more_byte
+    jr      .one_more_byte
 
 .more_bytes:
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      z,.no_more_bytes_this_channel
 
 .one_more_byte:
 
-    inc de
+    inc     de
 
 .no_more_bytes_this_channel:
 
@@ -766,21 +766,21 @@ gbt_channel_3_handle:: ; de = info
 
     ; Channel 3 is enabled
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.has_frequency
+    bit     7,a
+    jr      nz,.has_frequency
 
     ; Not frequency
 
-    bit 6,a
-    jr  nz,.effects
+    bit     6,a
+    jr      nz,.effects
 
     ; Set volume or NOP
 
-    bit 5,a
-    jr  nz,.just_set_volume
+    bit     5,a
+    jr      nz,.just_set_volume
 
     ; NOP
 
@@ -790,76 +790,76 @@ gbt_channel_3_handle:: ; de = info
 
     ; Set volume
 
-    and a,$0F
-    swap a
-    ld  [gbt_vol+2],a
+    and     a,$0F
+    swap    a
+    ld      [gbt_vol+2],a
 
-    jr  .refresh_channel3_regs
+    jr      .refresh_channel3_regs
 
 .effects:
 
     ; Set effect
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_3_set_effect
-    and a,a
-    ret z ; if 0, don't refresh registers
+    call    gbt_channel_3_set_effect
+    and     a,a
+    ret     z ; if 0, don't refresh registers
 
-    jr  .refresh_channel3_regs
+    jr      .refresh_channel3_regs
 
 .has_frequency:
 
     ; Has frequency
 
-    and a,$7F
-    ld  [gbt_arpeggio_freq_index+2*3],a
-    ; This destroys hl and a. Returns freq in bc
-    call _gbt_get_freq_from_index
+    and     a,$7F
+    ld      [gbt_arpeggio_freq_index+2*3],a
+    ; This destroys hl and     a. Returns freq in bc
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+2*2+0],a
-    ld  a,b
-    ld  [gbt_freq+2*2+1],a ; Get frequency
+    ld      a,c
+    ld      [gbt_freq+2*2+0],a
+    ld      a,b
+    ld      [gbt_freq+2*2+1],a ; Get frequency
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.freq_instr_and_effect
+    bit     7,a
+    jr      nz,.freq_instr_and_effect
 
     ; Freq + Instr + Volume
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$0F
-    ld  [gbt_instr+2],a ; Instrument
+    and     a,$0F
+    ld      [gbt_instr+2],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$30 ; a = volume
-    sla a
-    ld  [gbt_vol+2],a
+    and     a,$30 ; a = volume
+    sla     a
+    ld      [gbt_vol+2],a
 
-    jr  .refresh_channel3_regs
+    jr      .refresh_channel3_regs
 
 .freq_instr_and_effect:
 
     ; Freq + Instr + Effect
 
-    ld  b,a ; save byte
+    ld      b,a ; save byte
 
-    and a,$0F
-    ld  [gbt_instr+2],a ; Instrument
+    and     a,$0F
+    ld      [gbt_instr+2],a ; Instrument
 
-    ld  a,b ; restore byte
+    ld      a,b ; restore byte
 
-    and a,$70
-    swap a    ; a = effect (only 0-7 allowed here)
+    and     a,$70
+    swap    a    ; a = effect (only 0-7 allowed here)
 
-    call gbt_channel_3_set_effect
+    call    gbt_channel_3_set_effect
 
-    ;jr  .refresh_channel3_regs
+    ;jr      .refresh_channel3_regs
 
 .refresh_channel3_regs:
 
@@ -869,27 +869,27 @@ gbt_channel_3_handle:: ; de = info
 
 channel3_refresh_registers:
 
-    xor a,a
-    ld  [rNR30],a ; disable
+    xor     a,a
+    ld      [rNR30],a ; disable
 
-    ld  a,[gbt_channel3_loaded_instrument]
-    ld  b,a
-    ld  a,[gbt_instr+2]
-    cp  a,b
-    call nz,gbt_channel3_load_instrument ; a = instrument
+    ld      a,[gbt_channel3_loaded_instrument]
+    ld      b,a
+    ld      a,[gbt_instr+2]
+    cp      a,b
+    call    nz,gbt_channel3_load_instrument ; a = instrument
 
-    ld  a,$80
-    ld  [rNR30],a ; enable
+    ld      a,$80
+    ld      [rNR30],a ; enable
 
-    xor a,a
-    ld  [rNR31],a
-    ld  a,[gbt_vol+2]
-    ld  [rNR32],a
-    ld  a,[gbt_freq+2*2+0]
-    ld  [rNR33],a
-    ld  a,[gbt_freq+2*2+1]
-    or  a,$80 ; start
-    ld  [rNR34],a
+    xor     a,a
+    ld      [rNR31],a
+    ld      a,[gbt_vol+2]
+    ld      [rNR32],a
+    ld      a,[gbt_freq+2*2+0]
+    ld      [rNR33],a
+    ld      a,[gbt_freq+2*2+1]
+    or      a,$80 ; start
+    ld      [rNR34],a
 
     ret
 
@@ -897,22 +897,22 @@ channel3_refresh_registers:
 
 gbt_channel3_load_instrument:
 
-    ld  [gbt_channel3_loaded_instrument],a
+    ld      [gbt_channel3_loaded_instrument],a
 
-    swap a ; a = a * 16
-    ld  c,a
-    ld  b,0
-    ld  hl,gbt_wave
-    add hl,bc
+    swap    a ; a = a * 16
+    ld      c,a
+    ld      b,0
+    ld      hl,gbt_wave
+    add     hl,bc
 
-    ld  c,$30
-    ld  b,16
+    ld      c,$30
+    ld      b,16
 .loop:
-    ld  a,[hl+]
-    ld  [$FF00+c],a
-    inc c
-    dec b
-    jr  nz,.loop
+    ld      a,[hl+]
+    ld      [$FF00+c],a
+    inc     c
+    dec     b
+    jr      nz,.loop
 
     ret
 
@@ -923,92 +923,92 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
     ; Cut note
     ; --------
 
-    ld  a,[gbt_cut_note_tick+2]
-    ld  hl,gbt_ticks_elapsed
-    cp  a,[hl]
-    jp  nz,.dont_cut
+    ld      a,[gbt_cut_note_tick+2]
+    ld      hl,gbt_ticks_elapsed
+    cp      a,[hl]
+    jp      nz,.dont_cut
 
-    dec a ; a = $FF
-    ld  [gbt_cut_note_tick+2],a ; disable cut note
+    dec     a ; a = $FF
+    ld      [gbt_cut_note_tick+2],a ; disable cut note
 
-    ld  a,$80
-    ld  [rNR30],a ; enable
+    ld      a,$80
+    ld      [rNR30],a ; enable
 
-    xor a,a ; vol = 0
-    ld  [rNR32],a
-    ld  a,$80 ; start
-    ld  [rNR34],a
+    xor     a,a ; vol = 0
+    ld      [rNR32],a
+    ld      a,$80 ; start
+    ld      [rNR34],a
 
 .dont_cut:
 
     ; Arpeggio
     ; --------
 
-    ld  a,[gbt_arpeggio_enabled+2]
-    and a,a
-    ret z ; a is 0, return 0
+    ld      a,[gbt_arpeggio_enabled+2]
+    and     a,a
+    ret     z ; a is 0, return 0
 
     ; If enabled arpeggio, handle it
 
-    ld  a,[gbt_arpeggio_tick+2]
-    and a,a
-    jr  nz,.not_tick_0
+    ld      a,[gbt_arpeggio_tick+2]
+    and     a,a
+    jr      nz,.not_tick_0
 
     ; Tick 0 - Set original frequency
 
-    ld  a,[gbt_arpeggio_freq_index+2*3+0]
+    ld      a,[gbt_arpeggio_freq_index+2*3+0]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+2*2+0],a
-    ld  a,b
-    ld  [gbt_freq+2*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+2*2+0],a
+    ld      a,b
+    ld      [gbt_freq+2*2+1],a ; Set frequency
 
-    ld  a,1
-    ld  [gbt_arpeggio_tick+2],a
+    ld      a,1
+    ld      [gbt_arpeggio_tick+2],a
 
     ret ; ret 1
 
 .not_tick_0:
 
-    cp  a,1
-    jr  nz,.not_tick_1
+    cp      a,1
+    jr      nz,.not_tick_1
 
     ; Tick 1
 
-    ld  a,[gbt_arpeggio_freq_index+2*3+1]
+    ld      a,[gbt_arpeggio_freq_index+2*3+1]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+2*2+0],a
-    ld  a,b
-    ld  [gbt_freq+2*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+2*2+0],a
+    ld      a,b
+    ld      [gbt_freq+2*2+1],a ; Set frequency
 
-    ld  a,2
-    ld  [gbt_arpeggio_tick+2],a
+    ld      a,2
+    ld      [gbt_arpeggio_tick+2],a
 
-    dec a
+    dec     a
     ret ; ret 1
 
 .not_tick_1:
 
     ; Tick 2
 
-    ld  a,[gbt_arpeggio_freq_index+2*3+2]
+    ld      a,[gbt_arpeggio_freq_index+2*3+2]
 
-    call _gbt_get_freq_from_index
+    call    _gbt_get_freq_from_index
 
-    ld  a,c
-    ld  [gbt_freq+2*2+0],a
-    ld  a,b
-    ld  [gbt_freq+2*2+1],a ; Set frequency
+    ld      a,c
+    ld      [gbt_freq+2*2+0],a
+    ld      a,b
+    ld      [gbt_freq+2*2+1],a ; Set frequency
 
-    xor a,a
-    ld  [gbt_arpeggio_tick+2],a
+    xor     a,a
+    ld      [gbt_arpeggio_tick+2],a
 
-    inc a
+    inc     a
     ret ; ret 1
 
 ; -----------------
@@ -1016,20 +1016,20 @@ channel3_update_effects: ; returns 1 in a if it is needed to update sound regist
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 
-    ld  hl,.gbt_ch3_jump_table
-    ld  c,a
-    ld  b,0
-    add hl,bc
-    add hl,bc
+    ld      hl,.gbt_ch3_jump_table
+    ld      c,a
+    ld      b,0
+    add     hl,bc
+    add     hl,bc
 
-    ld  a,[hl+]
-    ld  h,[hl]
-    ld  l,a
+    ld      a,[hl+]
+    ld      h,[hl]
+    ld      l,a
 
-    ld  a,[de] ; load args
-    inc de
+    ld      a,[de] ; load args
+    inc     de
 
-    jp  hl
+    jp      hl
 
 .gbt_ch3_jump_table:
     DW  .gbt_ch3_pan
@@ -1050,40 +1050,40 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
     DW  gbt_ch1234_nop
 
 .gbt_ch3_pan:
-    and a,$44
-    ld  [gbt_pan+2],a
-    ld  a,1
+    and     a,$44
+    ld      [gbt_pan+2],a
+    ld      a,1
     ret ; ret 1
 
 .gbt_ch3_arpeggio:
-    ld  b,a ; b = params
+    ld      b,a ; b = params
 
-    ld  hl,gbt_arpeggio_freq_index+2*3
-    ld  c,[hl] ; c = base index
-    inc hl
+    ld      hl,gbt_arpeggio_freq_index+2*3
+    ld      c,[hl] ; c = base index
+    inc     hl
 
-    ld  a,b
-    swap a
-    and a,$0F
-    add a,c
+    ld      a,b
+    swap    a
+    and     a,$0F
+    add     a,c
 
-    ld  [hl+],a ; save first increment
+    ld      [hl+],a ; save first increment
 
-    ld  a,b
-    and a,$0F
-    add a,c
+    ld      a,b
+    and     a,$0F
+    add     a,c
 
-    ld  [hl],a ; save second increment
+    ld      [hl],a ; save second increment
 
-    ld  a,1
-    ld  [gbt_arpeggio_enabled+2],a
-    ld  [gbt_arpeggio_tick+2],a
+    ld      a,1
+    ld      [gbt_arpeggio_enabled+2],a
+    ld      [gbt_arpeggio_tick+2],a
 
     ret ; ret 1
 
 .gbt_ch3_cut_note:
-    ld  [gbt_cut_note_tick+2],a
-    xor a,a ; ret 0
+    ld      [gbt_cut_note_tick+2],a
+    xor     a,a ; ret 0
     ret
 
 ; -----------------------------------------------------------------------
@@ -1092,31 +1092,31 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
 
 gbt_channel_4_handle:: ; de = info
 
-    ld  a,[gbt_channels_enabled]
-    and a,$08
-    jr  nz,.channel4_enabled
+    ld      a,[gbt_channels_enabled]
+    and     a,$08
+    jr      nz,.channel4_enabled
 
     ; Channel is disabled. Increment pointer as needed
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  nz,.more_bytes
-    bit 6,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      nz,.more_bytes
+    bit     6,a
+    jr      z,.no_more_bytes_this_channel
 
-    jr  .one_more_byte
+    jr      .one_more_byte
 
 .more_bytes:
 
-    ld  a,[de]
-    inc de
-    bit 7,a
-    jr  z,.no_more_bytes_this_channel
+    ld      a,[de]
+    inc     de
+    bit     7,a
+    jr      z,.no_more_bytes_this_channel
 
 .one_more_byte:
 
-    inc de
+    inc     de
 
 .no_more_bytes_this_channel:
 
@@ -1126,21 +1126,21 @@ gbt_channel_4_handle:: ; de = info
 
     ; Channel 4 is enabled
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.has_instrument
+    bit     7,a
+    jr      nz,.has_instrument
 
     ; Not instrument
 
-    bit 6,a
-    jr  nz,.effects
+    bit     6,a
+    jr      nz,.effects
 
     ; Set volume or NOP
 
-    bit 5,a
-    jr  nz,.just_set_volume
+    bit     5,a
+    jr      nz,.just_set_volume
 
     ; NOP
 
@@ -1150,61 +1150,61 @@ gbt_channel_4_handle:: ; de = info
 
     ; Set volume
 
-    and a,$0F
-    swap a
-    ld  [gbt_vol+3],a
+    and     a,$0F
+    swap    a
+    ld      [gbt_vol+3],a
 
-    jr  .refresh_channel4_regs
+    jr      .refresh_channel4_regs
 
 .effects:
 
     ; Set effect
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_4_set_effect
-    and a,a
-    ret z ; if 0, don't refresh registers
+    call    gbt_channel_4_set_effect
+    and     a,a
+    ret     z ; if 0, don't refresh registers
 
-    jr  .refresh_channel4_regs
+    jr      .refresh_channel4_regs
 
 .has_instrument:
 
     ; Has instrument
 
-    and a,$1F
-    ld  hl,gbt_noise
-    ld  c,a
-    ld  b,0
-    add hl,bc
-    ld  a,[hl] ; a = instrument data
+    and     a,$1F
+    ld      hl,gbt_noise
+    ld      c,a
+    ld      b,0
+    add     hl,bc
+    ld      a,[hl] ; a = instrument data
 
-    ld  [gbt_instr+3],a
+    ld      [gbt_instr+3],a
 
-    ld  a,[de]
-    inc de
+    ld      a,[de]
+    inc     de
 
-    bit 7,a
-    jr  nz,.instr_and_effect
+    bit     7,a
+    jr      nz,.instr_and_effect
 
     ; Instr + Volume
 
-    and a,$0F ; a = volume
+    and     a,$0F ; a = volume
 
-    swap a
-    ld  [gbt_vol+3],a
+    swap    a
+    ld      [gbt_vol+3],a
 
-    jr  .refresh_channel4_regs
+    jr      .refresh_channel4_regs
 
 .instr_and_effect:
 
     ; Instr + Effect
 
-    and a,$0F ; a = effect
+    and     a,$0F ; a = effect
 
-    call gbt_channel_4_set_effect
+    call    gbt_channel_4_set_effect
 
-    ;jr  .refresh_channel4_regs
+    ;jr      .refresh_channel4_regs
 
 .refresh_channel4_regs:
 
@@ -1214,14 +1214,14 @@ gbt_channel_4_handle:: ; de = info
 
 channel4_refresh_registers:
 
-    xor a,a
-    ld  [rNR41],a
-    ld  a,[gbt_vol+3]
-    ld  [rNR42],a
-    ld  a,[gbt_instr+3]
-    ld  [rNR43],a
-    ld  a,$80 ; start
-    ld  [rNR44],a
+    xor     a,a
+    ld      [rNR41],a
+    ld      a,[gbt_vol+3]
+    ld      [rNR42],a
+    ld      a,[gbt_instr+3]
+    ld      [rNR43],a
+    ld      a,$80 ; start
+    ld      [rNR44],a
 
     ret
 
@@ -1232,22 +1232,22 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
     ; Cut note
     ; --------
 
-    ld  a,[gbt_cut_note_tick+3]
-    ld  hl,gbt_ticks_elapsed
-    cp  a,[hl]
-    jp  nz,.dont_cut
+    ld      a,[gbt_cut_note_tick+3]
+    ld      hl,gbt_ticks_elapsed
+    cp      a,[hl]
+    jp      nz,.dont_cut
 
-    dec a ; a = $FF
-    ld  [gbt_cut_note_tick+3],a ; disable cut note
+    dec     a ; a = $FF
+    ld      [gbt_cut_note_tick+3],a ; disable cut note
 
-    xor a,a ; vol = 0
-    ld  [rNR42],a
-    ld  a,$80 ; start
-    ld  [rNR44],a
+    xor     a,a ; vol = 0
+    ld      [rNR42],a
+    ld      a,$80 ; start
+    ld      [rNR44],a
 
 .dont_cut:
 
-    xor a,a
+    xor     a,a
     ret ; a is 0, return 0
 
 ; -----------------
@@ -1255,20 +1255,20 @@ channel4_update_effects: ; returns 1 in a if it is needed to update sound regist
 ; returns a = 1 if needed to update registers, 0 if not
 gbt_channel_4_set_effect: ; a = effect, de = pointer to data
 
-    ld  hl,.gbt_ch4_jump_table
-    ld  c,a
-    ld  b,0
-    add hl,bc
-    add hl,bc
+    ld      hl,.gbt_ch4_jump_table
+    ld      c,a
+    ld      b,0
+    add     hl,bc
+    add     hl,bc
 
-    ld  a,[hl+]
-    ld  h,[hl]
-    ld  l,a
+    ld      a,[hl+]
+    ld      h,[hl]
+    ld      l,a
 
-    ld  a,[de] ; load args
-    inc de
+    ld      a,[de] ; load args
+    inc     de
 
-    jp  hl
+    jp      hl
 
 .gbt_ch4_jump_table:
     DW  .gbt_ch4_pan
@@ -1289,14 +1289,14 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
     DW  gbt_ch1234_nop
 
 .gbt_ch4_pan:
-    and a,$44
-    ld  [gbt_pan+3],a
-    ld  a,1
+    and     a,$44
+    ld      [gbt_pan+3],a
+    ld      a,1
     ret ; ret 1
 
 .gbt_ch4_cut_note:
-    ld  [gbt_cut_note_tick+3],a
-    xor a,a ; ret 0
+    ld      [gbt_cut_note_tick+3],a
+    xor     a,a ; ret 0
     ret
 
 ; -----------------------------------------------------------------------
@@ -1304,60 +1304,60 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
 ; Common effects go here:
 
 gbt_ch1234_nop:
-    xor a,a ;ret 0
+    xor     a,a ;ret 0
     ret
 
 gbt_ch1234_jump_pattern:
-    ld  [gbt_current_pattern],a
-    xor a,a
-    ld  [gbt_current_step],a
-    ld  [gbt_have_to_stop_next_step],a ; clear stop flag
-    ld  a,1
-    ld  [gbt_update_pattern_pointers],a
-    xor a,a ;ret 0
+    ld      [gbt_current_pattern],a
+    xor     a,a
+    ld      [gbt_current_step],a
+    ld      [gbt_have_to_stop_next_step],a ; clear stop flag
+    ld      a,1
+    ld      [gbt_update_pattern_pointers],a
+    xor     a,a ;ret 0
     ret
 
 gbt_ch1234_jump_position:
-    ld  [gbt_current_step],a
-    ld  hl,gbt_current_pattern
+    ld      [gbt_current_step],a
+    ld      hl,gbt_current_pattern
     inc [hl]
-    ld  a,1
-    ld  [gbt_update_pattern_pointers],a
-    xor a,a ;ret 0
+    ld      a,1
+    ld      [gbt_update_pattern_pointers],a
+    xor     a,a ;ret 0
     ret
 
 gbt_ch1234_speed:
-    ld  [gbt_speed],a
-    xor a,a
-    ld  [gbt_ticks_elapsed],a
+    ld      [gbt_speed],a
+    xor     a,a
+    ld      [gbt_ticks_elapsed],a
     ret ;ret 0
 
 ; -----------------------------------------------------------------------
 
 gbt_update_bank1::
 
-    ld  de,gbt_temp_play_data
+    ld      de,gbt_temp_play_data
 
     ; each function will return in de the pointer to next byte
 
-    call gbt_channel_1_handle
+    call    gbt_channel_1_handle
 
-    call gbt_channel_2_handle
+    call    gbt_channel_2_handle
 
-    call gbt_channel_3_handle
+    call    gbt_channel_3_handle
 
-    call gbt_channel_4_handle
+    call    gbt_channel_4_handle
 
     ; end of channel handling
 
-    ld  hl,gbt_pan
-    ld  a,[hl+]
-    or  a,[hl]
-    inc hl
-    or  a,[hl]
-    inc hl
-    or  a,[hl]
-    ld  [rNR51],a ; handle panning...
+    ld      hl,gbt_pan
+    ld      a,[hl+]
+    or      a,[hl]
+    inc     hl
+    or      a,[hl]
+    inc     hl
+    or      a,[hl]
+    ld      [rNR51],a ; handle panning...
 
     ret
 
@@ -1365,21 +1365,21 @@ gbt_update_bank1::
 
 gbt_update_effects_bank1::
 
-    call channel1_update_effects
-    and a,a
-    call nz,channel1_refresh_registers
+    call    channel1_update_effects
+    and     a,a
+    call    nz,channel1_refresh_registers
 
-    call channel2_update_effects
-    and a,a
-    call nz,channel2_refresh_registers
+    call    channel2_update_effects
+    and     a,a
+    call    nz,channel2_refresh_registers
 
-    call channel3_update_effects
-    and a,a
-    call nz,channel3_refresh_registers
+    call    channel3_update_effects
+    and     a,a
+    call    nz,channel3_refresh_registers
 
-    call channel4_update_effects
-    and a,a
-    call nz,channel4_refresh_registers
+    call    channel4_update_effects
+    and     a,a
+    call    nz,channel4_refresh_registers
 
     ret
 
