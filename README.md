@@ -1,4 +1,4 @@
-GBT PLAYER  v3.0.1
+GBT PLAYER  v3.0.2
 ==================
 
 A music player library and converter kit for Game Boy that can be used with [RGBDS](https://github.com/bentley/rgbds).
@@ -77,6 +77,9 @@ To compile the GBDK example: Open the bat file, change it to set the correct pat
 
 Changelog
 ---------
+
+- Version 3.0.2 (2015/5/3)
+ - Corrected tabulations in RGBDS code.
 
 - Version 3.0.1 (2015/4/27)
  - Replaced tabs by spaces in asm code.
