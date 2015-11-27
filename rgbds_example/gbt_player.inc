@@ -18,7 +18,7 @@ GBT_PLAYER_INC SET 1
     GLOBAL  gbt_play ; Starts playing a song.
                      ; ---------------------------------------------------
                      ; de = pointer to song data
-                     ; a = default speed
+                     ; a = default speed. Careful, 0 = 256!
                      ; bc = data bank (b ignored if ROM with < 256 banks)
                      ; THIS WILL CHANGE ROM BANK!!!
 ; ------------------------------------------------------------------------
