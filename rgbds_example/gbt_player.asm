@@ -2,10 +2,10 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  3.0.2                ---
+;        ---                       GBT PLAYER  3.0.3                ---
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
+;        ---              Copyright (C) 2009-2016 Antonio Nino Diaz ---
 ;        ---                      All rights reserved.              ---
 ;        --------------------------------------------------------------
 ;
@@ -34,15 +34,15 @@ gbt_speed:: DS 1
 ; Up to 12 bytes per step are copied here to be handled in functions in bank 1
 gbt_temp_play_data:: DS 12
 
-gbt_loop_enabled:               DS 1
-gbt_ticks_elapsed::             DS 1
-gbt_current_step::              DS 1
-gbt_current_pattern::           DS 1
-gbt_current_step_data_ptr::     DS 2 ; pointer to next step data - LSB first
+gbt_loop_enabled:            DS 1
+gbt_ticks_elapsed::          DS 1
+gbt_current_step::           DS 1
+gbt_current_pattern::        DS 1
+gbt_current_step_data_ptr::  DS 2 ; pointer to next step data - LSB first
 IF DEF(GBT_USE_MBC5_512BANKS)
-gbt_current_step_data_bank::    DS 2 ; bank of current pattern data - LSB first
+gbt_current_step_data_bank:: DS 2 ; bank of current pattern data - LSB first
 ELSE
-gbt_current_step_data_bank::    DS 1 ; bank of current pattern data
+gbt_current_step_data_bank:: DS 1 ; bank of current pattern data
 ENDC
 
 gbt_channels_enabled:: DS 1
@@ -55,7 +55,7 @@ gbt_freq::  DS 3*2 ; Ch 1-3
 gbt_channel3_loaded_instrument:: DS 1 ; current loaded instrument ($FF if none)
 
 ; Arpeggio -> Ch 1-3
-gbt_arpeggio_freq_index:: DS 3*3 ; { base index, base index + x, base index + y } * 3
+gbt_arpeggio_freq_index:: DS 3*3 ; {base index, base index+x, base index+y} * 3
 gbt_arpeggio_enabled::    DS 3*1 ; if 0, disabled
 gbt_arpeggio_tick::       DS 3*1
 
@@ -73,7 +73,8 @@ gbt_update_pattern_pointers:: DS 1 ; set to 1 by jump effects
 
 gbt_get_pattern_ptr:: ; a = pattern number
 
-    ; loads a pointer to pattern a into gbt_current_step_data_ptr and gbt_current_step_data_bank
+    ; loads a pointer to pattern a into gbt_current_step_data_ptr and
+    ; gbt_current_step_data_bank
 
     ld      e,a
     ld      d,0
@@ -144,7 +145,7 @@ IF DEF(GBT_USE_MBC5_512BANKS)
 ENDC
 
     ld      a,0
-    call       gbt_get_pattern_ptr
+    call    gbt_get_pattern_ptr
 
     xor     a,a
     ld      [gbt_current_step],a
@@ -299,7 +300,8 @@ IF DEF(GBT_USE_MBC5_512BANKS)
 ENDC
     ld      a,$01
     ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
-    call       gbt_update_effects_bank1 ; call    update function in bank 1 (in gbt_player_bank1.s)
+    ; Call update function in bank 1 (in gbt_player_bank1.s)
+    call    gbt_update_effects_bank1
 
     ret
 
@@ -330,7 +332,8 @@ IF DEF(GBT_USE_MBC5_512BANKS)
 ENDC
     ld      a,$01
     ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
-    call       gbt_update_effects_bank1 ; call    update function in bank 1 (in gbt_player_bank1.s)
+    ; Call update function in bank 1 (in gbt_player_bank1.s)
+    call    gbt_update_effects_bank1
 
     ; Check if last step
     ; ------------------
@@ -339,7 +342,7 @@ ENDC
     or      a,a
     jr      z,.dont_stop
 
-    call       gbt_stop
+    call    gbt_stop
     ld      a,0
     ld      [gbt_have_to_stop_next_step],a
     ret
@@ -371,7 +374,7 @@ ENDC
     ld      de,gbt_temp_play_data
 
     ld      b,4
-.copy_loop:    ; copy as bytes as needed for this step
+.copy_loop: ; copy as bytes as needed for this step
 
     ld      a,[hl+]
     ld      [de],a
@@ -426,7 +429,7 @@ ENDC
     inc     a
     ld      [gbt_current_pattern],a
 
-    call       gbt_get_pattern_ptr
+    call    gbt_get_pattern_ptr
 
     ld      a,[gbt_current_step_data_ptr]
     ld      b,a
@@ -468,7 +471,8 @@ IF DEF(GBT_USE_MBC5_512BANKS)
 ENDC
     ld      a,$01
     ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
-    call    gbt_update_bank1 ; call    update function in bank 1 (in gbt_player_bank1.s)
+    ; Call update function in bank 1 (in gbt_player_bank1.s)
+    call    gbt_update_bank1
 
     ; Check if any effect has changed the pattern or step
 

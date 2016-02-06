@@ -2,10 +2,10 @@
 ;        --------------------------------------------------------------
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---                       GBT PLAYER  3.0.2                ---
+;        ---                       GBT PLAYER  3.0.3                ---
 ;        ---                                                        ---
 ;        ---                                                        ---
-;        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
+;        ---              Copyright (C) 2009-2016 Antonio Niño Díaz ---
 ;        ---                      All rights reserved.              ---
 ;        --------------------------------------------------------------
 ;
@@ -21,14 +21,14 @@
 ; -----------------------------------------------------------------------
 
 gbt_wave: ; 8 sounds
-    DB  $A5,$D7,$C9,$E1,$BC,$9A,$76,$31,$0C,$BA,$DE,$60,$1B,$CA,$03,$93 ; random :P
-    DB  $F0,$E1,$D2,$C3,$B4,$A5,$96,$87,$78,$69,$5A,$4B,$3C,$2D,$1E,$0F
-    DB  $FD,$EC,$DB,$CA,$B9,$A8,$97,$86,$79,$68,$57,$46,$35,$24,$13,$02 ; little up-downs
-    DB  $DE,$FE,$DC,$BA,$9A,$A9,$87,$77,$88,$87,$65,$56,$54,$32,$10,$12
-    DB  $AB,$CD,$EF,$ED,$CB,$A0,$12,$3E,$DC,$BA,$BC,$DE,$FE,$DC,$32,$10 ; triangular broken
-    DB  $FF,$EE,$DD,$CC,$BB,$AA,$99,$88,$77,$66,$55,$44,$33,$22,$11,$00 ; triangular
-    DB  $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00,$00,$00,$00,$00,$00,$00,$00 ; square 50%
-    DB  $79,$BC,$DE,$EF,$FF,$EE,$DC,$B9,$75,$43,$21,$10,$00,$11,$23,$45 ; sine
+DB $A5,$D7,$C9,$E1,$BC,$9A,$76,$31,$0C,$BA,$DE,$60,$1B,$CA,$03,$93 ; random
+DB $F0,$E1,$D2,$C3,$B4,$A5,$96,$87,$78,$69,$5A,$4B,$3C,$2D,$1E,$0F
+DB $FD,$EC,$DB,$CA,$B9,$A8,$97,$86,$79,$68,$57,$46,$35,$24,$13,$02 ; up-downs
+DB $DE,$FE,$DC,$BA,$9A,$A9,$87,$77,$88,$87,$65,$56,$54,$32,$10,$12
+DB $AB,$CD,$EF,$ED,$CB,$A0,$12,$3E,$DC,$BA,$BC,$DE,$FE,$DC,$32,$10 ; tri. broken
+DB $FF,$EE,$DD,$CC,$BB,$AA,$99,$88,$77,$66,$55,$44,$33,$22,$11,$00 ; triangular
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00,$00,$00,$00,$00,$00,$00,$00 ; square
+DB $79,$BC,$DE,$EF,$FF,$EE,$DC,$B9,$75,$43,$21,$10,$00,$11,$23,$45 ; sine
 
 gbt_noise: ; 16 sounds
     ; 7 bit
@@ -228,7 +228,7 @@ channel1_refresh_registers:
 
 ; ------------------
 
-channel1_update_effects: ; returns 1 in a if it is needed to update sound registers
+channel1_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ; Cut note
     ; --------
@@ -488,7 +488,7 @@ gbt_channel_2_handle:: ; de = info
 
     and     a,$7F
     ld      [gbt_arpeggio_freq_index+1*3],a
-    ; This destroys hl and     a. Returns freq in bc
+    ; This destroys hl and a. Returns freq in bc
     call    _gbt_get_freq_from_index
 
     ld      a,c
@@ -561,7 +561,7 @@ channel2_refresh_registers:
 
 ; ------------------
 
-channel2_update_effects: ; returns 1 in a if it is needed to update sound registers
+channel2_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ; Cut note
     ; --------
@@ -918,7 +918,7 @@ gbt_channel3_load_instrument:
 
 ; ------------------
 
-channel3_update_effects: ; returns 1 in a if it is needed to update sound registers
+channel3_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ; Cut note
     ; --------
@@ -1227,7 +1227,7 @@ channel4_refresh_registers:
 
 ; ------------------
 
-channel4_update_effects: ; returns 1 in a if it is needed to update sound registers
+channel4_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ; Cut note
     ; --------

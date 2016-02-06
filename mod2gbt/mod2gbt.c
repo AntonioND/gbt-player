@@ -1,16 +1,16 @@
 /*
-*        --------------------------------------------------------------
-*        ---                                                        ---
-*        ---                                                        ---
-*        ---            mod2gbt v3.0 (part of GBT Player)           ---
-*        ---                                                        ---
-*        ---                                                        ---
-*        ---              Copyright (C) 2009-2015 Antonio Niño Díaz ---
-*        ---                      All rights reserved.              ---
-*        --------------------------------------------------------------
-*
-*                                          antonio_nd@outlook.com
-*/
+ *        --------------------------------------------------------------
+ *        ---                                                        ---
+ *        ---                                                        ---
+ *        ---            mod2gbt v3.0 (part of GBT Player)           ---
+ *        ---                                                        ---
+ *        ---                                                        ---
+ *        ---              Copyright (C) 2009-2016 Antonio Nino Diaz ---
+ *        ---                      All rights reserved.              ---
+ *        --------------------------------------------------------------
+ *
+ *                                          antonio_nd@outlook.com
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,11 +25,11 @@ typedef signed   short int s16;
 //#define swap16(x) ( (((x)&0xFF)<<8) || (((x)>>8)&0xFF) )
 #define BIT(n) (1<<(n))
 
-//--------------------------------------------------------------------------------
-//--                                                                            --
-//--                            READ MOD FILE                                   --
-//--                                                                            --
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//--                                                                          --
+//--                           READ MOD FILE                                  --
+//--                                                                          --
+//------------------------------------------------------------------------------
 
 typedef struct __attribute__((packed)) {
     char name[22];
@@ -51,52 +51,53 @@ typedef struct __attribute__((packed)) {
     u8 unused; //set to 127, used by Noisetracker
     u8 pattern_table[128]; //0..63
     char identifier[4];
-    _pattern_t pattern[256]; //only 64 allowed (see pattern_table) but set to 256 anyway...
+    _pattern_t pattern[256]; //only 64 allowed (see pattern_table)
     //sample data... unused here
 } mod_file_t;
 
 void * load_file(const char * filename)
 {
-	FILE * datafile = fopen(filename, "rb");
-	unsigned int size;
-	void * buffer = NULL;
+    FILE * datafile = fopen(filename, "rb");
+    unsigned int size;
+    void * buffer = NULL;
 
-	if(datafile == NULL)
-	{
+    if(datafile == NULL)
+    {
         printf("\n\nERROR: %s couldn't be opened!\n\n",filename);
         return NULL;
     }
 
     fseek (datafile , 0 , SEEK_END);
-	size = ftell (datafile);
-	if(size == 0)
-	{
+    size = ftell (datafile);
+    if(size == 0)
+    {
         printf("\n\nERROR: Size of %s is 0!\n\n",filename);
         fclose(datafile);
         return NULL;
     }
-	rewind (datafile);
-	buffer = malloc(size);
-	if(buffer == NULL)
-	{
+    rewind (datafile);
+    buffer = malloc(size);
+    if(buffer == NULL)
+    {
         printf("\n\nERROR: Not enought memory to load %s!\n\n",filename);
         fclose(datafile);
         return NULL;
     }
-	if(fread(buffer,size,1,datafile) != 1)
-	{
+    if(fread(buffer,size,1,datafile) != 1)
+    {
         printf("\n\nERROR: Error while reading.\n\n");
         fclose(datafile);
-		free(buffer);
+        free(buffer);
         return NULL;
     }
 
-	fclose(datafile);
+    fclose(datafile);
 
-	return buffer;
+    return buffer;
 }
 
-void unpack_info(u8 * info, u8 * sample_num, u16 * sample_period, u8 * effect_num, u8 * effect_param)
+void unpack_info(u8 * info, u8 * sample_num, u16 * sample_period,
+        u8 * effect_num, u8 * effect_param)
 {
     *sample_num = (info[0]&0xF0)|((info[2]&0xF0)>>4);
     *sample_period = info[1]|((info[0]&0xF)<<8);
@@ -106,11 +107,11 @@ void unpack_info(u8 * info, u8 * sample_num, u16 * sample_period, u8 * effect_nu
 
 const u16 mod_period[6*12] = {
     1712,1616,1524,1440,1356,1280,1208,1140,1076,1016, 960, 907,
-     856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
-     428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
-     214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113,
-     107, 101,  95,  90,  85,  80,  75,  71,  67,  63,  60,  56,
-      53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28
+    856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
+    428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
+    214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113,
+    107, 101,  95,  90,  85,  80,  75,  71,  67,  63,  60,  56,
+    53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28
 };
 
 u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
@@ -119,11 +120,13 @@ u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
     {
         if(period < mod_period[(6*12)-1])
             if(channel != 4) // noise doesn't matter
-                    printf("\nPattern %d, Step %d, Channel %d. Note too high!\n",pattern,step,channel);
+                printf("\nPattern %d, Step %d, Channel %d. Note too high!\n",
+                       pattern,step,channel);
 
         if(period > mod_period[0])
             if(channel != 4) // noise doesn't matter
-                printf("\nPattern %d, Step %d, Channel %d. Note too low!\n",pattern,step,channel);
+                printf("\nPattern %d, Step %d, Channel %d. Note too low!\n",
+                       pattern,step,channel);
     }
     else
     {
@@ -153,11 +156,11 @@ u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
     return nearest_index;
 }
 
-//--------------------------------------------------------------------------------
-//--                                                                            --
-//--                            SAVE OUTPUT                                     --
-//--                                                                            --
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//--                                                                          --
+//--                            SAVE OUTPUT                                   --
+//--                                                                          --
+//------------------------------------------------------------------------------
 
 FILE * output_file;
 char label_name[64];
@@ -187,30 +190,30 @@ void out_close(void)
     fclose(output_file);
 }
 
-//--------------------------------------------------------------------------------
-//--                                                                            --
-//--                           SAVE TO GAMEBOY                                  --
-//--                                                                            --
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//--                                                                          --
+//--                          SAVE TO GAMEBOY                                 --
+//--                                                                          --
+//------------------------------------------------------------------------------
 
 /*
 SAMPLE PERIOD LUT - MOD values
-          C    C#   D    D#   E    F    F#   G    G#   A    A#   B
-Octave 0:1712,1616,1525,1440,1357,1281,1209,1141,1077,1017, 961, 907  // C3 to B3
-Octave 1: 856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453  // C4 to B4
-Octave 2: 428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226  // C5 to B5
-Octave 3: 214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113  // C6 to B6
-Octave 4: 107, 101,  95,  90,  85,  80,  76,  71,  67,  64,  60,  57  // C7 to B7
-Octave 5:  53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28  // C8 to B8
+           C    C#   D    D#   E    F    F#   G    G#   A    A#   B
+Octave 0:1712,1616,1525,1440,1357,1281,1209,1141,1077,1017, 961, 907 // C3 to B3
+Octave 1: 856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453 // C4 to B4
+Octave 2: 428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226 // C5 to B5
+Octave 3: 214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113 // C6 to B6
+Octave 4: 107, 101,  95,  90,  85,  80,  76,  71,  67,  64,  60,  57 // C7 to B7
+Octave 5:  53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28 // C8 to B8
 
 //From C3 to B8  |  A5 = 1750 = 440.00Hz  |  C5 = 1546
 const UWORD GB_frequencies[] = {
-	  44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986,  // C3 to B3
-	1046, 1102, 1155, 1205, 1253, 1297, 1339, 1379, 1417, 1452, 1486, 1517,  // C4 to B4
-	1546, 1575, 1602, 1627, 1650, 1673, 1694, 1714, 1732, 1750, 1767, 1783,  // C5 to B5
-	1798, 1812, 1825, 1837, 1849, 1860, 1871, 1881, 1890, 1899, 1907, 1915,  // C6 to B6
-	1923, 1930, 1936, 1943, 1949, 1954, 1959, 1964, 1969, 1974, 1978, 1982,  // C7 to B7
-	1985, 1988, 1992, 1995, 1998, 2001, 2004, 2006, 2009, 2011, 2013, 2015   // C8 to B8
+      44, 156, 262, 363, 457, 547, 631, 710, 786, 854, 923, 986, // C3 to B3
+    1046,1102,1155,1205,1253,1297,1339,1379,1417,1452,1486,1517, // C4 to B4
+    1546,1575,1602,1627,1650,1673,1694,1714,1732,1750,1767,1783, // C5 to B5
+    1798,1812,1825,1837,1849,1860,1871,1881,1890,1899,1907,1915, // C6 to B6
+    1923,1930,1936,1943,1949,1954,1959,1964,1969,1974,1978,1982, // C7 to B7
+    1985,1988,1992,1995,1998,2001,2004,2006,2009,2011,2013,2015  // C8 to B8
 };
 
 That means... MOD C0 (period 1712) = GB C3 (freq 44, index 0)
@@ -249,72 +252,79 @@ int SPEED_MOD_TO_GB(int s)
 
 //returns 1 if ok
 int EFFECT_MOD_TO_GB(u8 pattern_number, u8 step_number, u8 channel,
-                            u8 effectnum, u8 effectparams, u8 * converted_num, u8 * converted_params)
+                     u8 effectnum, u8 effectparams, u8 * converted_num,
+                     u8 * converted_params)
 {
     switch(effectnum)
     {
         case 0x0: //Arpeggio
-        {
-            *converted_num = 1;
-            *converted_params = effectparams;
-            return 1;
-        }
+            {
+                *converted_num = 1;
+                *converted_params = effectparams;
+                return 1;
+            }
         case 0xB: // Jump
-        {
-            *converted_num = 8;
-            *converted_params = effectparams;
-            return 1;
-        }
+            {
+                *converted_num = 8;
+                *converted_params = effectparams;
+                return 1;
+            }
         case 0xC: // Volume -> Not handled here
-        {
-            printf("Strange error at pattern %d, step %d, channel %d: %01X%02X\n",
-                           pattern_number,step_number,channel,effectnum,effectparams);
-            return 0;
-        }
-        case 0xD: // Break + Set step
-        {
-            *converted_num = 9; // Effect value is BCD, convert to regular integer
-            *converted_params = (((effectparams&0xF0) >> 4) * 10) + (effectparams&0xF);
-            //*converted_params = effectparams; // ... or not?
-            return 1;
-        }
-        case 0xE:
-        {
-            if((effectparams&0xF0) == 0x80) // Pan
             {
-                u8 left = 0;
-                u8 right = 0;
-                switch(effectparams & 0xF)
-                {
-                    case 0: case 1: case 2: case 3: left = 1; break;
-                    default:
-                    case 4: case 5: case 6: case 7:
-                    case 8: case 9: case 10: case 11: left = 1; right = 1; break;
-                    case 12: case 13: case 14: case 15: right = 1; break;
-                }
-                *converted_num = 0;
-                *converted_params = (left<<(3+channel))|(right<<(channel-1)); // channel 1-4
-                return 1;
-            }
-            if((effectparams&0xF0) == 0xC0) // Cut note
-            {
-                *converted_num = 2;
-                *converted_params = (effectparams & 0xF);
-                return 1;
-            }
-            else // Error
-            {
-                printf("Unsupported effect at pattern %d, step %d, channel %d: %01X%02X\n",
-                       pattern_number,step_number,channel,effectnum,effectparams);
+                printf("Strange error at pattern %d, step %d, "
+                        "channel %d: %01X%02X\n", pattern_number, step_number,
+                        channel, effectnum, effectparams);
                 return 0;
             }
-            break;
-        }
+        case 0xD: // Break + Set step
+            {
+                *converted_num = 9; // Effect value is BCD, convert to integer
+                *converted_params = (((effectparams&0xF0) >> 4) * 10) +
+                                    (effectparams&0xF);
+                //*converted_params = effectparams; // ... or not?
+                return 1;
+            }
+        case 0xE:
+            {
+                if((effectparams&0xF0) == 0x80) // Pan
+                {
+                    u8 left = 0;
+                    u8 right = 0;
+                    switch(effectparams & 0xF)
+                    {
+                        case 0: case 1: case 2: case 3: left = 1; break;
+                        default:
+                        case 4: case 5: case 6: case 7:
+                        case 8: case 9: case 10: case 11:
+                            left = 1; right = 1; break;
+                        case 12: case 13: case 14: case 15: right = 1; break;
+                    }
+                    *converted_num = 0;
+                    *converted_params =
+                        (left<<(3+channel))|(right<<(channel-1)); // channel 1-4
+                    return 1;
+                }
+                if((effectparams&0xF0) == 0xC0) // Cut note
+                {
+                    *converted_num = 2;
+                    *converted_params = (effectparams & 0xF);
+                    return 1;
+                }
+                else // Error
+                {
+                    printf("Unsupported effect at pattern %d, step %d, "
+                           "channel %d: %01X%02X\n",pattern_number,step_number,
+                           channel,effectnum,effectparams);
+                    return 0;
+                }
+                break;
+            }
         case 0xF: // Speed
             if(effectparams > 0x1F) //nothing
             {
-                printf("Unsupported BPM speed effect at pattern %d, step %d, channel %d: %01X%02X\n",
-                       pattern_number,step_number,channel,effectnum,effectparams);
+                printf("Unsupported BPM speed effect at pattern %d, step %d, "
+                       "channel %d: %01X%02X\n",pattern_number,step_number,
+                       channel,effectnum,effectparams);
                 return 0;
             }
             else //speed
@@ -323,20 +333,22 @@ int EFFECT_MOD_TO_GB(u8 pattern_number, u8 step_number, u8 channel,
                 *converted_params = SPEED_MOD_TO_GB(effectparams);
                 return 1;
             }
-        break;
+            break;
 
         default: //nothing
-        {
-            printf("Unsupported effect at pattern %d, step %d, channel %d: %01X%02X\n",
-                       pattern_number,step_number,channel,effectnum,effectparams);
-            return 0;
-        }
+            {
+                printf("Unsupported effect at pattern %d, step %d, "
+                       "channel %d: %01X%02X\n",pattern_number,step_number,
+                       channel,effectnum,effectparams);
+                return 0;
+            }
     }
     return 0;
 }
 
-void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 samplenum,
-                      u16 sampleperiod, u8 effectnum, u8 effectparams)
+void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
+                      u8 samplenum, u16 sampleperiod, u8 effectnum,
+                      u8 effectparams)
 {
     u8 result[3] = { 0, 0, 0 };
     int command_len = 1; // NOP
@@ -359,7 +371,8 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 //Others
                 u8 converted_num, converted_params;
                 if(EFFECT_MOD_TO_GB(pattern_number,step_number,1,
-                                    effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                    effectnum,effectparams,&converted_num,
+                                    &converted_params) == 1)
                 {
                     result[0] = BIT(6) | (instrument << 4) | converted_num;
                     result[1] = converted_params;
@@ -369,8 +382,9 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 {
                     if(effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel 1: %01X%02X\n",
-                           pattern_number,step_number,effectnum,effectparams);
+                        printf("Invalid command at pattern %d, step %d, "
+                               "channel 1: %01X%02X\n",pattern_number,
+                               step_number,effectnum,effectparams);
                     }
                     //NOP
                     result[0] = 0;
@@ -398,7 +412,8 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         else
         {
             if(EFFECT_MOD_TO_GB(pattern_number,step_number,1,
-                                effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                effectnum,effectparams,&converted_num,
+                                &converted_params) == 1)
             {
                 //Note + Effect
                 result[0] = BIT(7) | note_index;
@@ -406,12 +421,13 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 result[2] = converted_params;
                 command_len = 3;
             }
-            else //Note + No effect!! -> NOT GOOD, WE NEED AT LEAST VOLUME CHANGE!!
+            else //Note + No effect!! -> AT LEAST VOLUME CHANGE NEEDED!!
             {
-                printf("Invalid command at pattern %d, step %d, channel 1: %01X%02X\n",
-                        pattern_number,step_number,effectnum,effectparams);
+                printf("Invalid command at pattern %d, step %d, "
+                       "channel 1: %01X%02X\n",pattern_number,step_number,
+                       effectnum,effectparams);
                 if(effectnum == 0)
-                    printf("You need to set the volume when using a new note.\n");
+                    printf("You need to set the volume when using a note.\n");
             }
         }
     }
@@ -432,8 +448,8 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
     }
 }
 
-void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 samplenum,
-                      u16 sampleperiod, u8 effectnum, u8 effectparams)
+void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
+        u8 samplenum, u16 sampleperiod, u8 effectnum, u8 effectparams)
 {
     u8 result[3] = { 0, 0, 0 };
     int command_len = 1; // NOP
@@ -456,7 +472,8 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 //Others
                 u8 converted_num, converted_params;
                 if(EFFECT_MOD_TO_GB(pattern_number,step_number,2,
-                                    effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                    effectnum,effectparams,&converted_num,
+                                    &converted_params) == 1)
                 {
                     result[0] = BIT(6) | (instrument << 4) | converted_num;
                     result[1] = converted_params;
@@ -466,8 +483,9 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 {
                     if(effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel 2: %01X%02X\n",
-                           pattern_number,step_number,effectnum,effectparams);
+                        printf("Invalid command at pattern %d, step %d, "
+                               "channel 2: %01X%02X\n",pattern_number,
+                               step_number,effectnum,effectparams);
                     }
                     //NOP
                     result[0] = 0;
@@ -495,7 +513,8 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         else
         {
             if(EFFECT_MOD_TO_GB(pattern_number,step_number,2,
-                                effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                effectnum,effectparams,&converted_num,
+                                &converted_params) == 1)
             {
                 //Note + Effect
                 result[0] = BIT(7) | note_index;
@@ -503,12 +522,13 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 result[2] = converted_params;
                 command_len = 3;
             }
-            else //Note + No effect!! -> NOT GOOD, WE NEED AT LEAST VOLUME CHANGE!!
+            else //Note + No effect!! -> WE NEED AT LEAST VOLUME CHANGE!!
             {
-                printf("Invalid command at pattern %d, step %d, channel 2: %01X%02X\n",
-                        pattern_number,step_number,effectnum,effectparams);
+                printf("Invalid command at pattern %d, step %d, "
+                       "channel 2: %01X%02X\n",pattern_number,step_number,
+                       effectnum,effectparams);
                 if(effectnum == 0)
-                    printf("You need to set the volume when using a new note.\n");
+                    printf("You need to set the volume when using a note.\n");
             }
         }
     }
@@ -529,8 +549,8 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
     }
 }
 
-void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 samplenum,
-                      u16 sampleperiod, u8 effectnum, u8 effectparams)
+void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
+        u8 samplenum, u16 sampleperiod, u8 effectnum, u8 effectparams)
 {
     u8 result[3] = { 0, 0, 0 };
     int command_len = 1; // NOP
@@ -551,7 +571,8 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 //Others
                 u8 converted_num, converted_params;
                 if(EFFECT_MOD_TO_GB(pattern_number,step_number,3,
-                                    effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                    effectnum,effectparams,&converted_num,
+                                    &converted_params) == 1)
                 {
                     result[0] = BIT(6) | converted_num;
                     result[1] = converted_params;
@@ -561,8 +582,9 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 {
                     if(effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel 3: %01X%02X\n",
-                           pattern_number,step_number,effectnum,effectparams);
+                        printf("Invalid command at pattern %d, step %d, "
+                               "channel 3: %01X%02X\n",pattern_number,
+                               step_number,effectnum,effectparams);
                     }
                     //NOP
                     result[0] = 0;
@@ -592,11 +614,13 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         else
         {
             if(EFFECT_MOD_TO_GB(pattern_number,step_number,3,
-                                effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                effectnum,effectparams,&converted_num,
+                                &converted_params) == 1)
             {
                 if(converted_num > 7)
                 {
-                    printf("Invalid command at pattern %d, step %d, channel 3: %01X%02X\n"
+                    printf("Invalid command at pattern %d, step %d, "
+                           "channel 3: %01X%02X\n"
                            "(Only 0-7 allowed in this mode)\n",
                            pattern_number,step_number,effectnum,effectparams);
                 }
@@ -609,12 +633,13 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                     command_len = 3;
                 }
             }
-            else //Note + No effect!! -> NOT GOOD, WE NEED AT LEAST VOLUME CHANGE!!
+            else //Note + No effect!! -> WE NEED AT LEAST VOLUME CHANGE!!
             {
-                printf("Invalid command at pattern %d, step %d, channel 3: %01X%02X\n",
-                        pattern_number,step_number,effectnum,effectparams);
+                printf("Invalid command at pattern %d, step %d, "
+                       "channel 3: %01X%02X\n",pattern_number,step_number,
+                       effectnum,effectparams);
                 if(effectnum == 0)
-                    printf("You need to set the volume when using a new note.\n");
+                    printf("You need to set the volume when using a note.\n");
             }
         }
     }
@@ -635,8 +660,9 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
     }
 }
 
-void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 samplenum,
-                      u16 sampleperiod, u8 effectnum, u8 effectparams)
+void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
+                      u8 samplenum, u16 sampleperiod, u8 effectnum,
+                      u8 effectparams)
 {
     u8 result[3] = { 0, 0, 0 };
     int command_len = 1; // NOP
@@ -657,7 +683,8 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 //Others
                 u8 converted_num, converted_params;
                 if(EFFECT_MOD_TO_GB(pattern_number,step_number,4,
-                                    effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                    effectnum,effectparams,&converted_num,
+                                    &converted_params) == 1)
                 {
                     result[0] = BIT(6) | converted_num;
                     result[1] = converted_params;
@@ -667,8 +694,9 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 {
                     if(effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel 4: %01X%02X\n",
-                           pattern_number,step_number,effectnum,effectparams);
+                        printf("Invalid command at pattern %d, step %d, "
+                               "channel 4: %01X%02X\n",pattern_number,
+                               step_number,effectnum,effectparams);
                     }
                     //NOP
                     result[0] = 0;
@@ -685,7 +713,7 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
     }
     else // New note (not a real note...)
     {
-        u8 instrument = (samplenum-16) & 0x1F; // Only 0-0xF initially implemented
+        u8 instrument = (samplenum-16) & 0x1F; // Only 0-0xF implemented now
 
         u8 converted_num, converted_params;
         if(effectnum == 0xC)
@@ -698,7 +726,8 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
         else
         {
             if(EFFECT_MOD_TO_GB(pattern_number,step_number,4,
-                                effectnum,effectparams,&converted_num,&converted_params) == 1)
+                                effectnum,effectparams,&converted_num,
+                                &converted_params) == 1)
             {
                 //Note + Effect
                 result[0] = BIT(7) | instrument;
@@ -706,12 +735,13 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
                 result[2] = converted_params;
                 command_len = 3;
             }
-            else //Note + No effect!! -> NOT GOOD, WE NEED AT LEAST VOLUME CHANGE!!
+            else //Note + No effect!! -> WE NEED AT LEAST VOLUME CHANGE!!
             {
-                printf("Invalid command at pattern %d, step %d, channel 4: %01X%02X\n",
-                        pattern_number,step_number,effectnum,effectparams);
+                printf("Invalid command at pattern %d, step %d, "
+                       "channel 4: %01X%02X\n",pattern_number,step_number,
+                       effectnum,effectparams);
                 if(effectnum == 0)
-                    printf("You need to set the volume when using a new note.\n");
+                    printf("You need to set the volume when using a note.\n");
             }
         }
     }
@@ -751,7 +781,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         out_write_str("    DB  ");
 
         u8 data[4]; //packed data
-        u8 samplenum; u16 sampleperiod; u8 effectnum, effectparams; //unpacked data
+        u8 samplenum; u16 sampleperiod; u8 effectnum, effectparams; //unpacked
 
         u8 note_index;
 
@@ -761,7 +791,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         note_index = mod_get_index_from_period(sampleperiod,number,step,1);
 
         convert_channel1(number,step,
-                         note_index,samplenum,sampleperiod,effectnum,effectparams);
+                note_index,samplenum,sampleperiod,effectnum,effectparams);
         out_write_str(", ");
 
         //Channel 2
@@ -770,7 +800,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         note_index = mod_get_index_from_period(sampleperiod,number,step,2);
 
         convert_channel2(number,step,
-                         note_index,samplenum,sampleperiod,effectnum,effectparams);
+                note_index,samplenum,sampleperiod,effectnum,effectparams);
         out_write_str(", ");
 
         //Channel 3
@@ -779,7 +809,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         note_index = mod_get_index_from_period(sampleperiod,number,step,3);
 
         convert_channel3(number,step,
-                         note_index,samplenum,sampleperiod,effectnum,effectparams);
+                note_index,samplenum,sampleperiod,effectnum,effectparams);
         out_write_str(", ");
 
         //Channel 4
@@ -788,7 +818,7 @@ void convert_pattern(_pattern_t * pattern, u8 number)
         note_index = mod_get_index_from_period(sampleperiod,number,step,4);
 
         convert_channel4(number,step,
-                         note_index,samplenum,sampleperiod,effectnum,effectparams);
+                note_index,samplenum,sampleperiod,effectnum,effectparams);
 
         out_write_str("\n");
     }
@@ -796,17 +826,17 @@ void convert_pattern(_pattern_t * pattern, u8 number)
     out_write_str("\n");
 }
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void print_usage(void)
 {
     printf("Usage: mod2gbt modfile.mod song_name [-speed][-512-banks]\n\n");
     printf("       -speed      Don't convert speed from 50 Hz to 60 Hz.\n");
-    printf("       -512-banks  Output data for a ROM with more than 256 banks.\n");
+    printf("       -512-banks  Prepare for a ROM with more than 256 banks.\n");
     printf("\n\n");
 }
 
@@ -822,7 +852,7 @@ int main(int argc, char * argv[])
     printf("     |     mod2gbt v3.0 (part of GBT Player)     |\n");
     printf("     |                                           |\n");
     printf("     |                                           |\n");
-    printf("     | Copyright (C) 2009-2015 Antonio Niño Díaz |\n");
+    printf("     | Copyright (C) 2009-2015 Antonio Nino Diaz |\n");
     printf("     |                      All rights reserved. |\n");
     printf("     |                                           |\n");
     printf("     |                   antonio_nd@outlook.com  |\n");
@@ -867,7 +897,8 @@ int main(int argc, char * argv[])
     }
     else
     {
-        printf("\nERROR: Not a valid mod file.\nOnly 4 channel mod files with 31 samples allowed.\n\n");
+        printf("\nERROR: Not a valid mod file.\n"
+               "Only 4 channel mod files with 31 samples allowed.\n\n");
         return -3;
     }
 
@@ -883,7 +914,7 @@ int main(int argc, char * argv[])
 
     u8 num_patterns = 0;
     for(i = 0; i < 128; i++) if(modfile->pattern_table[i] > num_patterns)
-            num_patterns = modfile->pattern_table[i];
+        num_patterns = modfile->pattern_table[i];
     num_patterns ++;
 
     printf("Number of patterns: %d\n",num_patterns);
