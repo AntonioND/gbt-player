@@ -6,7 +6,7 @@ A music player library and converter kit for Game Boy that can be used with
 
 Licensed under the BSD license.
 
-Copyright (C) 2009-2015 Antonio Niño Díaz.
+Copyright (C) 2009-2016 Antonio Niño Díaz.
 
 All rights reserved.
 
