@@ -1,24 +1,45 @@
+;###############################################################################
+;#                                                                             #
+;#                                                                             #
+;#                              GBT PLAYER  3.0.4                              #
+;#                                                                             #
+;#                                             Contact: antonio_nd@outlook.com #
+;###############################################################################
 
-;        --------------------------------------------------------------
-;        ---                                                        ---
-;        ---                                                        ---
-;        ---                       GBT PLAYER  3.0.3                ---
-;        ---                                                        ---
-;        ---                                                        ---
-;        ---              Copyright (C) 2009-2016 Antonio Niño Díaz ---
-;        ---                      All rights reserved.              ---
-;        --------------------------------------------------------------
+; Copyright (c) 2009-2016, Antonio Niño Díaz (AntonioND)
+; All rights reserved.
 ;
-;                                          antonio_nd@outlook.com
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice, this
+;  list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+; DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+; FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+; CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+; OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+;###############################################################################
 
     INCLUDE "hardware.inc"
     INCLUDE "gbt_player.inc"
 
-; -----------------------------------------------------------------------
+;###############################################################################
 
     SECTION "GBT_BANK1",ROMX,BANK[1]
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_wave: ; 8 sounds
 DB $A5,$D7,$C9,$E1,$BC,$9A,$76,$31,$0C,$BA,$DE,$60,$1B,$CA,$03,$93 ; random
@@ -45,7 +66,7 @@ gbt_frequencies:
     DW  1923, 1930, 1936, 1943, 1949, 1954, 1959, 1964, 1969, 1974, 1978, 1982
     DW  1985, 1988, 1992, 1995, 1998, 2001, 2004, 2006, 2009, 2011, 2013, 2015
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 _gbt_get_freq_from_index: ; a = index, bc = returned freq
     ld      hl,gbt_frequencies
@@ -58,9 +79,9 @@ _gbt_get_freq_from_index: ; a = index, bc = returned freq
     ld      b,[hl]
     ret
 
-; -----------------------------------------------------------------------
-; ------------------------------ Channel 1 ------------------------------
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+; ---------------------------------- Channel 1 ---------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_channel_1_handle:: ; de = info
 
@@ -393,9 +414,9 @@ gbt_channel_1_set_effect: ; a = effect, de = pointer to data.
     xor     a,a ; ret 0
     ret
 
-; -----------------------------------------------------------------------
-; ------------------------------ Channel 2 ------------------------------
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+; ---------------------------------- Channel 2 ---------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_channel_2_handle:: ; de = info
 
@@ -726,9 +747,9 @@ gbt_channel_2_set_effect: ; a = effect, de = pointer to data
     xor     a,a ; ret 0
     ret
 
-; -----------------------------------------------------------------------
-; ------------------------------ Channel 3 ------------------------------
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+; ---------------------------------- Channel 3 ---------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_channel_3_handle:: ; de = info
 
@@ -1086,9 +1107,9 @@ gbt_channel_3_set_effect: ; a = effect, de = pointer to data
     xor     a,a ; ret 0
     ret
 
-; -----------------------------------------------------------------------
-; ------------------------------ Channel 4 ------------------------------
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+; ---------------------------------- Channel 4 ---------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_channel_4_handle:: ; de = info
 
@@ -1299,7 +1320,9 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
     xor     a,a ; ret 0
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 ; Common effects go here:
 
@@ -1332,7 +1355,7 @@ gbt_ch1234_speed:
     ld      [gbt_ticks_elapsed],a
     ret ;ret 0
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_update_bank1::
 
@@ -1361,7 +1384,7 @@ gbt_update_bank1::
 
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_update_effects_bank1::
 
@@ -1383,5 +1406,4 @@ gbt_update_effects_bank1::
 
     ret
 
-; -----------------------------------------------------------------------
-
+;###############################################################################

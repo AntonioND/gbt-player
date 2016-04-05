@@ -1,22 +1,45 @@
+;###############################################################################
+;#                                                                             #
+;#                                                                             #
+;#                              GBT PLAYER  3.0.4                              #
+;#                                                                             #
+;#                                             Contact: antonio_nd@outlook.com #
+;###############################################################################
 
-;        --------------------------------------------------------------
-;        ---                                                        ---
-;        ---                                                        ---
-;        ---                       GBT PLAYER  3.0.3                ---
-;        ---                                                        ---
-;        ---                                                        ---
-;        ---              Copyright (C) 2009-2016 Antonio Nino Diaz ---
-;        ---                      All rights reserved.              ---
-;        --------------------------------------------------------------
+; Copyright (c) 2009-2016, Antonio Niño Díaz (AntonioND)
+; All rights reserved.
 ;
-;                                          antonio_nd@outlook.com
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice, this
+;  list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+; DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+; FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+; CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+; OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+;###############################################################################
 
     INCLUDE "hardware.inc"
     INCLUDE "gbt_player.inc"
 
-; -----------------------------------------------------------------------
+;###############################################################################
 
     SECTION "GBT_VAR_1",WRAM0
+
+;-------------------------------------------------------------------------------
 
 gbt_playing: DS 1
 
@@ -67,9 +90,11 @@ gbt_have_to_stop_next_step:: DS 1
 
 gbt_update_pattern_pointers:: DS 1 ; set to 1 by jump effects
 
-; -----------------------------------------------------------------------
+;###############################################################################
 
     SECTION "GBT_BANK0",ROM0
+
+;-------------------------------------------------------------------------------
 
 gbt_get_pattern_ptr:: ; a = pattern number
 
@@ -81,12 +106,12 @@ gbt_get_pattern_ptr:: ; a = pattern number
 
 IF DEF(GBT_USE_MBC5_512BANKS)
     ld      a,[gbt_pattern_array_bank+0]
-    ld      [$2000],a ; MBC5 - Set bank
+    ld      [rROMB0],a ; MBC5 - Set bank
     ld      a,[gbt_pattern_array_bank+1]
-    ld      [$3000],a ; MBC5 - Set bank
+    ld      [rROMB1],a ; MBC5 - Set bank
 ELSE
     ld      a,[gbt_pattern_array_bank]
-    ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank
+    ld      [rROMB0],a ; MBC1, MBC3, MBC5 - Set bank
 ENDC
 
     ld      hl,gbt_pattern_array_ptr
@@ -126,7 +151,7 @@ ENDC
 
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_play:: ; de = data, bc = bank, a = speed
 
@@ -241,7 +266,7 @@ ENDC
 
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_pause:: ; a = pause/unpause
     ld      [gbt_playing],a
@@ -251,13 +276,13 @@ gbt_pause:: ; a = pause/unpause
     ld      [rNR50],a
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_loop:: ; a = loop/don't loop
     ld      [gbt_loop_enabled],a
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_stop::
     xor     a,a
@@ -267,13 +292,13 @@ gbt_stop::
     ld      [rNR52],a
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
 gbt_enable_channels:: ; a = channel flags (channel flag = (1<<(channel_num-1)))
     ld      [gbt_channels_enabled],a
     ret
 
-; -----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 
     GLOBAL  gbt_update_bank1
 
@@ -543,5 +568,4 @@ ENDC
 
     ret
 
-; -----------------------------------------------------------------------
-
+;###############################################################################

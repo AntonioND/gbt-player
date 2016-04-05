@@ -19,47 +19,53 @@
 ;* Rev 2.2 -           : Fixed NR42,NR43, & NR44 equates
 ;* Rev 2.3 -           : Fixed incorrect _HRAM equate
 ;* Rev 2.4 - 27-Apr-13 : Added some cart defines (AntonioND)
+;* Rev 2.5 - 03-May-15 : Fixed format (AntonioND)
+;* Rev 2.6 - 04-Apr-16 : Added GBC OAM and cart defines (AntonioND)
 
 ; If all of these are already defined, don't do it again.
 
-        IF      !DEF(HARDWARE_INC)
-HARDWARE_INC  SET  1
+    IF !DEF(HARDWARE_INC)
+HARDWARE_INC SET 1
 
-rev_Check_hardware_inc: MACRO
+rev_Check_hardware_inc : MACRO
 ;NOTE: REVISION NUMBER CHANGES MUST BE ADDED
 ;TO SECOND PARAMETER IN FOLLOWING LINE.
-        IF      \1 > 2.4      ;PUT REVISION NUMBER HERE
+    IF  \1 > 2.6 ;PUT REVISION NUMBER HERE
         WARN    "Version \1 or later of 'hardware.inc' is required."
-        ENDC
-        ENDM
+    ENDC
+ENDM
 
-_HW           EQU  $FF00
+_HW          EQU $FF00
 
-_VRAM         EQU  $8000 ; $8000->$A000
-_SCRN0        EQU  $9800 ; $9800->$9BFF
-_SCRN1        EQU  $9C00 ; $9C00->$9FFF
-_RAM          EQU  $C000 ; $C000->$E000
-_OAMRAM       EQU  $FE00 ; $FE00->$FE9F
-_AUD3WAVERAM  EQU  $FF30 ; $FF30->$FF3F
-_HRAM         EQU  $FF80 ; $FF80->$FFFE
+_VRAM        EQU $8000 ; $8000->$9FFF
+_SCRN0       EQU $9800 ; $9800->$9BFF
+_SCRN1       EQU $9C00 ; $9C00->$9FFF
+_SRAM        EQU $A000 ; $A000->$BFFF
+_RAM         EQU $C000 ; $C000->$DFFF
+_OAMRAM      EQU $FE00 ; $FE00->$FE9F
+_AUD3WAVERAM EQU $FF30 ; $FF30->$FF3F
+_HRAM        EQU $FF80 ; $FF80->$FFFE
 
 ; *** MBC5 Equates ***
 
-rRAMG         EQU  $0000 ; $0000->$1fff
-rROMB0        EQU  $2000 ; $2000->$2fff
-rROMB1        EQU  $3000 ; $3000->$3fff
-rRAMB         EQU  $4000 ; $4000->$5fff
+rRAMG        EQU $0000 ; $0000->$1fff
+rROMB0       EQU $2000 ; $2000->$2fff
+rROMB1       EQU $3000 ; $3000->$3fff - If more than 256 ROM banks are present.
+rRAMB        EQU $4000 ; $4000->$5fff - Bit 3 enables rumble (if present)
 
 
 ; --
 ; -- OAM flags
 ; --
 
-OAMF_PRI    EQU  %10000000 ; Priority
-OAMF_YFLIP  EQU  %01000000 ; Y flip
-OAMF_XFLIP  EQU  %00100000 ; X flip
-OAMF_PAL0   EQU  %00000000 ; Palette number; 0,1
-OAMF_PAL1   EQU  %00010000 ; Palette number; 0,1
+OAMF_PRI        EQU %10000000 ; Priority
+OAMF_YFLIP      EQU %01000000 ; Y flip
+OAMF_XFLIP      EQU %00100000 ; X flip
+OAMF_PAL0       EQU %00000000 ; Palette number; 0,1 (DMG)
+OAMF_PAL1       EQU %00010000 ; Palette number; 0,1 (DMG)
+OAMF_BANK0      EQU %00000000 ; Bank number; 0,1 (GBC)
+OAMF_BANK1      EQU %00001000 ; Bank number; 0,1 (GBC)
+OAMF_PALMASK    EQU %00000111 ; Palette (GBC)
 
 
 ;***************************************************************************
@@ -74,12 +80,12 @@ OAMF_PAL1   EQU  %00010000 ; Palette number; 0,1
 ; --
 rP1 EQU $FF00
 
-P1F_5   EQU  %00100000 ; P15 out port
-P1F_4   EQU  %00010000 ; P14 out port
-P1F_3   EQU  %00001000 ; P13 in port
-P1F_2   EQU  %00000100 ; P12 in port
-P1F_1   EQU  %00000010 ; P11 in port
-P1F_0   EQU  %00000001 ; P10 in port
+P1F_5 EQU %00100000 ; P15 out port
+P1F_4 EQU %00010000 ; P14 out port
+P1F_3 EQU %00001000 ; P13 in port
+P1F_2 EQU %00000100 ; P12 in port
+P1F_1 EQU %00000010 ; P11 in port
+P1F_0 EQU %00000001 ; P10 in port
 
 ; --
 ; -- SB ($FF01)
@@ -120,12 +126,12 @@ rTMA EQU $FF06
 ; --
 rTAC EQU $FF07
 
-TACF_START   EQU %00000100
-TACF_STOP    EQU %00000000
-TACF_4KHZ    EQU %00000000
-TACF_16KHZ   EQU %00000011
-TACF_65KHZ   EQU %00000010
-TACF_262KHZ  EQU %00000001
+TACF_START  EQU %00000100
+TACF_STOP   EQU %00000000
+TACF_4KHZ   EQU %00000000
+TACF_16KHZ  EQU %00000011
+TACF_65KHZ  EQU %00000010
+TACF_262KHZ EQU %00000001
 
 ; --
 ; -- IF ($FF0F)
@@ -139,22 +145,22 @@ rIF EQU $FF0F
 ; --
 rLCDC EQU $FF40
 
-LCDCF_OFF     EQU  %00000000 ; LCD Control Operation
-LCDCF_ON      EQU  %10000000 ; LCD Control Operation
-LCDCF_WIN9800 EQU  %00000000 ; Window Tile Map Display Select
-LCDCF_WIN9C00 EQU  %01000000 ; Window Tile Map Display Select
-LCDCF_WINOFF  EQU  %00000000 ; Window Display
-LCDCF_WINON   EQU  %00100000 ; Window Display
-LCDCF_BG8800  EQU  %00000000 ; BG & Window Tile Data Select
-LCDCF_BG8000  EQU  %00010000 ; BG & Window Tile Data Select
-LCDCF_BG9800  EQU  %00000000 ; BG Tile Map Display Select
-LCDCF_BG9C00  EQU  %00001000 ; BG Tile Map Display Select
-LCDCF_OBJ8    EQU  %00000000 ; OBJ Construction
-LCDCF_OBJ16   EQU  %00000100 ; OBJ Construction
-LCDCF_OBJOFF  EQU  %00000000 ; OBJ Display
-LCDCF_OBJON   EQU  %00000010 ; OBJ Display
-LCDCF_BGOFF   EQU  %00000000 ; BG Display
-LCDCF_BGON    EQU  %00000001 ; BG Display
+LCDCF_OFF     EQU %00000000 ; LCD Control Operation
+LCDCF_ON      EQU %10000000 ; LCD Control Operation
+LCDCF_WIN9800 EQU %00000000 ; Window Tile Map Display Select
+LCDCF_WIN9C00 EQU %01000000 ; Window Tile Map Display Select
+LCDCF_WINOFF  EQU %00000000 ; Window Display
+LCDCF_WINON   EQU %00100000 ; Window Display
+LCDCF_BG8800  EQU %00000000 ; BG & Window Tile Data Select
+LCDCF_BG8000  EQU %00010000 ; BG & Window Tile Data Select
+LCDCF_BG9800  EQU %00000000 ; BG Tile Map Display Select
+LCDCF_BG9C00  EQU %00001000 ; BG Tile Map Display Select
+LCDCF_OBJ8    EQU %00000000 ; OBJ Construction
+LCDCF_OBJ16   EQU %00000100 ; OBJ Construction
+LCDCF_OBJOFF  EQU %00000000 ; OBJ Display
+LCDCF_OBJON   EQU %00000010 ; OBJ Display
+LCDCF_BGOFF   EQU %00000000 ; BG Display
+LCDCF_BGON    EQU %00000001 ; BG Display
 ; "Window Character Data Select" follows BG
 
 
@@ -180,14 +186,14 @@ STATF_BUSY    EQU  %00000010 ; When set, VRAM access is unsafe
 ; -- SCY ($FF42)
 ; -- Scroll Y (R/W)
 ; --
-rSCY  EQU $FF42
+rSCY EQU $FF42
 
 
 ; --
 ; -- SCY ($FF43)
 ; -- Scroll X (R/W)
 ; --
-rSCX  EQU $FF43
+rSCX EQU $FF43
 
 
 ; --
@@ -205,14 +211,14 @@ rLY EQU $FF44
 ; --
 ; -- When LYEQUEQULYC, STATF_LYCF will be set in STAT
 ; --
-rLYC  EQU $FF45
+rLYC EQU $FF45
 
 
 ; --
 ; -- DMA ($FF46)
 ; -- DMA Transfer and Start Address (W)
 ; --
-rDMA  EQU $FF46
+rDMA EQU $FF46
 
 
 ; --
@@ -224,7 +230,7 @@ rDMA  EQU $FF46
 ; -- Bit 3-2 - Intensity for %01
 ; -- Bit 1-0 - Intensity for %00
 ; --
-rBGP  EQU $FF47
+rBGP EQU $FF47
 
 
 ; --
@@ -361,11 +367,11 @@ rSVBK EQU $FF70
 rIE EQU $FFFF
 
 
-IEF_HILO    EQU  %00010000 ; Transition from High to Low of Pin number P10-P13
-IEF_SERIAL  EQU  %00001000 ; Serial I/O transfer end
-IEF_TIMER   EQU  %00000100 ; Timer Overflow
-IEF_LCDC    EQU  %00000010 ; LCDC (see STAT)
-IEF_VBLANK  EQU  %00000001 ; V-Blank
+IEF_HILO   EQU %00010000 ; Transition from High to Low of Pin number P10-P13
+IEF_SERIAL EQU %00001000 ; Serial I/O transfer end
+IEF_TIMER  EQU %00000100 ; Timer Overflow
+IEF_LCDC   EQU %00000010 ; LCDC (see STAT)
+IEF_VBLANK EQU %00000001 ; V-Blank
 
 
 
@@ -644,45 +650,50 @@ rAUD4GO EQU rNR44 ; silly name!
 ;*
 ;***************************************************************************
 
-CART_ROM                      EQU $00
-CART_ROM_MBC1                 EQU $01
-CART_ROM_MBC1_RAM             EQU $02
-CART_ROM_MBC1_RAM_BAT         EQU $03
-CART_ROM_MBC2                 EQU $05
-CART_ROM_MBC2_BAT             EQU $06
-CART_ROM_RAM                  EQU $08
-CART_ROM_RAM_BAT              EQU $09
-CART_ROM_MBC3_BAT_RTC         EQU $0F
-CART_ROM_MBC3_RAM_BAT_RTC     EQU $10
-CART_ROM_MBC3                 EQU $11
-CART_ROM_MBC3_RAM             EQU $12
-CART_ROM_MBC3_RAM_BAT         EQU $13
-CART_ROM_MBC5                 EQU $19
-CART_ROM_MBC5_BAT             EQU $1A
-CART_ROM_MBC5_RAM_BAT         EQU $1B
-CART_ROM_MBC5_RUMBLE          EQU $1C
-CART_ROM_MBC5_RAM_RUMBLE      EQU $1D
-CART_ROM_MBC5_RAM_BAT_RUMBLE  EQU $1E
-CART_ROM_MBC7_RAM_BAT_GYRO    EQU $22
-CART_ROM_POCKET_CAMERA        EQU $FC
+CART_COMPATIBLE_DMG     EQU $00
+CART_COMPATIBLE_DMG_GBC EQU $80
+CART_COMPATIBLE_GBC     EQU $C0
 
-CART_ROM_256K  EQU 0
-CART_ROM_512K  EQU 1
-CART_ROM_1M    EQU 2
-CART_ROM_2M    EQU 3
-CART_ROM_4M    EQU 4
-CART_ROM_8M    EQU 5
-CART_ROM_16M   EQU 6
-CART_ROM_32M   EQU 7
-CART_ROM_64M   EQU 8
+CART_ROM                     EQU $00
+CART_ROM_MBC1                EQU $01
+CART_ROM_MBC1_RAM            EQU $02
+CART_ROM_MBC1_RAM_BAT        EQU $03
+CART_ROM_MBC2                EQU $05
+CART_ROM_MBC2_BAT            EQU $06
+CART_ROM_RAM                 EQU $08
+CART_ROM_RAM_BAT             EQU $09
+CART_ROM_MBC3_BAT_RTC        EQU $0F
+CART_ROM_MBC3_RAM_BAT_RTC    EQU $10
+CART_ROM_MBC3                EQU $11
+CART_ROM_MBC3_RAM            EQU $12
+CART_ROM_MBC3_RAM_BAT        EQU $13
+CART_ROM_MBC5                EQU $19
+CART_ROM_MBC5_BAT            EQU $1A
+CART_ROM_MBC5_RAM_BAT        EQU $1B
+CART_ROM_MBC5_RUMBLE         EQU $1C
+CART_ROM_MBC5_RAM_RUMBLE     EQU $1D
+CART_ROM_MBC5_RAM_BAT_RUMBLE EQU $1E
+CART_ROM_MBC7_RAM_BAT_GYRO   EQU $22
+CART_ROM_POCKET_CAMERA       EQU $FC
 
-CART_RAM_NONE  EQU 0
-CART_RAM_16K   EQU 1
-CART_RAM_64K   EQU 2
-CART_RAM_256K  EQU 3
+CART_ROM_256K EQU 0 ; 2 banks
+CART_ROM_512K EQU 1 ; 4 banks
+CART_ROM_1M   EQU 2 ; 8 banks
+CART_ROM_2M   EQU 3 ; 16 banks
+CART_ROM_4M   EQU 4 ; 32 banks
+CART_ROM_8M   EQU 5 ; 64 banks
+CART_ROM_16M  EQU 6 ; 128 banks
+CART_ROM_32M  EQU 7 ; 256 banks
+CART_ROM_64M  EQU 8 ; 512 banks
 
-CART_RAM_ENABLE   EQU $0A
-CART_RAM_DISABLE  EQU $00
+CART_RAM_NONE EQU 0
+CART_RAM_16K  EQU 1 ; 1 incomplete bank
+CART_RAM_64K  EQU 2 ; 1 bank
+CART_RAM_256K EQU 3 ; 4 banks
+CART_RAM_1M   EQU 4 ; 16 banks
+
+CART_RAM_ENABLE  EQU $0A
+CART_RAM_DISABLE EQU $00
 
 ;***************************************************************************
 ;*
@@ -690,23 +701,23 @@ CART_RAM_DISABLE  EQU $00
 ;*
 ;***************************************************************************
 
-PADF_DOWN       EQU     $80
-PADF_UP         EQU     $40
-PADF_LEFT       EQU     $20
-PADF_RIGHT      EQU     $10
-PADF_START      EQU     $08
-PADF_SELECT     EQU     $04
-PADF_B          EQU     $02
-PADF_A          EQU     $01
+PADF_DOWN   EQU $80
+PADF_UP     EQU $40
+PADF_LEFT   EQU $20
+PADF_RIGHT  EQU $10
+PADF_START  EQU $08
+PADF_SELECT EQU $04
+PADF_B      EQU $02
+PADF_A      EQU $01
 
-PADB_DOWN       EQU     $7
-PADB_UP         EQU     $6
-PADB_LEFT       EQU     $5
-PADB_RIGHT      EQU     $4
-PADB_START      EQU     $3
-PADB_SELECT     EQU     $2
-PADB_B          EQU     $1
-PADB_A          EQU     $0
+PADB_DOWN   EQU $7
+PADB_UP     EQU $6
+PADB_LEFT   EQU $5
+PADB_RIGHT  EQU $4
+PADB_START  EQU $3
+PADB_SELECT EQU $2
+PADB_B      EQU $1
+PADB_A      EQU $0
 
 ;***************************************************************************
 ;*
@@ -714,24 +725,25 @@ PADB_A          EQU     $0
 ;*
 ;***************************************************************************
 
-SCRN_X     EQU  160 ; Width of screen in pixels
-SCRN_Y     EQU  144 ; Height of screen in pixels
-SCRN_X_B   EQU  20  ; Width of screen in bytes
-SCRN_Y_B   EQU  18  ; Height of screen in bytes
+SCRN_X    EQU 160 ; Width of screen in pixels
+SCRN_Y    EQU 144 ; Height of screen in pixels
+SCRN_X_B  EQU 20  ; Width of screen in bytes
+SCRN_Y_B  EQU 18  ; Height of screen in bytes
 
-SCRN_VX    EQU  256 ; Virtual width of screen in pixels
-SCRN_VY    EQU  256 ; Virtual height of screen in pixels
-SCRN_VX_B  EQU  32  ; Virtual width of screen in bytes
-SCRN_VY_B  EQU  32  ; Virtual height of screen in bytes
+SCRN_VX   EQU 256 ; Virtual width of screen in pixels
+SCRN_VY   EQU 256 ; Virtual height of screen in pixels
+SCRN_VX_B EQU 32  ; Virtual width of screen in bytes
+SCRN_VY_B EQU 32  ; Virtual height of screen in bytes
 
-NINTENDO_LOGO:   MACRO
 ;*
 ;* Nintendo scrolling logo
 ;* (Code won't work on a real GameBoy)
-;* (if next three lines are altered.)
- DB $CE,$ED,$66,$66,$CC,$0D,$00,$0B,$03,$73,$00,$83,$00,$0C,$00,$0D
- DB $00,$08,$11,$1F,$88,$89,$00,$0E,$DC,$CC,$6E,$E6,$DD,$DD,$D9,$99
- DB $BB,$BB,$67,$63,$6E,$0E,$EC,$CC,$DD,$DC,$99,$9F,$BB,$B9,$33,$3E
-        ENDM
+;* (if next lines are altered.)
+NINTENDO_LOGO : MACRO
+    DB  $CE,$ED,$66,$66,$CC,$0D,$00,$0B,$03,$73,$00,$83,$00,$0C,$00,$0D
+    DB  $00,$08,$11,$1F,$88,$89,$00,$0E,$DC,$CC,$6E,$E6,$DD,$DD,$D9,$99
+    DB  $BB,$BB,$67,$63,$6E,$0E,$EC,$CC,$DD,$DC,$99,$9F,$BB,$B9,$33,$3E
+ENDM
 
-        ENDC    ;HARDWARE_INC
+    ENDC ;HARDWARE_INC
+
