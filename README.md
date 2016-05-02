@@ -1,4 +1,4 @@
-GBT PLAYER  v3.0.4
+GBT PLAYER  v3.0.5
 ==================
 
 A music player library and converter kit for Game Boy that can be used with
@@ -113,6 +113,9 @@ path to your lcc binary and double clic the bat.
 
 Changelog
 ---------
+
+* Version 3.0.5 (2016/5/2)
+    - Bit shift optimizations.
 
 * Version 3.0.4 (2016/4/5)
     - Code reorganized and added license notices to source files.
