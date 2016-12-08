@@ -913,6 +913,7 @@ int main(int argc, char * argv[])
     printf("\nPattern order...\n");
 
     out_write_str("const unsigned char * ","");
+    out_write_str("const unsigned char * const ","");
     out_write_str(label_name,label_name);
     out_write_str("_Data[] = {\n","_Data::\n");
     for(i = 0; i < modfile->song_lenght; i ++)
