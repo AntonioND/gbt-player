@@ -119,6 +119,10 @@ const u16 mod_period[6*12] = {
 
 u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
 {
+	int i;
+	u16 nearest_value;
+    u8 nearest_index;
+	
     if(period > 0)
     {
         if(period < mod_period[(6*12)-1])
@@ -134,15 +138,15 @@ u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
         return -1;
     }
 
-    int i;
+    
     for( i = 0; i < 6*12; i++)
         if(period == mod_period[i])
             return i;
 
     //problems here... get nearest value
 
-    u16 nearest_value = 0xFFFF;
-    u8 nearest_index = 0;
+    nearest_value = 0xFFFF;
+    nearest_index = 0;
     for( i = 0; i < 6*12; i++)
     {
         int test_distance = abs( ((int)period) - ((int)mod_period[i]) );
@@ -735,20 +739,20 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index, u8 sampl
 
 void convert_pattern(_pattern_t * pattern, u8 number)
 {
-    out_write_str("const unsigned char ","");
+    int step;
+	u8 data[4]; //packed data
+	u8 samplenum; u16 sampleperiod; u8 effectnum, effectparams; //unpacked data
+	u8 note_index;
+	
+	
+	out_write_str("const unsigned char ","");
     out_write_str(label_name,label_name);
     out_write_dec(number);
     out_write_str("[] = {\n",":\n");
 
-    int step;
     for(step = 0; step < 64; step ++)
     {
-        out_write_str("  ","  DB  ");
-
-        u8 data[4]; //packed data
-        u8 samplenum; u16 sampleperiod; u8 effectnum, effectparams; //unpacked data
-
-        u8 note_index;
+        out_write_str("  ","  DB  ");        
 
         //Channel 1
         memcpy(data,pattern->info[step][0],4);
@@ -809,6 +813,10 @@ void print_usage(void)
 
 int main(int argc, char * argv[])
 {
+	int i;
+    mod_file_t * modfile;
+	u8 num_patterns;
+
     printf("     +-------------------------------------------+\n");
     printf("     |                                           |\n");
     printf("     |     mod2gbt v2.0 (part of GBT Player)     |\n");
@@ -861,8 +869,7 @@ int main(int argc, char * argv[])
         }
     }
 
-    int i;
-    mod_file_t * modfile = load_file(argv[1]);
+    modfile = load_file(argv[1]);
     if(modfile == NULL) return -2;
 
     printf("\n%s loaded!\n",argv[1]);
@@ -886,7 +893,7 @@ int main(int argc, char * argv[])
 
     printf("\n");
 
-    u8 num_patterns = 0;
+    num_patterns = 0;
     for(i = 0; i < 128; i++) if(modfile->pattern_table[i] > num_patterns)
             num_patterns = modfile->pattern_table[i];
     num_patterns ++;
@@ -912,7 +919,7 @@ int main(int argc, char * argv[])
 
     printf("\nPattern order...\n");
 
-    out_write_str("const unsigned char * ","");
+    out_write_str("const unsigned char * const ","");
     out_write_str(label_name,label_name);
     out_write_str("_Data[] = {\n","_Data::\n");
     for(i = 0; i < modfile->song_lenght; i ++)
