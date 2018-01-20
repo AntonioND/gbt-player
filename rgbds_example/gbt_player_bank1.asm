@@ -1,12 +1,8 @@
 ;###############################################################################
-;#                                                                             #
-;#                                                                             #
-;#                              GBT PLAYER  3.0.5                              #
-;#                                                                             #
-;#                                             Contact: antonio_nd@outlook.com #
-;###############################################################################
-
-; Copyright (c) 2009-2016, Antonio Niño Díaz (AntonioND)
+;
+; GBT Player v3.0.6
+;
+; Copyright (c) 2009-2018, Antonio Niño Díaz <antonio_nd@outlook.com>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -29,7 +25,7 @@
 ; CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 ; OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+;
 ;###############################################################################
 
     INCLUDE "hardware.inc"

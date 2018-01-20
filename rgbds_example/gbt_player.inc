@@ -1,12 +1,8 @@
 ;###############################################################################
-;#                                                                             #
-;#                                                                             #
-;#                              GBT PLAYER  3.0.5                              #
-;#                                                                             #
-;#                                             Contact: antonio_nd@outlook.com #
-;###############################################################################
-
-; Copyright (c) 2009-2016, Antonio Niño Díaz (AntonioND)
+;
+; GBT Player v3.0.6
+;
+; Copyright (c) 2009-2018, Antonio Niño Díaz <antonio_nd@outlook.com>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -29,7 +25,7 @@
 ; CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 ; OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+;
 ;###############################################################################
 
     IF !DEF(GBT_PLAYER_INC)
@@ -49,7 +45,7 @@ GBT_PLAYER_INC SET 1
     GLOBAL  gbt_loop ; Enables/disables looping at the end of the song.
                      ; a = 0 to stop at the end, anything else to loop
 
-    GLOBAL  gbt_stop   ; Stops the song.
+    GLOBAL  gbt_stop ; Stops the song.
 
     GLOBAL  gbt_enable_channels ; Enables given channels.
                                 ; a = channel flags ORed:
@@ -58,18 +54,19 @@ GBT_PLAYER_INC SET 1
                                 ;         channel 3 = 4
                                 ;         channel 4 = 8
 
-    GLOBAL  gbt_update  ; Updates the player, must be called each VBL.
-                        ; THIS WILL CHANGE ROM BANK!!!
+    GLOBAL  gbt_update ; Updates the player, must be called each VBL.
+                       ; Note: This will change the active ROM bank!
 
 ; - If the following value is uncomented, the total of banks allowed is 512
-; (or more), but it's a bit slower. MBC5 ONLY, DOESN'T WORK WITH OTHERS!!!
-; YOU MUST USE THE -512-banks OPTION WHEN CONVERTING A SONG WITH mod2gbt!!!
+;   (or more), but it's a bit slower. MBC5 ONLY, DOESN'T WORK WITH OTHERS!!!
+;   YOU MUST USE THE -512-banks OPTION WHEN CONVERTING A SONG WITH mod2gbt!!!
 ; - If it's commented, only 256 banks are allowed, it's a little bit faster
-; and saves a few bytes. MBC1, MBC3 and MBC5 (and others).
+;   and saves a few bytes. MBC1, MBC3 and MBC5 (and others).
+
 ;GBT_USE_MBC5_512BANKS SET 1
 
 ;###############################################################################
 
-    ENDC ;GBT_PLAYER_INC
+    ENDC ; GBT_PLAYER_INC
 
 ;###############################################################################

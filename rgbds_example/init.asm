@@ -8,10 +8,18 @@
     GLOBAL  song_data
 
 ;-------------------------------------------------------------------------------
-;-                                CARTRIDGE HEADER                             -
+;-                                Cartridge header                             -
 ;-------------------------------------------------------------------------------
 
-    SECTION "Cartridge Header",ROM0[$0100]
+    SECTION "VBL interrupt vector", ROM0[$0040]
+
+    reti
+
+;-------------------------------------------------------------------------------
+;-                                Cartridge header                             -
+;-------------------------------------------------------------------------------
+
+    SECTION "Cartridge header", ROM0[$0100]
 
     nop
     jp      StartPoint
@@ -34,10 +42,10 @@
     DW  0   ;Checksum
 
 ;-------------------------------------------------------------------------------
-;-                             INITIALIZE THE GAMEBOY                          -
+;-                             Initialize the Game Boy                         -
 ;-------------------------------------------------------------------------------
 
-    SECTION "Program Start",ROM0[$0150]
+    SECTION "Program Start", ROM0[$0150]
 
 StartPoint:
 
@@ -48,17 +56,19 @@ StartPoint:
     ld      a,$01
     ld      [rIE],a ; Enable VBL interrupt
 
+    ei
+
     ld      de,song_data
     ld      bc,BANK(song_data)
     ld      a,$05
     call    gbt_play ; Play song
 
 .loop:
+
     halt
-    xor     a,a
-    ld      [rIF],a
 
     call    gbt_update ; Update player
+
     jr      .loop
 
 ;-------------------------------------------------------------------------------
