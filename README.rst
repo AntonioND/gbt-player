@@ -14,8 +14,7 @@ Email: antonio_nd@outlook.com
 
 Web:
 
-- http://antoniond_blog.drunkencoders.com/
-- http://antoniond.drunkencoders.com/
+- www.skylyrac.net/
 
 Latest version:
 
@@ -110,9 +109,9 @@ the same effect can be obtained with ``as-gbz80``. If it can be done, open an
 issue and I may update ``GBDK`` version again. For now, this old legacy version
 is mostly unmaintained.
 
-Reading related to bank switching:
+Article I wrote related to bank switching:
 
-http://antoniond_blog.drunkencoders.com/?p=392
+www.skylyrac.net/gbt-player-usage.html
 
 To compile the ``GBDK`` example: Open the bat file, change it to set the correct
 path to your ``lcc`` binary and double clic the bat.
