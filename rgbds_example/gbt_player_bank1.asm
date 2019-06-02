@@ -1306,7 +1306,7 @@ gbt_channel_4_set_effect: ; a = effect, de = pointer to data
     DW  gbt_ch1234_nop
 
 .gbt_ch4_pan:
-    and     a,$44
+    and     a,$88
     ld      [gbt_pan+3],a
     ld      a,1
     ret ; ret 1

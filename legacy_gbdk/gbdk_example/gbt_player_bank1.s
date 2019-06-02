@@ -1325,7 +1325,7 @@ gbt_ch4_jump_table$:
 	.DW	gbt_ch1234_nop
 
 gbt_ch4_pan$:
-	and	a,#0x44
+	and	a,#0x88
 	ld	(gbt_pan+3),a
 	ld	a,#1
 	ret ; ret 1
