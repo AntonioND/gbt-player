@@ -1,6 +1,6 @@
 ;###############################################################################
 ;
-; GBT Player v3.0.6
+; GBT Player v3.0.7
 ;
 ; Copyright (c) 2009-2018, Antonio Niño Díaz <antonio_nd@outlook.com>
 ; All rights reserved.

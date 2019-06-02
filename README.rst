@@ -1,4 +1,4 @@
-GBT PLAYER v3.0.6
+GBT PLAYER v3.0.7
 =================
 
 Music player library and converter kit for Game Boy that can be used with `RGBDS
@@ -118,6 +118,10 @@ path to your ``lcc`` binary and double clic the bat.
 
 Changelog
 ---------
+
+- Version 3.0.7 (2019/6/3)
+
+  - Fix panning in channel 4.
 
 - Version 3.0.6 (2018/1/20)
 
