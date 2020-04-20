@@ -1,7 +1,7 @@
 /*
- * GBT Player v2.1.2
+ * GBT Player v2.1.3
  *
- * Copyright (c) 2009-2018, Antonio Niño Díaz <antonio_nd@outlook.com>
+ * Copyright (c) 2009-2018, Antonio NiÃ±o DÃ­az <antonio_nd@outlook.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

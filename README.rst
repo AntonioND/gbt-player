@@ -1,4 +1,4 @@
-GBT PLAYER v3.0.7
+GBT PLAYER v3.0.8
 =================
 
 Music player library and converter kit for Game Boy that can be used with `RGBDS
@@ -119,6 +119,11 @@ path to your ``lcc`` binary and double clic the bat.
 Changelog
 ---------
 
+- Version 3.0.8 and 2.1.3 (2020/4/21)
+
+  - Fix effect ``Dnn`` in the last pattern of a song (Nolan Baker). Now it jumps
+    to pattern 0 instead of crashing.
+
 - Version 3.0.7 (2019/6/3)
 
   - Fix panning in channel 4.
@@ -128,6 +133,7 @@ Changelog
   - Code cleanup.
   - Fix example code.
   - Increase version of ``mod2gbt`` to v3.1.
+  - Some C fixes (Zalo)
 
 - Version 2.1.2 (2018/1/20)
 
