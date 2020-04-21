@@ -125,6 +125,7 @@ Changelog
 
   - Fix effect ``Dnn`` in the last pattern of a song (Nolan Baker). Now it jumps
     to pattern 0 instead of crashing.
+  - Relicense under the MIT license (rather than BSD-2-Clause).
 
 - Version 3.0.7 (2019/6/3)
 
