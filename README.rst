@@ -2,7 +2,7 @@ GBT PLAYER v3.0.8
 =================
 
 Music player library and converter kit for Game Boy that can be used with `RGBDS
-<https://github.com/bentley/rgbds>`__.
+<https://github.com/bentley/rgbds>`__ (and, with limitations, with GBDK).
 
 Licensed under the MIT license.
 
@@ -53,11 +53,13 @@ Compile ``mod2gbt``. In Windows you can use a command line like:
 
 ``gcc -o mod2gbt.exe mod2gbt``
 
-A bash script for Linux has been included in case you are feeling lazy.
+A Makefile for Linux has been included in case you are feeling lazy. Just do:
+
+``make``
 
 Put ``rgbasm``, ``rgbfix`` and ``rgblink`` in the ``gbt-player`` folder and
-double click the bat/sh file in the ``rbgds_example`` folder. A compiled GB
-binary is included.
+run the bat/sh file in the ``rbgds_example`` folder. A compiled GB binary is
+included.
 
 Notes
 -----
@@ -109,7 +111,7 @@ the same effect can be obtained with ``as-gbz80``. If it can be done, open an
 issue and I may update ``GBDK`` version again. For now, this old legacy version
 is mostly unmaintained.
 
-Article I wrote related to bank switching:
+This is an article I wrote related to bank switching:
 
 www.skylyrac.net/gbt-player-usage.html
 
