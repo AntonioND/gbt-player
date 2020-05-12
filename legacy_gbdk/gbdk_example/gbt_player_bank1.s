@@ -375,8 +375,8 @@ gbt_ch1_jump_table$:
 gbt_ch1_pan$:
 	and	a,#0x11
 	ld	(gbt_pan+0),a
-	ld	a,#1
-	ret ; ret 1
+	xor	a,a
+	ret ; ret 0 do not update registers, only NR51 at end.
 
 gbt_ch1_arpeggio$:
 	ld	b,a ; b = params
@@ -708,8 +708,8 @@ gbt_ch2_jump_table$:
 gbt_ch2_pan$:
 	and	a,#0x22
 	ld	(gbt_pan+1),a
-	ld	a,#1
-	ret ; ret 1
+	xor	a,a ; ret 0
+	ret ; Should not update registers, only NR51 at end.
 
 gbt_ch2_arpeggio$:
 	ld	b,a ; b = params
@@ -1068,8 +1068,8 @@ gbt_ch3_jump_table$:
 gbt_ch3_pan$:
 	and	a,#0x44
 	ld	(gbt_pan+2),a
-	ld	a,#1
-	ret ; ret 1
+	xor	a,a ; ret 0
+	ret ; do not update registers, only NR51 at end.
 
 gbt_ch3_arpeggio$:
 	ld	b,a ; b = params
@@ -1307,8 +1307,8 @@ gbt_ch4_jump_table$:
 gbt_ch4_pan$:
 	and	a,#0x88
 	ld	(gbt_pan+3),a
-	ld	a,#1
-	ret ; ret 1
+	xor	a,a ; ret 0
+	ret ; do not update registers, only NR51 at end.
 
 gbt_ch4_cut_note$:
 	ld	(gbt_cut_note_tick+3),a
@@ -1341,7 +1341,7 @@ gbt_ch1234_jump_position:
 	; Check to see if jump puts us past end of song
 	ld	a,(hl)
 	call	gbt_get_pattern_ptr
-	ld	hl,gbt_current_step_data_ptr
+	ld	hl,#gbt_current_step_data_ptr
 	ld	a,(hl+)
 	ld	b,a
 	ld	a,(hl)

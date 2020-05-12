@@ -101,7 +101,7 @@ gbt_update_pattern_pointers::
 
 ;-------------------------------------------------------------------------------
 
-gbt_get_pattern_ptr:: ; a = pattern number
+gbt_get_pattern_ptr: ; a = pattern number
 
 	; loads a pointer to pattern a into gbt_current_step_data_ptr
 
