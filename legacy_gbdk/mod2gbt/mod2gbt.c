@@ -11,6 +11,7 @@
 #include <string.h>
 
 #define DEFAULT_ROM_BANK (2)
+#define BANK_NUM_UNBANKED 0
 
 unsigned int current_output_bank;
 
@@ -863,7 +864,7 @@ void convert_pattern(_pattern_t *pattern, u8 number)
 void print_usage(void)
 {
     printf("Usage: mod2gbt modfile.mod label_name [N]\n");
-    printf("       N: Set output to ROM bank N (defaults to %d).",
+    printf("       N: Set output to ROM bank N (defaults to %d, use 0 for unbanked)",
            DEFAULT_ROM_BANK);
     printf("\n\n");
 }
@@ -898,7 +899,11 @@ int main(int argc, char *argv[])
         }
         else
         {
-            printf("Output to bank: %d\n", current_output_bank);
+            if (current_output_bank == BANK_NUM_UNBANKED) {
+                printf("Bank set to 0, so output will be unbanked\n");
+            } else {
+                printf("Output to bank: %d\n", current_output_bank);
+            }
         }
     }
 
@@ -940,9 +945,11 @@ int main(int argc, char *argv[])
 
     out_write_str("\n// File created by mod2gbt\n\n");
 
-    out_write_str("#pragma bank=");
-    out_write_dec(current_output_bank);
-    out_write_str("\n\n");
+    if (current_output_bank != BANK_NUM_UNBANKED) {
+        out_write_str("#pragma bank=");
+        out_write_dec(current_output_bank);
+        out_write_str("\n\n");
+    }
 
     printf("\nConverting patterns...\n");
     for (i = 0; i < num_patterns; i++)
