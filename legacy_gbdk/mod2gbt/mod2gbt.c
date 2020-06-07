@@ -960,7 +960,7 @@ int main(int argc, char *argv[])
 
     printf("\n\nPattern order...\n");
 
-    out_write_str("const unsigned char * const");
+    out_write_str("const unsigned char * const ");
     out_write_str(label_name);
     out_write_str("_Data[] = {\n");
 
