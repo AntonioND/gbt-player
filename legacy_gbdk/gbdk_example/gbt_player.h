@@ -16,6 +16,7 @@
 void gbt_play(void *data, UINT8 bank, UINT8 speed);
 
 // Pauses or unpauses music.
+// Parameter: 1 = un-pause/resume, 0 = pause
 void gbt_pause(UINT8 pause);
 
 // Stops music and turns off sound system. Called automatically when the last
