@@ -266,7 +266,7 @@ _gbt_play::
 ;-------------------------------------------------------------------------------
 
 _gbt_pause::
-	lda	hl,2(sp) ; (Parameter: 1 = un-pause/resume, 0 = pause)
+	lda	hl,2(sp)
 	ld	a,(hl)
 	ld	(gbt_playing),a
 	or	a
