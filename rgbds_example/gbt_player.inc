@@ -20,7 +20,7 @@ GBT_PLAYER_INC SET 1
                      ; THIS WILL CHANGE ROM BANK!!!
 
     GLOBAL  gbt_pause ; Pauses or unpauses the song.
-                      ; a = 0 to unpause, anything else to pause.
+                      ; a = 0 to pause, anything else to unpause.
 
     GLOBAL  gbt_loop ; Enables/disables looping at the end of the song.
                      ; a = 0 to stop at the end, anything else to loop

@@ -270,9 +270,13 @@ _gbt_pause::
 	ld	a,(hl)
 	ld	(gbt_playing),a
 	or	a
-	ret	z
-	xor	a
-	ldh	(#.NR50),a
+	jr	nz,.gbt_pause_unmute
+	ldh	(#.NR50),a ; Mute sound: set L & R sound levels to Off
+	ret
+
+.gbt_pause_unmute: ; Unmute sound if playback is resumed
+	ld	a,#0x77
+	ldh	(#.NR50),a ; Restore L & R sound levels to 100%
 	ret
 
 ;-------------------------------------------------------------------------------
