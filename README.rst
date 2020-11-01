@@ -113,7 +113,7 @@ is mostly unmaintained.
 
 This is an article I wrote related to bank switching:
 
-www.skylyrac.net/gbt-player-usage.html
+http://www.skylyrac.net/2015-04-08-gbt-player-usage.html
 
 To compile the ``GBDK`` example: Open the bat file, change it to set the correct
 path to your ``lcc`` binary and double clic the bat.
