@@ -131,7 +131,10 @@ ENDC
 
 gbt_get_pattern_ptr_banked:: ; a = pattern number
 
-	call    gbt_get_pattern_ptr
+    push    de
+    call    gbt_get_pattern_ptr
+    pop     de
+
     ld      hl,gbt_current_step_data_ptr
     ld      a,[hl+]
     ld      b,a
@@ -149,7 +152,7 @@ ENDC
     ld      a,$01
     ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
 
-	ret
+    ret
 
 ;-------------------------------------------------------------------------------
 
