@@ -946,7 +946,7 @@ int main(int argc, char *argv[])
     out_write_str("\n// File created by mod2gbt\n\n");
 
     if (current_output_bank != BANK_NUM_UNBANKED) {
-        out_write_str("#pragma bank=");
+        out_write_str("#pragma bank ");
         out_write_dec(current_output_bank);
         out_write_str("\n\n");
     }
@@ -959,6 +959,12 @@ int main(int argc, char *argv[])
     }
 
     printf("\n\nPattern order...\n");
+
+    out_write_str("const void __at(");
+    out_write_dec(current_output_bank);
+    out_write_str(") __bank_");
+    out_write_str(label_name);
+    out_write_str("_Data;\n");
 
     out_write_str("const unsigned char * const ");
     out_write_str(label_name);
