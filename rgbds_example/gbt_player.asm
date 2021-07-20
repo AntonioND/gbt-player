@@ -129,6 +129,33 @@ ENDC
 
 ;-------------------------------------------------------------------------------
 
+gbt_get_pattern_ptr_banked:: ; a = pattern number
+
+    push    de
+    call    gbt_get_pattern_ptr
+    pop     de
+
+    ld      hl,gbt_current_step_data_ptr
+    ld      a,[hl+]
+    ld      b,a
+    ld      a,[hl]
+    or      a,b
+    jr      nz,.dont_loop
+    xor     a,a
+    ld      [gbt_current_pattern], a
+.dont_loop:
+
+IF DEF(GBT_USE_MBC5_512BANKS)
+    xor     a,a
+    ld      [$3000],a
+ENDC
+    ld      a,$01
+    ld      [$2000],a ; MBC1, MBC3, MBC5 - Set bank 1
+
+    ret
+
+;-------------------------------------------------------------------------------
+
 gbt_play:: ; de = data, bc = bank, a = speed
 
     ld      hl,gbt_pattern_array_ptr
