@@ -4,7 +4,7 @@
 ;
 ; SPDX-License-Identifier: MIT
 ;
-; Copyright (c) 2009-2020, Antonio Niño Díaz <antonio_nd@outlook.com>
+; Copyright (c) 2009-2021, Antonio Niño Díaz <antonio_nd@outlook.com>
 ;
 ;###############################################################################
 
