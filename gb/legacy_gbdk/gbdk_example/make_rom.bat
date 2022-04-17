@@ -1,4 +1,4 @@
-..\mod2gbt\mod2gbt template.mod song 2
+..\..\mod2gbt\mod2gbt template.mod song 2
 
 ..\..\bin\lcc -Wa-l -Wl-m -Wl-j -DUSE_SFR_FOR_REG -c -o main.o main.c
 ..\..\bin\lcc -Wa-l -Wl-m -Wl-j -DUSE_SFR_FOR_REG -c -o output.o output.c

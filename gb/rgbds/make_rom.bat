@@ -1,4 +1,4 @@
-..\mod2gbt\mod2gbt template.mod song
+..\..\mod2gbt\mod2gbt template.mod song
 
 ..\rgbasm -oinit.o init.asm
 ..\rgbasm -ogbt_player.o gbt_player.asm
