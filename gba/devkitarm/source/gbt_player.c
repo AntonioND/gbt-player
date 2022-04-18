@@ -132,18 +132,21 @@ void gbt_pause(int play)
 {
     gbt_playing = play;
 
+    uint16_t mask =
+        SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT;
+
     if (play)
     {
         // Unmute sound if playback is resumed
-        // Restore L & R sound levels to 100%
-        REG_SOUNDCNT_L |= SOUNDCNT_L_PSG_VOL_RIGHT_SET(7) |
-                          SOUNDCNT_L_PSG_VOL_LEFT_SET(7);
+        uint16_t new_pan = gbt_pan[0] | gbt_pan[1] | gbt_pan[2] | gbt_pan[3];
+        REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
     }
     else
     {
-        // Mute sound: set L & R sound levels to Off
-        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_VOL_RIGHT_SET(7) |
-                            SOUNDCNT_L_PSG_VOL_LEFT_SET(7));
+        REG_SOUNDCNT_L &= ~mask;
     }
 }
 

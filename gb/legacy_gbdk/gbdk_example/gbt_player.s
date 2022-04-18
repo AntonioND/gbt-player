@@ -307,12 +307,25 @@ _gbt_pause::
 	ld	(gbt_playing),a
 	or	a
 	jr	nz,.gbt_pause_unmute
-	ldh	(#.NR50),a ; Mute sound: set L & R sound levels to Off
+
+	; Silence all channels
+	xor	a
+	ldh	(#.NR51),a
+
 	ret
 
 .gbt_pause_unmute: ; Unmute sound if playback is resumed
-	ld	a,#0x77
-	ldh	(#.NR50),a ; Restore L & R sound levels to 100%
+
+    ; Restore panning status
+	ld	hl,#gbt_pan
+	ld	a,(hl+)
+	or	a,(hl)
+	inc	hl
+	or	a,(hl)
+	inc hl
+	or	a,(hl)
+	ld	(#.NR51),a
+
 	ret
 
 ;-------------------------------------------------------------------------------
