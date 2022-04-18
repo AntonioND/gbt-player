@@ -11,45 +11,47 @@
 
 typedef int (*effect_handler)(uint32_t args);
 
-uint8_t gbt_playing;
+static uint8_t gbt_playing;
 
 // pointer to the pattern pointer array
-uint8_t * const *gbt_pattern_array_ptr;
+static uint8_t * const *gbt_pattern_array_ptr;
 
-uint8_t gbt_speed;
+static uint8_t gbt_speed;
 
 // Up to 12 bytes per step are copied here to be handled
-uint8_t gbt_temp_play_data[12];
+static uint8_t gbt_temp_play_data[12];
 
-uint8_t gbt_loop_enabled;
-uint16_t gbt_ticks_elapsed;
-uint16_t gbt_current_step;
-uint16_t gbt_current_pattern;
-const uint8_t *gbt_current_step_data_ptr; // pointer to next step data
+static uint8_t gbt_loop_enabled;
+static uint16_t gbt_ticks_elapsed;
+static uint16_t gbt_current_step;
+static uint16_t gbt_current_pattern;
+static const uint8_t *gbt_current_step_data_ptr; // pointer to next step data
 
-uint8_t gbt_channels_enabled;
+static uint8_t gbt_channels_enabled;
 
-uint16_t gbt_pan[4]; // Ch 1-4
-uint16_t gbt_vol[4]; // Ch 1-4
-uint16_t gbt_instr[4]; // Ch 1-4
-uint16_t gbt_freq[3]; // Ch 1-3
+static uint16_t gbt_pan[4]; // Ch 1-4
+static uint16_t gbt_vol[4]; // Ch 1-4
+static uint16_t gbt_instr[4]; // Ch 1-4
+static uint16_t gbt_freq[3]; // Ch 1-3
 
-uint8_t gbt_channel3_loaded_instrument; // current loaded instrument (0xFF if none)
+// Currently loaded instrument (0xFF if none)
+static uint8_t gbt_channel3_loaded_instrument;
 
 // Arpeggio -> Ch 1-3
-uint8_t gbt_arpeggio_freq_index[3][3]; // {base index, base index+x, base index+y}
-uint8_t gbt_arpeggio_enabled[3]; // if 0, disabled
-uint8_t gbt_arpeggio_tick[3];
+// {base index, base index+x, base index+y}
+static uint8_t gbt_arpeggio_freq_index[3][3];
+static uint8_t gbt_arpeggio_enabled[3]; // if 0, disabled
+static uint8_t gbt_arpeggio_tick[3];
 
 // Cut note
-uint8_t gbt_cut_note_tick[4]; // If tick == gbt_cut_note_tick, stop note.
+static uint8_t gbt_cut_note_tick[4]; // If tick == gbt_cut_note_tick, stop note.
 
 // Last step of last pattern this is set to 1
-uint8_t gbt_have_to_stop_next_step;
+static uint8_t gbt_have_to_stop_next_step;
 
-uint8_t gbt_update_pattern_pointers; // set to 1 by jump effects
+static uint8_t gbt_update_pattern_pointers; // set to 1 by jump effects
 
-void gbt_get_pattern_ptr(int pattern_number)
+static void gbt_get_pattern_ptr(int pattern_number)
 {
     gbt_current_step_data_ptr = gbt_pattern_array_ptr[pattern_number];
 }
@@ -160,7 +162,7 @@ void gbt_enable_channels(int flags)
     gbt_channels_enabled = flags;
 }
 
-const uint8_t gbt_wave[8][16] = { // 8 sounds
+static const uint8_t gbt_wave[8][16] = { // 8 sounds
     { 0xA5, 0xD7, 0xC9, 0xE1, 0xBC, 0x9A, 0x76, 0x31,
       0x0C, 0xBA, 0xDE, 0x60, 0x1B, 0xCA, 0x03, 0x93 }, // random
     { 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87,
@@ -179,7 +181,7 @@ const uint8_t gbt_wave[8][16] = { // 8 sounds
       0x75, 0x43, 0x21, 0x10, 0x00, 0x11, 0x23, 0x45 }, // sine
 };
 
-const uint8_t gbt_noise[16] = { // 16 sounds
+static const uint8_t gbt_noise[16] = { // 16 sounds
     // 7 bit
     0x5F, 0x5B, 0x4B, 0x2F, 0x3B, 0x58, 0x1F, 0x0F,
     // 15 bit
@@ -187,7 +189,7 @@ const uint8_t gbt_noise[16] = { // 16 sounds
     0x67, 0x63, 0x53
 };
 
-const uint16_t gbt_frequencies[] = {
+static const uint16_t gbt_frequencies[] = {
       44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986,
     1046, 1102, 1155, 1205, 1253, 1297, 1339, 1379, 1417, 1452, 1486, 1517,
     1546, 1575, 1602, 1627, 1650, 1673, 1694, 1714, 1732, 1750, 1767, 1783,
@@ -201,19 +203,19 @@ static uint16_t _gbt_get_freq_from_index(int index)
     return gbt_frequencies[index];
 }
 
-int gbt_ch1234_nop(uint32_t args)
+static int gbt_ch1234_nop(uint32_t args)
 {
     return 0;
 }
 
-int gbt_ch1234_speed(uint32_t args)
+static int gbt_ch1234_speed(uint32_t args)
 {
     gbt_speed = args;
     gbt_ticks_elapsed = 0;
     return 0;
 }
 
-int gbt_ch1234_jump_pattern(uint32_t args)
+static int gbt_ch1234_jump_pattern(uint32_t args)
 {
     gbt_current_pattern = args;
 
@@ -225,7 +227,7 @@ int gbt_ch1234_jump_pattern(uint32_t args)
     return 0;
 }
 
-int gbt_ch1234_jump_position(uint32_t args)
+static int gbt_ch1234_jump_position(uint32_t args)
 {
     gbt_current_step = args;
 
@@ -247,20 +249,20 @@ int gbt_ch1234_jump_position(uint32_t args)
 // --------------------------------- Channel 1 ---------------------------------
 // -----------------------------------------------------------------------------
 
-int gbt_ch1_pan(uint32_t args)
+static int gbt_ch1_pan(uint32_t args)
 {
     gbt_pan[0] = args & 0x11;
 
     return 0; // do not update registers, only NR51 at end.
 }
 
-int gbt_ch1_cut_note(uint32_t args)
+static int gbt_ch1_cut_note(uint32_t args)
 {
     gbt_cut_note_tick[0] = args;
     return 0;
 }
 
-int gbt_ch1_arpeggio(uint32_t args)
+static int gbt_ch1_arpeggio(uint32_t args)
 {
     uint32_t base_index = gbt_arpeggio_freq_index[0][0];
     gbt_arpeggio_freq_index[0][1] = base_index + ((args >> 4) & 0xF);
@@ -272,7 +274,7 @@ int gbt_ch1_arpeggio(uint32_t args)
     return 1;
 }
 
-effect_handler gbt_ch1_jump_table[16] = {
+static effect_handler gbt_ch1_jump_table[16] = {
     gbt_ch1_pan,
     gbt_ch1_arpeggio,
     gbt_ch1_cut_note,
@@ -292,19 +294,19 @@ effect_handler gbt_ch1_jump_table[16] = {
 };
 
 // returns 1 if needed to update registers, 0 if not
-int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
+static int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
 {
     return gbt_ch1_jump_table[effect](data);
 }
 
-void channel1_refresh_registers(void)
+static void channel1_refresh_registers(void)
 {
     REG_SOUND1CNT_L = 0;
     REG_SOUND1CNT_H = ((uint16_t)gbt_vol[0] << 8) | gbt_instr[0];
     REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt_freq[0];
 }
 
-uint8_t *gbt_channel_1_handle(uint8_t *data)
+static uint8_t *gbt_channel_1_handle(uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 0)) == 0)
     {
@@ -391,7 +393,7 @@ uint8_t *gbt_channel_1_handle(uint8_t *data)
 }
 
 // Returns 1 if it needed to update sound registers
-int channel1_update_effects(void)
+static int channel1_update_effects(void)
 {
     // Cut note
     // --------
@@ -451,20 +453,20 @@ int channel1_update_effects(void)
 // --------------------------------- Channel 2 ---------------------------------
 // -----------------------------------------------------------------------------
 
-int gbt_ch2_pan(uint32_t args)
+static int gbt_ch2_pan(uint32_t args)
 {
     gbt_pan[1] = args & 0x22;
 
     return 0; // do not update registers, only NR51 at end.
 }
 
-int gbt_ch2_cut_note(uint32_t args)
+static int gbt_ch2_cut_note(uint32_t args)
 {
     gbt_cut_note_tick[1] = args;
     return 0;
 }
 
-int gbt_ch2_arpeggio(uint32_t args)
+static int gbt_ch2_arpeggio(uint32_t args)
 {
     uint32_t base_index = gbt_arpeggio_freq_index[1][0];
     gbt_arpeggio_freq_index[1][1] = base_index + ((args >> 4) & 0xF);
@@ -476,7 +478,7 @@ int gbt_ch2_arpeggio(uint32_t args)
     return 1;
 }
 
-effect_handler gbt_ch2_jump_table[16] = {
+static effect_handler gbt_ch2_jump_table[16] = {
     gbt_ch2_pan,
     gbt_ch2_arpeggio,
     gbt_ch2_cut_note,
@@ -496,18 +498,18 @@ effect_handler gbt_ch2_jump_table[16] = {
 };
 
 // returns 1 if needed to update registers, 0 if not
-int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
+static int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
 {
     return gbt_ch2_jump_table[effect](data);
 }
 
-void channel2_refresh_registers(void)
+static void channel2_refresh_registers(void)
 {
     REG_SOUND2CNT_L = ((uint16_t)gbt_vol[1] << 8) | gbt_instr[1];
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt_freq[1];
 }
 
-uint8_t *gbt_channel_2_handle(uint8_t *data)
+static uint8_t *gbt_channel_2_handle(uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 1)) == 0)
     {
@@ -594,7 +596,7 @@ uint8_t *gbt_channel_2_handle(uint8_t *data)
 }
 
 // Returns 1 if it needed to update sound registers
-int channel2_update_effects(void)
+static int channel2_update_effects(void)
 {
     // Cut note
     // --------
@@ -654,20 +656,20 @@ int channel2_update_effects(void)
 // --------------------------------- Channel 3 ---------------------------------
 // -----------------------------------------------------------------------------
 
-int gbt_ch3_pan(uint32_t args)
+static int gbt_ch3_pan(uint32_t args)
 {
     gbt_pan[2] = args & 0x44;
 
     return 0; // do not update registers, only NR51 at end.
 }
 
-int gbt_ch3_cut_note(uint32_t args)
+static int gbt_ch3_cut_note(uint32_t args)
 {
     gbt_cut_note_tick[2] = args;
     return 0;
 }
 
-int gbt_ch3_arpeggio(uint32_t args)
+static int gbt_ch3_arpeggio(uint32_t args)
 {
     uint32_t base_index = gbt_arpeggio_freq_index[2][0];
     gbt_arpeggio_freq_index[2][1] = base_index + ((args >> 4) & 0xF);
@@ -679,7 +681,7 @@ int gbt_ch3_arpeggio(uint32_t args)
     return 1;
 }
 
-effect_handler gbt_ch3_jump_table[16] = {
+static effect_handler gbt_ch3_jump_table[16] = {
     gbt_ch3_pan,
     gbt_ch3_arpeggio,
     gbt_ch3_cut_note,
@@ -699,12 +701,12 @@ effect_handler gbt_ch3_jump_table[16] = {
 };
 
 // returns 1 if needed to update registers, 0 if not
-int gbt_channel_3_set_effect(uint32_t effect, uint8_t data)
+static int gbt_channel_3_set_effect(uint32_t effect, uint8_t data)
 {
     return gbt_ch3_jump_table[effect](data);
 }
 
-void channel3_refresh_registers(void)
+static void channel3_refresh_registers(void)
 {
     // Disable channel and set bank 0 as writable
     REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
@@ -729,7 +731,7 @@ void channel3_refresh_registers(void)
     REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt_freq[2];
 }
 
-uint8_t *gbt_channel_3_handle(uint8_t *data)
+static uint8_t *gbt_channel_3_handle(uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 2)) == 0)
     {
@@ -814,7 +816,7 @@ uint8_t *gbt_channel_3_handle(uint8_t *data)
 }
 
 // Returns 1 if it needed to update sound registers
-int channel3_update_effects(void)
+static int channel3_update_effects(void)
 {
     // Cut note
     // --------
@@ -875,19 +877,19 @@ int channel3_update_effects(void)
 // --------------------------------- Channel 4 ---------------------------------
 // -----------------------------------------------------------------------------
 
-int gbt_ch4_pan(uint32_t args)
+static int gbt_ch4_pan(uint32_t args)
 {
     gbt_pan[3] = args & 0x88;
     return 0; // do not update registers, only NR51 at end.
 }
 
-int gbt_ch4_cut_note(uint32_t args)
+static int gbt_ch4_cut_note(uint32_t args)
 {
     gbt_cut_note_tick[3] = args;
     return 0;
 }
 
-effect_handler gbt_ch4_jump_table[16] = {
+static effect_handler gbt_ch4_jump_table[16] = {
     gbt_ch4_pan,
     gbt_ch1234_nop,
     gbt_ch4_cut_note,
@@ -907,18 +909,18 @@ effect_handler gbt_ch4_jump_table[16] = {
 };
 
 // returns 1 if needed to update registers, 0 if not
-int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
+static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 {
     return gbt_ch4_jump_table[effect](data);
 }
 
-void channel4_refresh_registers(void)
+static void channel4_refresh_registers(void)
 {
     REG_SOUND4CNT_L = (uint16_t)gbt_vol[3] << 8;
     REG_SOUND4CNT_H = SOUND2CNT_H_RESTART | gbt_instr[3];
 }
 
-uint8_t *gbt_channel_4_handle(uint8_t *data)
+static uint8_t *gbt_channel_4_handle(uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 3)) == 0)
     {
@@ -999,7 +1001,7 @@ uint8_t *gbt_channel_4_handle(uint8_t *data)
 }
 
 // Returns 1 if it needed to update sound registers
-int channel4_update_effects(void)
+static int channel4_update_effects(void)
 {
     // Cut note
     // --------
@@ -1019,7 +1021,7 @@ int channel4_update_effects(void)
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-void gbt_update_effects_internal(void)
+static void gbt_update_effects_internal(void)
 {
     if (channel1_update_effects())
         channel1_refresh_registers();
@@ -1196,4 +1198,3 @@ void gbt_update(void)
 
     gbt_current_step_data_ptr = src_search;
 }
-
