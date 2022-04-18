@@ -18,9 +18,6 @@ static uint8_t * const *gbt_pattern_array_ptr;
 
 static uint8_t gbt_speed;
 
-// Up to 12 bytes per step are copied here to be handled
-static uint8_t gbt_temp_play_data[12];
-
 static uint8_t gbt_loop_enabled;
 static uint16_t gbt_ticks_elapsed;
 static uint16_t gbt_current_step;
@@ -306,7 +303,7 @@ static void channel1_refresh_registers(void)
     REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt_freq[0];
 }
 
-static uint8_t *gbt_channel_1_handle(uint8_t *data)
+static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 0)) == 0)
     {
@@ -509,7 +506,7 @@ static void channel2_refresh_registers(void)
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt_freq[1];
 }
 
-static uint8_t *gbt_channel_2_handle(uint8_t *data)
+static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 1)) == 0)
     {
@@ -731,7 +728,7 @@ static void channel3_refresh_registers(void)
     REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt_freq[2];
 }
 
-static uint8_t *gbt_channel_3_handle(uint8_t *data)
+static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 2)) == 0)
     {
@@ -920,7 +917,7 @@ static void channel4_refresh_registers(void)
     REG_SOUND4CNT_H = SOUND2CNT_H_RESTART | gbt_instr[3];
 }
 
-static uint8_t *gbt_channel_4_handle(uint8_t *data)
+static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 {
     if ((gbt_channels_enabled & (1 << 3)) == 0)
     {
@@ -1081,33 +1078,6 @@ void gbt_update(void)
         return;
     }
 
-    // Get this step data
-    // ------------------
-
-    const uint8_t *src = gbt_current_step_data_ptr;
-    uint8_t *dst = gbt_temp_play_data;
-
-    for (int i = 0; i < 4; i++) // copy as bytes as needed for this step
-    {
-        uint8_t b = *src++;
-        *dst++ = b;
-
-        if (b & (1 << 7))
-        {
-            b = *src++;
-            *dst++ = b;
-
-            if (b & (1 << 7))
-                *dst++ = *src++;
-        }
-        else if (b & (1 << 6))
-        {
-            *dst++ = *src++;
-        }
-    }
-
-    gbt_current_step_data_ptr = src;
-
     // Increment step/pattern
     // ----------------------
 
@@ -1144,12 +1114,14 @@ void gbt_update(void)
 
     // Update channels
 
-    uint8_t *ptr = gbt_temp_play_data;
+    const uint8_t *ptr = gbt_current_step_data_ptr;
 
     ptr = gbt_channel_1_handle(ptr);
     ptr = gbt_channel_2_handle(ptr);
     ptr = gbt_channel_3_handle(ptr);
     ptr = gbt_channel_4_handle(ptr);
+
+    gbt_current_step_data_ptr = ptr;
 
     // Handle panning
 
