@@ -6,7 +6,12 @@
 
 #include <stdint.h>
 
-#include "gbt_hardware.h" // TODO: Create define to switch to libugba
+#ifdef GBT_USE_LIBUGBA
+# include <ugba/ugba.h>
+#else
+# include "gbt_hardware.h"
+#endif
+
 #include "gbt_player.h"
 
 typedef int (*effect_handler)(uint32_t args);
