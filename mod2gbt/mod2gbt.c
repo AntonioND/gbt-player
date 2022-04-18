@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+int export_to_c = 0;
 int perform_speed_convertion = 1;
 typedef unsigned char u8;
 typedef signed   char s8;
@@ -191,7 +192,10 @@ void out_write_dec(u8 number)
 
 void out_write_hex(u8 number)
 {
-    fprintf(output_file, "%02X", number);
+    if (export_to_c)
+        fprintf(output_file, "0x%02X", number);
+    else
+        fprintf(output_file, "$%02X", number);
 }
 
 void out_close(void)
@@ -458,17 +462,16 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
         }
     }
 
-    out_write_str("$");
     out_write_hex(result[0]);
 
     if (command_len > 1)
     {
-        out_write_str(",$");
+        out_write_str(", ");
         out_write_hex(result[1]);
 
         if (command_len > 2)
         {
-            out_write_str(",$");
+            out_write_str(", ");
             out_write_hex(result[2]);
         }
     }
@@ -561,17 +564,16 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
         }
     }
 
-    out_write_str("$");
     out_write_hex(result[0]);
 
     if (command_len > 1)
     {
-        out_write_str(",$");
+        out_write_str(", ");
         out_write_hex(result[1]);
 
         if (command_len > 2)
         {
-            out_write_str(",$");
+            out_write_str(", ");
             out_write_hex(result[2]);
         }
     }
@@ -674,17 +676,16 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
         }
     }
 
-    out_write_str("$");
     out_write_hex(result[0]);
 
     if (command_len > 1)
     {
-        out_write_str(",$");
+        out_write_str(", ");
         out_write_hex(result[1]);
 
         if (command_len > 2)
         {
-            out_write_str(",$");
+            out_write_str(", ");
             out_write_hex(result[2]);
         }
     }
@@ -777,17 +778,16 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
         }
     }
 
-    out_write_str("$");
     out_write_hex(result[0]);
 
     if (command_len > 1)
     {
-        out_write_str(",$");
+        out_write_str(", ");
         out_write_hex(result[1]);
 
         if (command_len > 2)
         {
-            out_write_str(",$");
+            out_write_str(", ");
             out_write_hex(result[2]);
         }
     }
@@ -795,21 +795,39 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
 
 void convert_pattern(_pattern_t *pattern, u8 number)
 {
-    out_write_str("    SECTION \"");
-    out_write_str(label_name);
-    out_write_str("_");
-    out_write_dec(number);
-    out_write_str("\", ROMX\n");
+    if (export_to_c)
+    {
+        out_write_str("static const uint8_t ");
+        out_write_str(label_name);
+        out_write_str("_");
+        out_write_dec(number);
+        out_write_str("[] = {\n");
+    }
+    else
+    {
+        out_write_str("    SECTION \"");
+        out_write_str(label_name);
+        out_write_str("_");
+        out_write_dec(number);
+        out_write_str("\", ROMX\n");
 
-    out_write_str(label_name);
-    out_write_str("_");
-    out_write_dec(number);
-    out_write_str(":\n");
+        out_write_str(label_name);
+        out_write_str("_");
+        out_write_dec(number);
+        out_write_str(":\n");
+    }
 
     int step;
     for (step = 0; step < 64; step++)
     {
-        out_write_str("    DB  ");
+        if (export_to_c)
+        {
+            out_write_str("    ");
+        }
+        else
+        {
+            out_write_str("    DB  ");
+        }
 
         u8 data[4]; // Packed data
 
@@ -850,10 +868,21 @@ void convert_pattern(_pattern_t *pattern, u8 number)
         convert_channel4(number, step, note_index, samplenum, effectnum,
                          effectparams);
 
-        out_write_str("\n");
+        if (export_to_c)
+            out_write_str(",\n");
+        else
+            out_write_str("\n");
     }
 
-    out_write_str("\n");
+    if (export_to_c)
+    {
+        out_write_str("};\n");
+        out_write_str("\n");
+    }
+    else
+    {
+        out_write_str("\n");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -864,7 +893,8 @@ void convert_pattern(_pattern_t *pattern, u8 number)
 
 void print_usage(void)
 {
-    printf("Usage: mod2gbt modfile.mod song_name [-speed] [-512-banks]\n\n");
+    printf("Usage: mod2gbt modfile.mod song_name [-speed] [-512-banks] [-gba]\n\n");
+    printf("       -gba        Export to GBA files.\n");
     printf("       -speed      Don't convert speed from 50 Hz to 60 Hz.\n");
     printf("       -512-banks  Prepare for a ROM with more than 256 banks.\n");
     printf("\n\n");
@@ -901,6 +931,11 @@ int main(int argc, char *argv[])
         {
             more_than_256_banks = 1;
             printf("Output for a ROM with more than 256 banks.\n\n");
+        }
+        else if (strcmp(argv[i], "-gba") == 0)
+        {
+            export_to_c = 1;
+            printf("Export to GBA files.\n\n");
         }
         else
         {
@@ -943,19 +978,28 @@ int main(int argc, char *argv[])
 
     printf("Number of patterns: %d\n", num_patterns);
 
-    char *filename = malloc(strlen(label_name) + strlen(".asm"));
-    if (filename)
+    const char *extension = export_to_c ? ".c" : ".asm";
+
+    char *filename = malloc(strlen(label_name) + strlen(extension));
+    if (filename == NULL)
     {
-        sprintf(filename, "%s.asm", label_name);
-        out_open(filename);
-        free(filename);
+        printf("Can't allocate memory for file name\n");
+        return -4;
+    }
+
+    sprintf(filename, "%s%s", label_name, extension);
+    out_open(filename);
+    free(filename);
+
+    if (export_to_c)
+    {
+        out_write_str("\n// File created by mod2gbt\n\n"
+                      "#include <stddef.h>\n#include <stdint.h>\n\n");
     }
     else
     {
-        out_open("output.asm");
+        out_write_str("\n; File created by mod2gbt\n\n");
     }
-
-    out_write_str("\n; File created by mod2gbt\n\n");
 
     printf("\nConverting patterns...\n");
     for (i = 0; i < num_patterns; i++)
@@ -966,44 +1010,64 @@ int main(int argc, char *argv[])
 
     printf("\n\nPattern order...\n");
 
-    out_write_str("  SECTION \"");
-    out_write_str(label_name);
-    out_write_str("_data\", ROMX\n");
-
-    out_write_str(label_name);
-    out_write_str("_data::\n");
-
-    if (more_than_256_banks)
+    if (export_to_c)
     {
+        out_write_str("const uint8_t *");
+        out_write_str(label_name);
+        out_write_str("_data[] = {\n");
+
         for (i = 0; i < modfile->song_length; i++)
         {
-            out_write_str("    DW  BANK(");
+            out_write_str("    ");
             out_write_str(label_name);
             out_write_str("_");
             out_write_dec(modfile->pattern_table[i]);
-            out_write_str("), ");
-            out_write_str(label_name);
-            out_write_str("_");
-            out_write_dec(modfile->pattern_table[i]);
-            out_write_str("\n");
+            out_write_str(",\n");
         }
-        out_write_str("    DW  $0000, $0000\n\n");
+        out_write_str("    NULL\n");
+        out_write_str("};");
     }
     else
     {
-        for (i = 0; i < modfile->song_length; i++)
+        out_write_str("  SECTION \"");
+        out_write_str(label_name);
+        out_write_str("_data\", ROMX\n");
+
+        out_write_str(label_name);
+        out_write_str("_data::\n");
+
+        if (more_than_256_banks)
         {
-            out_write_str("    DB  BANK(");
-            out_write_str(label_name);
-            out_write_str("_");
-            out_write_dec(modfile->pattern_table[i]);
-            out_write_str(")\n    DW  ");
-            out_write_str(label_name);
-            out_write_str("_");
-            out_write_dec(modfile->pattern_table[i]);
-            out_write_str("\n");
+            for (i = 0; i < modfile->song_length; i++)
+            {
+                out_write_str("    DW  BANK(");
+                out_write_str(label_name);
+                out_write_str("_");
+                out_write_dec(modfile->pattern_table[i]);
+                out_write_str("), ");
+                out_write_str(label_name);
+                out_write_str("_");
+                out_write_dec(modfile->pattern_table[i]);
+                out_write_str("\n");
+            }
+            out_write_str("    DW  $0000, $0000\n\n");
         }
-        out_write_str("    DB  $00\n    DW  $0000\n\n");
+        else
+        {
+            for (i = 0; i < modfile->song_length; i++)
+            {
+                out_write_str("    DB  BANK(");
+                out_write_str(label_name);
+                out_write_str("_");
+                out_write_dec(modfile->pattern_table[i]);
+                out_write_str(")\n    DW  ");
+                out_write_str(label_name);
+                out_write_str("_");
+                out_write_dec(modfile->pattern_table[i]);
+                out_write_str("\n");
+            }
+            out_write_str("    DB  $00\n    DW  $0000\n\n");
+        }
     }
 
     out_close();
