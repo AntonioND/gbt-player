@@ -257,7 +257,6 @@ static int gbt_ch1234_jump_position(uint32_t args)
 static int gbt_ch1_pan(uint32_t args)
 {
     gbt_pan[0] = args & 0x11;
-
     return 0; // do not update registers, only NR51 at end.
 }
 
@@ -313,7 +312,7 @@ static void channel1_refresh_registers(void)
 
 static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & (1 << 0)) == 0)
+    if ((gbt_channels_enabled & BIT(0)) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -461,7 +460,6 @@ static int channel1_update_effects(void)
 static int gbt_ch2_pan(uint32_t args)
 {
     gbt_pan[1] = args & 0x22;
-
     return 0; // do not update registers, only NR51 at end.
 }
 
@@ -516,7 +514,7 @@ static void channel2_refresh_registers(void)
 
 static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & (1 << 1)) == 0)
+    if ((gbt_channels_enabled & BIT(1)) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -664,7 +662,6 @@ static int channel2_update_effects(void)
 static int gbt_ch3_pan(uint32_t args)
 {
     gbt_pan[2] = args & 0x44;
-
     return 0; // do not update registers, only NR51 at end.
 }
 
@@ -738,7 +735,7 @@ static void channel3_refresh_registers(void)
 
 static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & (1 << 2)) == 0)
+    if ((gbt_channels_enabled & BIT(2)) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -927,7 +924,7 @@ static void channel4_refresh_registers(void)
 
 static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & (1 << 3)) == 0)
+    if ((gbt_channels_enabled & BIT(3)) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -1163,14 +1160,14 @@ void gbt_update(void)
     {
         uint8_t b = *src_search++;
 
-        if (b & (1 << 7))
+        if (b & BIT(7))
         {
             b = *src_search++;
 
-            if (b & (1 << 7))
+            if (b & BIT(7))
                 src_search++;
         }
-        else if (b & (1 << 6))
+        else if (b & BIT(6))
         {
             src_search++;
         }
