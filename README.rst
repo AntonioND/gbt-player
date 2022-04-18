@@ -1,12 +1,14 @@
-GBT PLAYER v3.0.8
+GBT PLAYER v3.0.9
 =================
 
-Music player library and converter kit for Game Boy that can be used with `RGBDS
-<https://github.com/bentley/rgbds>`__ (and, with limitations, with GBDK).
+Music player library and converter kit for Game Boy and Game Boy Color that can
+be used with `RGBDS <https://github.com/bentley/rgbds>`__ (and, with
+limitations, with GBDK). It is also available for Game Boy Advance as a C
+library.
 
 Licensed under the MIT license.
 
-Copyright (C) 2009-2020 Antonio Niño Díaz.
+Copyright (C) 2009-2022 Antonio Niño Díaz.
 
 All rights reserved.
 
@@ -23,22 +25,27 @@ Latest version:
 Introduction
 ------------
 
-**GBT Player** is a music creation environment for GB and GBC. It is composed by
-**mod2gbt**, which converts a mod file into a gbt (GameBoy Tracker) file, and
-GBT Player, which will be used to play that song in the GB. It's the same idea
-as the old Lemon player, but greatly improved. Because of this workflow, there
-are a lot of limitations that the GB doesn't impose, but that are needed so that
-the mod file and the result on the GB are similar.
+**GBT Player** is a music creation environment for GB, GBC and GBA. It is formed
+by **mod2gbt**, which converts a mod file into a gbt (GameBoy Tracker) file, and
+GBT Player, which will be used to play that song in the GB, GBC or GBA. It's the
+same idea as the old Lemon player, but greatly improved. Because of this
+workflow, there are a lot of limitations that the GB/GBA doesn't impose, but that
+are needed so that the mod file and the result on the GB/GBA are similar.
 
-``GBT Player`` is writen in 100% assembly. That means that it is fast, it won't
-need a lot of CPU time (around 7%?), and you will have a lot of time for your
-game logic. There is source code for **RGBDS**, the main option for Game Boy
+``GBT Player`` is writen in 100% assembly for GB/GBC and in C for GBA. That
+means that it is fast, it won't need a lot of CPU time (around 7%? in GB, and
+barely noticeable in GBA), and you will have a lot of time for your game logic.
+
+For GB/GBC, there is source code for **RGBDS**, the main option for Game Boy
 development (in my opinion). There is also legacy code for an old version that
 also supported **GBDK**, but it's mostly unmaintained.
 
+For GBA, the code is just in C, and it doesn't depend on any library apart from
+a few standard library headers.
+
 ``mod2gbt`` is writen in C, and should compile anywhere.
 
-GBT Player is open source, and it is licensed under the BSD license. That means
+GBT Player is open source, and it is licensed under the MIT license. That means
 that you can use and modify it but you have to give credit for the original
 work. It would be nice to you tell me if you use it, anyway. :)
 
@@ -57,7 +64,7 @@ A Makefile for Linux has been included in case you are feeling lazy. Just do:
 
 ``make``
 
-Put ``rgbasm``, ``rgbfix`` and ``rgblink`` in the ``gbt-player`` folder and
+Put ``rgbasm``, ``rgbfix`` and ``rgblink`` in the ``gbt-player/gb`` folder and
 run the bat/sh file in the ``rbgds_example`` folder. A compiled GB binary is
 included.
 
@@ -80,11 +87,6 @@ the examples would be too simple for a makefile to be useful.
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 so you should make roms and test them in emulators or real GB often.
 
-When creating **really** big ROMs (more than 4 MiB), the define
-``GBT_USE_MBC5_512BANKS`` in ``gbt_player.inc`` should be uncommented to allow
-allocation of the music data in banks higher than 255. Also, songs must be
-converted adding ``-512-banks`` to the ``mod2gbt`` command line.
-
 If you don't like the speed convertion done by ``mod2gbt`` (from 50 Hz to 60 Hz)
 you can use the ``-speed`` argument for ``mod2gbt``. The speed will be higher
 and it will probably have to be adjusted manually.
@@ -92,6 +94,11 @@ and it will probably have to be adjusted manually.
 The initial speed of the song is set by the start function, and it will run at
 that speed until it finds a change speed command in the song. If the first step
 of your song takes forever, this is the reason.
+
+**For GB/GBC**: When creating **really** big ROMs (more than 4 MiB), the define
+``GBT_USE_MBC5_512BANKS`` in ``gbt_player.inc`` should be uncommented to allow
+allocation of the music data in banks higher than 255. Also, songs must be
+converted adding ``-512-banks`` to the ``mod2gbt`` command line.
 
 GBDK notes
 ----------
@@ -120,6 +127,11 @@ path to your ``lcc`` binary and double clic the bat.
 
 Changelog
 ---------
+
+- Version 3.0.9 (2022/4/18)
+
+  - First version for GBA.
+  - Directory structure reorganized.
 
 - Version 3.0.8 and 2.1.3 (2020/4/21)
 
@@ -235,7 +247,7 @@ License
 -------
 
 ```
-Copyright (c) 2009-2020 Antonio Niño Díaz <antonio_nd@outlook.com>
+Copyright (c) 2009-2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
