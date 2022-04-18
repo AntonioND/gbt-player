@@ -11,43 +11,43 @@
 
 typedef int (*effect_handler)(uint32_t args);
 
-int gbt_playing;
+uint8_t gbt_playing;
 
 // pointer to the pattern pointer array
 uint8_t * const *gbt_pattern_array_ptr;
 
-int gbt_speed;
+uint8_t gbt_speed;
 
 // Up to 12 bytes per step are copied here to be handled
 uint8_t gbt_temp_play_data[12];
 
-int gbt_loop_enabled;
-int gbt_ticks_elapsed;
-int gbt_current_step;
-int gbt_current_pattern;
+uint8_t gbt_loop_enabled;
+uint16_t gbt_ticks_elapsed;
+uint16_t gbt_current_step;
+uint16_t gbt_current_pattern;
 const uint8_t *gbt_current_step_data_ptr; // pointer to next step data
 
-int gbt_channels_enabled;
+uint8_t gbt_channels_enabled;
 
 uint16_t gbt_pan[4]; // Ch 1-4
 uint16_t gbt_vol[4]; // Ch 1-4
 uint16_t gbt_instr[4]; // Ch 1-4
 uint16_t gbt_freq[3]; // Ch 1-3
 
-int gbt_channel3_loaded_instrument; // current loaded instrument (0xFF if none)
+uint8_t gbt_channel3_loaded_instrument; // current loaded instrument (0xFF if none)
 
 // Arpeggio -> Ch 1-3
-int gbt_arpeggio_freq_index[3][3]; // {base index, base index+x, base index+y}
-int gbt_arpeggio_enabled[3]; // if 0, disabled
-int gbt_arpeggio_tick[3];
+uint8_t gbt_arpeggio_freq_index[3][3]; // {base index, base index+x, base index+y}
+uint8_t gbt_arpeggio_enabled[3]; // if 0, disabled
+uint8_t gbt_arpeggio_tick[3];
 
 // Cut note
-int gbt_cut_note_tick[4]; // If tick == gbt_cut_note_tick, stop note.
+uint8_t gbt_cut_note_tick[4]; // If tick == gbt_cut_note_tick, stop note.
 
 // Last step of last pattern this is set to 1
-int gbt_have_to_stop_next_step;
+uint8_t gbt_have_to_stop_next_step;
 
-int gbt_update_pattern_pointers; // set to 1 by jump effects
+uint8_t gbt_update_pattern_pointers; // set to 1 by jump effects
 
 void gbt_get_pattern_ptr(int pattern_number)
 {
