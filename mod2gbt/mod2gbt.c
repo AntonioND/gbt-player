@@ -912,7 +912,7 @@ int main(int argc, char *argv[])
     printf("All rights reserved\n");
     printf("\n");
 
-    if ((argc < 3) || (argc > 5))
+    if (argc < 3)
     {
         print_usage();
         return -1;
