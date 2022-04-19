@@ -269,7 +269,7 @@ static int gbt_ch1234_jump_position(uint32_t args)
 static int gbt_ch1_pan(uint32_t args)
 {
     gbt.pan[0] = args & 0x11;
-    return 0; // do not update registers, only NR51 at end.
+    return 0; // Panning is always updated
 }
 
 static int gbt_ch1_cut_note(uint32_t args)
@@ -430,7 +430,7 @@ static int channel1_update_effects(void)
 static int gbt_ch2_pan(uint32_t args)
 {
     gbt.pan[1] = args & 0x22;
-    return 0; // do not update registers, only NR51 at end.
+    return 0; // Panning is always updated
 }
 
 static int gbt_ch2_cut_note(uint32_t args)
@@ -591,7 +591,7 @@ static int channel2_update_effects(void)
 static int gbt_ch3_pan(uint32_t args)
 {
     gbt.pan[2] = args & 0x44;
-    return 0; // do not update registers, only NR51 at end.
+    return 0; // Panning is always updated
 }
 
 static int gbt_ch3_cut_note(uint32_t args)
@@ -771,7 +771,7 @@ static int channel3_update_effects(void)
 static int gbt_ch4_pan(uint32_t args)
 {
     gbt.pan[3] = args & 0x88;
-    return 0; // do not update registers, only NR51 at end.
+    return 0; // Panning is always updated
 }
 
 static int gbt_ch4_cut_note(uint32_t args)
