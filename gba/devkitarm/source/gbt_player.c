@@ -339,63 +339,44 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 
     uint8_t b = *data++;
 
-    if (b & BIT(7))
+    if (b & BIT(7)) // Has frequency
     {
-        // Has frequency
-
         uint32_t index = b & 0x7F;
         gbt_arpeggio_freq_index[0][0] = index;
         gbt_freq[0] = _gbt_get_freq_from_index(index);
 
         b = *data++;
 
-        if (b & BIT(7))
+        if (b & BIT(7)) // Freq + Instr + Effect
         {
-            // Freq + Instr + Effect
-
             gbt_instr[0] = (b & 0x30) << 2; // Instrument
             gbt_channel_1_set_effect(b & 0xF, *data++);
             channel1_refresh_registers();
         }
-        else
+        else // Freq + Instr + Volume
         {
-            // Freq + Instr + Volume
-
             gbt_instr[0] = (b & 0x30) << 2; // Instrument
             gbt_vol[0] = (b & 0xF) << 12;
             channel1_refresh_registers();
         }
-
-        return data;
     }
-    else if (b & BIT(6))
+    else if (b & BIT(6)) // Set instrument and effect
     {
-        // Set instrument and effect
-
         gbt_instr[0] = (b & 0x30) << 2; // Instrument
-
         gbt_channel_1_set_effect(b & 0xF, *data++);
-
         channel1_refresh_registers();
-
-        return data;
     }
-    else if (b & BIT(5))
+    else if (b & BIT(5)) // Set volume
     {
-        // Just set volume
-
         gbt_vol[0] = (b & 0xF) << 12;
-
         channel1_refresh_registers();
-
-        return data;
     }
     else
     {
         // NOP
-
-        return data;
     }
+
+    return data;
 }
 
 // Returns 1 if it needed to update sound registers
@@ -518,63 +499,45 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 
     uint8_t b = *data++;
 
-    if (b & BIT(7))
+    if (b & BIT(7)) // Has frequency
     {
-        // Has frequency
-
         uint32_t index = b & 0x7F;
         gbt_arpeggio_freq_index[1][0] = index;
         gbt_freq[1] = _gbt_get_freq_from_index(index);
 
         b = *data++;
 
-        if (b & BIT(7))
+        if (b & BIT(7)) // Freq + Instr + Effect
         {
-            // Freq + Instr + Effect
-
             gbt_instr[1] = (b & 0x30) << 2; // Instrument
             gbt_channel_2_set_effect(b & 0xF, *data++);
             channel2_refresh_registers();
         }
-        else
+        else // Freq + Instr + Volume
         {
-            // Freq + Instr + Volume
-
             gbt_instr[1] = (b & 0x30) << 2; // Instrument
             gbt_vol[1] = (b & 0xF) << 12;
             channel2_refresh_registers();
         }
-
-        return data;
     }
-    else if (b & BIT(6))
+    else if (b & BIT(6)) // Set instrument and effect
     {
-        // Set instrument and effect
 
         gbt_instr[1] = (b & 0x30) << 2; // Instrument
-
         gbt_channel_2_set_effect(b & 0xF, *data++);
-
         channel2_refresh_registers();
-
-        return data;
     }
-    else if (b & BIT(5))
+    else if (b & BIT(5)) // Set volume
     {
-        // Just set volume
-
         gbt_vol[1] = (b & 0xF) << 12;
-
         channel2_refresh_registers();
-
-        return data;
     }
     else
     {
         // NOP
-
-        return data;
     }
+
+    return data;
 }
 
 // Returns 1 if it needed to update sound registers
@@ -716,61 +679,44 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 
     uint8_t b = *data++;
 
-    if (b & BIT(7))
+    if (b & BIT(7)) // Has frequency
     {
-        // Has frequency
-
         uint32_t index = b & 0x7F;
         gbt_arpeggio_freq_index[2][0] = index;
         gbt_freq[2] = _gbt_get_freq_from_index(index);
 
         b = *data++;
 
-        if (b & BIT(7))
+        if (b & BIT(7)) // Freq + Instr + Effect
         {
-            // Freq + Instr + Effect
-
             gbt_instr[2] = b & 0x0F; // Instrument
             // Effects 8-15 not available from this mode
             gbt_channel_3_set_effect((b >> 4) & 0x7, *data++);
             channel3_refresh_registers();
         }
-        else
+        else // Freq + Instr + Volume
         {
-            // Freq + Instr + Volume
-
             gbt_instr[2] = b & 0x0F; // Instrument
             gbt_vol[2] = (b & 0x30) << 9;
             channel3_refresh_registers();
         }
-
-        return data;
     }
-    else if (b & BIT(6))
+    else if (b & BIT(6)) // Set effect
     {
-        // Set effect
-
         if (gbt_channel_3_set_effect(b & 0xF, *data++))
             channel3_refresh_registers();
-
-        return data;
     }
-    else if (b & BIT(5))
+    else if (b & BIT(5)) // Set volume
     {
-        // Just set volume
-
         gbt_vol[2] = (b & 0x3) << 13;
-
         channel3_refresh_registers();
-
-        return data;
     }
     else
     {
         // NOP
-
-        return data;
     }
+
+    return data;
 }
 
 // Returns 1 if it needed to update sound registers
@@ -882,57 +828,40 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 
     uint8_t b = *data++;
 
-    if (b & BIT(7))
+    if (b & BIT(7)) // Has instrument
     {
-        // Has instrument
-
         uint32_t index = b & 0x1F;
         gbt_instr[3] = gbt_noise[index];
 
         b = *data++;
 
-        if (b & BIT(7))
+        if (b & BIT(7)) // Instr + Effect
         {
-            // Instr + Effect
-
             gbt_channel_4_set_effect(b & 0xF, *data++);
             channel4_refresh_registers();
         }
-        else
+        else // Instr + Volume
         {
-            // Instr + Volume
-
             gbt_vol[3] = (b & 0xF) << 12;
             channel4_refresh_registers();
         }
-
-        return data;
     }
-    else if (b & BIT(6))
+    else if (b & BIT(6)) // Set effect
     {
-        // Set effect
-
         if (gbt_channel_4_set_effect(b & 0xF, *data++))
             channel4_refresh_registers();
-
-        return data;
     }
-    else if (b & BIT(5))
+    else if (b & BIT(5)) // Set volume
     {
-        // Just set volume
-
         gbt_vol[3] = (b & 0xF) << 12;
-
         channel4_refresh_registers();
-
-        return data;
     }
     else
     {
         // NOP
-
-        return data;
     }
+
+    return data;
 }
 
 // Returns 1 if it needed to update sound registers
