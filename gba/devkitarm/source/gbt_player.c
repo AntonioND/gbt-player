@@ -76,7 +76,7 @@ void gbt_play(const void *song, int speed)
 
     gbt_channel3_loaded_instrument = 0xFF;
 
-    gbt_channels_enabled = 0xF;
+    gbt_channels_enabled = GBT_ENABLE_CH_ALL;
 
     gbt_pan[0] = 0x11; // L and R
     gbt_pan[1] = 0x22;
@@ -314,7 +314,7 @@ static void channel1_refresh_registers(void)
 
 static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & BIT(0)) == 0)
+    if ((gbt_channels_enabled & GBT_ENABLE_CH1) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -493,7 +493,7 @@ static void channel2_refresh_registers(void)
 
 static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & BIT(1)) == 0)
+    if ((gbt_channels_enabled & GBT_ENABLE_CH2) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -691,7 +691,7 @@ static void channel3_refresh_registers(void)
 
 static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & BIT(2)) == 0)
+    if ((gbt_channels_enabled & GBT_ENABLE_CH3) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
@@ -857,7 +857,7 @@ static void channel4_refresh_registers(void)
 
 static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 {
-    if ((gbt_channels_enabled & BIT(3)) == 0)
+    if ((gbt_channels_enabled & GBT_ENABLE_CH4) == 0)
     {
         // Channel is disabled. Increment pointer as needed
 
