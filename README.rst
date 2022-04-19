@@ -64,7 +64,7 @@ A Makefile for Linux has been included in case you are feeling lazy. Just do:
 
 ``make``
 
-Put ``rgbasm``, ``rgbfix`` and ``rgblink`` in the ``gbt-player/gb`` folder and
+Put ``rgbasm``, ``rgbfix`` and ``rgblink`` in the ``gb/rgbds`` folder and
 run the bat/sh file in the ``rbgds_example`` folder. A compiled GB binary is
 included.
 
