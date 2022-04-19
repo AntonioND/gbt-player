@@ -1074,37 +1074,35 @@ void gbt_update(void)
     REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
 
     // Check if any effect has changed the pattern or step
-    if (gbt_update_pattern_pointers == 0)
-        return;
-
-    // if any effect has changed the pattern or step, update
-
-    gbt_update_pattern_pointers = 0; // clear flag
-
-    gbt_have_to_stop_next_step = 0; // clear stop flag
-
-    gbt_get_pattern_ptr(gbt_current_pattern); // set ptr to start of the pattern
-
-    // Search the step
-
-    const uint8_t *src_search = gbt_current_step_data_ptr;
-
-    for (int i = 0; i < 4 * gbt_current_step; i++)
+    if (gbt_update_pattern_pointers)
     {
-        uint8_t b = *src_search++;
+        gbt_update_pattern_pointers = 0; // clear flag
 
-        if (b & BIT(7))
+        gbt_have_to_stop_next_step = 0; // clear stop flag
+
+        gbt_get_pattern_ptr(gbt_current_pattern); // set ptr to start of pattern
+
+        // Search the step
+
+        const uint8_t *src_search = gbt_current_step_data_ptr;
+
+        for (int i = 0; i < 4 * gbt_current_step; i++)
         {
-            b = *src_search++;
+            uint8_t b = *src_search++;
 
             if (b & BIT(7))
-                src_search++;
-        }
-        else if (b & BIT(6))
-        {
-            src_search++;
-        }
-    }
+            {
+                b = *src_search++;
 
-    gbt_current_step_data_ptr = src_search;
+                if (b & BIT(7))
+                    src_search++;
+            }
+            else if (b & BIT(6))
+            {
+                src_search++;
+            }
+        }
+
+        gbt_current_step_data_ptr = src_search;
+    }
 }
