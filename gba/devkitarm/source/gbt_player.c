@@ -100,12 +100,15 @@ void gbt_play(const void *song, int speed)
 
     gbt_get_pattern_ptr(0);
 
-    gbt.current_step = 0;
+    gbt.current_step = -1;
     gbt.current_pattern = 0;
     gbt.ticks_elapsed = 0;
     gbt.loop_enabled = 0;
     gbt.have_to_stop_next_step = 0;
     gbt.update_pattern_pointers = 0;
+
+    // Force refresh as soon as possible
+    gbt.ticks_elapsed = gbt.speed - 1;
 
     gbt.channel3_loaded_instrument = 0xFF;
 
