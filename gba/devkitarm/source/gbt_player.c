@@ -81,10 +81,10 @@ void gbt_play(const void *song, int speed)
     gbt_pan[2] = 0x44;
     gbt_pan[3] = 0x88;
 
-    gbt_vol[0] = 0xF0; // 100%
-    gbt_vol[1] = 0xF0;
-    gbt_vol[2] = 0x20;
-    gbt_vol[3] = 0xF0;
+    gbt_vol[0] = 0xF000; // 100%
+    gbt_vol[1] = 0xF000;
+    gbt_vol[2] = 0x2000;
+    gbt_vol[3] = 0xF000;
 
     gbt_instr[0] = 0;
     gbt_instr[1] = 0;
@@ -306,7 +306,7 @@ static int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
 static void channel1_refresh_registers(void)
 {
     REG_SOUND1CNT_L = 0;
-    REG_SOUND1CNT_H = ((uint16_t)gbt_vol[0] << 8) | gbt_instr[0];
+    REG_SOUND1CNT_H = gbt_vol[0] | gbt_instr[0];
     REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt_freq[0];
 }
 
@@ -360,7 +360,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
             // Freq + Instr + Volume
 
             gbt_instr[0] = (b & 0x30) << 2; // Instrument
-            gbt_vol[0] = (b & 0x0F) << 4;
+            gbt_vol[0] = (b & 0xF) << 12;
             channel1_refresh_registers();
         }
 
@@ -382,7 +382,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
     {
         // Just set volume
 
-        gbt_vol[0] = (b & 0x0F) << 4;
+        gbt_vol[0] = (b & 0xF) << 12;
 
         channel1_refresh_registers();
 
@@ -508,7 +508,7 @@ static int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
 
 static void channel2_refresh_registers(void)
 {
-    REG_SOUND2CNT_L = ((uint16_t)gbt_vol[1] << 8) | gbt_instr[1];
+    REG_SOUND2CNT_L = gbt_vol[1] | gbt_instr[1];
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt_freq[1];
 }
 
@@ -562,7 +562,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
             // Freq + Instr + Volume
 
             gbt_instr[1] = (b & 0x30) << 2; // Instrument
-            gbt_vol[1] = (b & 0x0F) << 4;
+            gbt_vol[1] = (b & 0xF) << 12;
             channel2_refresh_registers();
         }
 
@@ -584,7 +584,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
     {
         // Just set volume
 
-        gbt_vol[1] = (b & 0x0F) << 4;
+        gbt_vol[1] = (b & 0xF) << 12;
 
         channel2_refresh_registers();
 
@@ -729,7 +729,7 @@ static void channel3_refresh_registers(void)
                       SOUND3CNT_L_ENABLE;
 
     // TODO: Support 75%
-    REG_SOUND3CNT_H = ((uint16_t)gbt_vol[2] << 8);
+    REG_SOUND3CNT_H = gbt_vol[2];
     REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt_freq[2];
 }
 
@@ -784,7 +784,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
             // Freq + Instr + Volume
 
             gbt_instr[2] = b & 0x0F; // Instrument
-            gbt_vol[2] = (b & 0x30) << 1;
+            gbt_vol[2] = (b & 0x30) << 9;
             channel3_refresh_registers();
         }
 
@@ -803,7 +803,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
     {
         // Just set volume
 
-        gbt_vol[2] = (b & 0x03) << 5;
+        gbt_vol[2] = (b & 0x3) << 13;
 
         channel3_refresh_registers();
 
@@ -918,7 +918,7 @@ static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 
 static void channel4_refresh_registers(void)
 {
-    REG_SOUND4CNT_L = (uint16_t)gbt_vol[3] << 8;
+    REG_SOUND4CNT_L = gbt_vol[3];
     REG_SOUND4CNT_H = SOUND2CNT_H_RESTART | gbt_instr[3];
 }
 
@@ -969,7 +969,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
         {
             // Instr + Volume
 
-            gbt_vol[3] = (b & 0x0F) << 4;
+            gbt_vol[3] = (b & 0xF) << 12;
             channel4_refresh_registers();
         }
 
@@ -988,7 +988,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
     {
         // Just set volume
 
-        gbt_vol[3] = (b & 0x0F) << 4;
+        gbt_vol[3] = (b & 0xF) << 12;
 
         channel4_refresh_registers();
 
