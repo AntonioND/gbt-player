@@ -212,6 +212,7 @@ static uint16_t _gbt_get_freq_from_index(int index)
 
 static int gbt_ch1234_nop(uint32_t args)
 {
+    (void)args;
     return 0;
 }
 
