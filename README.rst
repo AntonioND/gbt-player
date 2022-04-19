@@ -1,4 +1,4 @@
-GBT PLAYER v3.0.9
+GBT PLAYER v3.1.0
 =================
 
 Music player library and converter kit for Game Boy and Game Boy Color that can
