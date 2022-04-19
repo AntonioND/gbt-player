@@ -415,39 +415,16 @@ static int channel1_update_effects(void)
 
     if (gbt_arpeggio_enabled[0])
     {
-        if (gbt_arpeggio_tick[0] == 0)
-        {
-            // Tick 0 - Set original frequency
-
-            uint32_t index = gbt_arpeggio_freq_index[0][0];
-            gbt_freq[0] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[0] = 1;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[0] == 1)
-        {
-            // Tick 1
-
-            uint32_t index = gbt_arpeggio_freq_index[0][0];
-            gbt_freq[0] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[0] = 2;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[0] == 2)
-        {
-            // Tick 2
-
-            uint32_t index = gbt_arpeggio_freq_index[0][0];
-            gbt_freq[0] = _gbt_get_freq_from_index(index);
-
+        uint8_t tick = gbt_arpeggio_tick[0];
+        if (tick == 2)
             gbt_arpeggio_tick[0] = 0;
+        else
+            gbt_arpeggio_tick[0] = tick + 1;
 
-            return 1;
-        }
+        uint32_t index = gbt_arpeggio_freq_index[0][tick];
+        gbt_freq[0] = _gbt_get_freq_from_index(index);
+
+        return 1;
     }
 
     return 0;
@@ -617,39 +594,16 @@ static int channel2_update_effects(void)
 
     if (gbt_arpeggio_enabled[1])
     {
-        if (gbt_arpeggio_tick[1] == 0)
-        {
-            // Tick 0 - Set original frequency
-
-            uint32_t index = gbt_arpeggio_freq_index[1][0];
-            gbt_freq[1] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[1] = 1;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[1] == 1)
-        {
-            // Tick 1
-
-            uint32_t index = gbt_arpeggio_freq_index[1][0];
-            gbt_freq[1] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[1] = 2;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[1] == 2)
-        {
-            // Tick 2
-
-            uint32_t index = gbt_arpeggio_freq_index[1][0];
-            gbt_freq[1] = _gbt_get_freq_from_index(index);
-
+        uint8_t tick = gbt_arpeggio_tick[1];
+        if (tick == 2)
             gbt_arpeggio_tick[1] = 0;
+        else
+            gbt_arpeggio_tick[1] = tick + 1;
 
-            return 1;
-        }
+        uint32_t index = gbt_arpeggio_freq_index[1][tick];
+        gbt_freq[1] = _gbt_get_freq_from_index(index);
+
+        return 1;
     }
 
     return 0;
@@ -837,39 +791,16 @@ static int channel3_update_effects(void)
 
     if (gbt_arpeggio_enabled[2])
     {
-        if (gbt_arpeggio_tick[2] == 0)
-        {
-            // Tick 0 - Set original frequency
-
-            uint32_t index = gbt_arpeggio_freq_index[2][0];
-            gbt_freq[2] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[2] = 1;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[2] == 1)
-        {
-            // Tick 1
-
-            uint32_t index = gbt_arpeggio_freq_index[2][0];
-            gbt_freq[2] = _gbt_get_freq_from_index(index);
-
-            gbt_arpeggio_tick[2] = 2;
-
-            return 1;
-        }
-        else if (gbt_arpeggio_tick[2] == 2)
-        {
-            // Tick 2
-
-            uint32_t index = gbt_arpeggio_freq_index[2][0];
-            gbt_freq[2] = _gbt_get_freq_from_index(index);
-
+        uint8_t tick = gbt_arpeggio_tick[2];
+        if (tick == 2)
             gbt_arpeggio_tick[2] = 0;
+        else
+            gbt_arpeggio_tick[2] = tick + 1;
 
-            return 1;
-        }
+        uint32_t index = gbt_arpeggio_freq_index[2][tick];
+        gbt_freq[2] = _gbt_get_freq_from_index(index);
+
+        return 1;
     }
 
     return 0;
