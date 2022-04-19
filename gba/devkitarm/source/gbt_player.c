@@ -16,18 +16,20 @@
 
 typedef int (*effect_handler)(uint32_t args);
 
-static uint8_t gbt_playing;
-
-// pointer to the pattern pointer array
+// Pointer to the pattern pointer array
 static uint8_t * const *gbt_pattern_array_ptr;
+
+// Pointer to next step data
+static const uint8_t *gbt_current_step_data_ptr;
+
+static uint8_t gbt_playing;
+static uint8_t gbt_loop_enabled;
 
 static uint8_t gbt_speed;
 
-static uint8_t gbt_loop_enabled;
-static uint16_t gbt_ticks_elapsed;
-static uint16_t gbt_current_step;
-static uint16_t gbt_current_pattern;
-static const uint8_t *gbt_current_step_data_ptr; // pointer to next step data
+static uint8_t gbt_ticks_elapsed;
+static uint8_t gbt_current_step;
+static uint8_t gbt_current_pattern;
 
 static uint8_t gbt_channels_enabled;
 
