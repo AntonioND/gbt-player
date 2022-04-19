@@ -11,6 +11,8 @@
 
 #define BIT(n)              (1 << (n))
 
+#define EWRAM_BSS           __attribute__((section(".sbss")))
+
 // Definitions taken from libugba
 
 #define MEM_IO_ADDR         (0x04000000)

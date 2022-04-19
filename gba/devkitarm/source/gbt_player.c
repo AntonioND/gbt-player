@@ -59,7 +59,7 @@ typedef struct {
 
 } gbt_player_info_t;
 
-static gbt_player_info_t gbt;
+EWRAM_BSS static gbt_player_info_t gbt;
 
 static void gbt_get_pattern_ptr(int pattern_number)
 {
