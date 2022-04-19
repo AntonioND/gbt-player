@@ -1,9 +1,9 @@
 /*
- * mod2gbt v3.2 (Part of GBT Player)
+ * mod2gbt v3.1.0 (Part of GBT Player)
  *
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2009-2012, Antonio Niño Díaz <antonio_nd@outlook.com>
+ * Copyright (c) 2009-2022 Antonio Niño Díaz <antonio_nd@outlook.com>
  */
 
 #include <stdio.h>
@@ -930,8 +930,8 @@ int main(int argc, char *argv[])
 
     int i;
 
-    printf("mod2gbt v3.2 (part of GBT Player)\n");
-    printf("Copyright (c) 2009-2012 Antonio Niño Díaz "
+    printf("mod2gbt v3.1.0 (part of GBT Player)\n");
+    printf("Copyright (c) 2009-2022 Antonio Niño Díaz "
            "<antonio_nd@outlook.com>\n");
     printf("All rights reserved\n");
     printf("\n");

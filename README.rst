@@ -2,13 +2,13 @@ GBT PLAYER v3.0.9
 =================
 
 Music player library and converter kit for Game Boy and Game Boy Color that can
-be used with `RGBDS <https://github.com/bentley/rgbds>`__ (and, with
+be used with `RGBDS <https://github.com/gbdev/rgbds>`__ (and, with
 limitations, with GBDK). It is also available for Game Boy Advance as a C
 library.
 
 Licensed under the MIT license.
 
-Copyright (C) 2009-2022 Antonio Niño Díaz.
+Copyright (C) 2009-2022 Antonio Niño Díaz
 
 All rights reserved.
 
@@ -127,6 +127,10 @@ path to your ``lcc`` binary and double clic the bat.
 
 Changelog
 ---------
+
+- Version 3.1.0 (2022/4/19)
+
+  - Bugfix release for GBA.
 
 - Version 3.0.9 (2022/4/18)
 

@@ -1,10 +1,10 @@
 ;###############################################################################
 ;
-; GBT Player v3.0.8
+; GBT Player v3.1.0
 ;
 ; SPDX-License-Identifier: MIT
 ;
-; Copyright (c) 2009-2020, Antonio Niño Díaz <antonio_nd@outlook.com>
+; Copyright (c) 2009-2020 Antonio Niño Díaz <antonio_nd@outlook.com>
 ;
 ;###############################################################################
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 #
-# Copyright (c) 2020, Antonio Niño Díaz
+# Copyright (c) 2020 Antonio Niño Díaz
 
 NAME	:= mod2gbt
 
