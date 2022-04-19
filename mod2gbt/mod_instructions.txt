@@ -24,7 +24,7 @@ Bnn - Jump to pattern in order nn (in hexadecimal).
 
 Cnn - Sets the volume to nn (in hexadecimal). Valid values from 00h to 40h.
       Channel 3 can only be set to 0%, 25%, 50% and 100%. Others can be set
-      in a range of 0-Fh.
+      in a range of 0-Fh. On GBA, channel 3 can also be set to 75%.
 
 Dnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
       If used the last step of a pattern it will jump two patterns, not one!

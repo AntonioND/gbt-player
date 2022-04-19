@@ -704,7 +704,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
         else // Freq + Instr + Volume
         {
             gbt.instr[2] = b & 0x0F; // Instrument
-            gbt.vol[2] = (b & 0x30) << 9;
+            gbt.vol[2] = (b & 0x70) << 9;
             channel3_refresh_registers();
         }
     }
@@ -715,7 +715,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
     }
     else if (b & BIT(5)) // Set volume
     {
-        gbt.vol[2] = (b & 0x3) << 13;
+        gbt.vol[2] = (b & 0x7) << 13;
         channel3_refresh_registers();
     }
     else

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int export_to_c = 0;
+int export_to_gba = 0;
 int perform_speed_convertion = 1;
 typedef unsigned char u8;
 typedef signed   char s8;
@@ -192,7 +192,7 @@ void out_write_dec(u8 number)
 
 void out_write_hex(u8 number)
 {
-    if (export_to_c)
+    if (export_to_gba)
         fprintf(output_file, "0x%02X", number);
     else
         fprintf(output_file, "$%02X", number);
@@ -242,20 +242,44 @@ int volume_mod_to_gb_ch3(int v) // Channel 3
 {
     int vol = volume_mod_to_gb(v);
 
-    switch (vol)
+    if (export_to_gba)
     {
-        case 0: case 1: case 2: case 3:
-            return 0;
+        switch (vol)
+        {
+            case 0: case 1: case 2: case 3:
+                return 0; // 0%
 
-        case 4: case 5: case 6: case 7:
-            return 3;
+            case 4: case 5: case 6:
+                return 3; // 25%
 
-        case 8: case 9: case 10: case 11:
-            return 2;
+            case 7: case 8: case 9:
+                return 2; // 50%
 
-        default:
-        case 12: case 13: case 14: case 15:
-            return 1;
+            case 10: case 11: case 12:
+                return 4; // 75%
+
+            default:
+            case 13: case 14: case 15:
+                return 1; // 100%
+        }
+    }
+    else
+    {
+        switch (vol)
+        {
+            case 0: case 1: case 2: case 3:
+                return 0; // 0%
+
+            case 4: case 5: case 6: case 7:
+                return 3; // 25%
+
+            case 8: case 9: case 10: case 11:
+                return 2; // 50%
+
+            default:
+            case 12: case 13: case 14: case 15:
+                return 1; // 100%
+        }
     }
 
     return 0;
@@ -795,7 +819,7 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
 
 void convert_pattern(_pattern_t *pattern, u8 number)
 {
-    if (export_to_c)
+    if (export_to_gba)
     {
         out_write_str("static const uint8_t ");
         out_write_str(label_name);
@@ -820,7 +844,7 @@ void convert_pattern(_pattern_t *pattern, u8 number)
     int step;
     for (step = 0; step < 64; step++)
     {
-        if (export_to_c)
+        if (export_to_gba)
         {
             out_write_str("    ");
         }
@@ -868,13 +892,13 @@ void convert_pattern(_pattern_t *pattern, u8 number)
         convert_channel4(number, step, note_index, samplenum, effectnum,
                          effectparams);
 
-        if (export_to_c)
+        if (export_to_gba)
             out_write_str(",\n");
         else
             out_write_str("\n");
     }
 
-    if (export_to_c)
+    if (export_to_gba)
     {
         out_write_str("};\n");
         out_write_str("\n");
@@ -934,7 +958,7 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(argv[i], "-gba") == 0)
         {
-            export_to_c = 1;
+            export_to_gba = 1;
             printf("Export to GBA files.\n\n");
         }
         else
@@ -978,7 +1002,7 @@ int main(int argc, char *argv[])
 
     printf("Number of patterns: %d\n", num_patterns);
 
-    const char *extension = export_to_c ? ".c" : ".asm";
+    const char *extension = export_to_gba ? ".c" : ".asm";
 
     char *filename = malloc(strlen(label_name) + strlen(extension));
     if (filename == NULL)
@@ -991,7 +1015,7 @@ int main(int argc, char *argv[])
     out_open(filename);
     free(filename);
 
-    if (export_to_c)
+    if (export_to_gba)
     {
         out_write_str("\n// File created by mod2gbt\n\n"
                       "#include <stddef.h>\n#include <stdint.h>\n\n");
@@ -1010,7 +1034,7 @@ int main(int argc, char *argv[])
 
     printf("\n\nPattern order...\n");
 
-    if (export_to_c)
+    if (export_to_gba)
     {
         out_write_str("const uint8_t *");
         out_write_str(label_name);
