@@ -84,10 +84,12 @@ the examples would be too simple for a makefile to be useful.
 
 ``effects_test.gb`` tests arpeggio and "cut note" effects.
 
+``volume_test.gb`` tests the range of volumes supported by each channel.
+
 The mod file isn't 100% accurate. Sounds are a bit different from the real ones,
 so you should make roms and test them in emulators or real GB often.
 
-If you don't like the speed convertion done by ``mod2gbt`` (from 50 Hz to 60 Hz)
+If you don't like the speed conversion done by ``mod2gbt`` (from 50 Hz to 60 Hz)
 you can use the ``-speed`` argument for ``mod2gbt``. The speed will be higher
 and it will probably have to be adjusted manually.
 
