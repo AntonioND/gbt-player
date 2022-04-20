@@ -120,7 +120,7 @@ uint8_t mod_get_index_from_period(uint16_t period, int pattern, int step, int ch
         {
             if (channel != 4) // Pitch ignored for noise channel
             {
-                printf("\nPattern %d, Step %d, Channel %d. Note too high!\n",
+                printf("\nWARNING: Pattern %d, Step %d, Channel %d. Note too high!\n",
                        pattern, step, channel);
             }
         }
@@ -128,7 +128,7 @@ uint8_t mod_get_index_from_period(uint16_t period, int pattern, int step, int ch
         {
             if (channel != 4) // Pitch ignored for noise channel
             {
-                printf("\nPattern %d, Step %d, Channel %d. Note too low!\n",
+                printf("\nWARNING: Pattern %d, Step %d, Channel %d. Note too low!\n",
                        pattern, step, channel);
             }
         }
@@ -286,7 +286,7 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
         }
         case 0xC: // Volume -> Not handled here
         {
-            printf("Strange error at pattern %d, step %d, channel %d: "
+            printf("ERROR: Strange error at pattern %d, step %d, channel %d: "
                    "%01X%02X\n", pattern_number, step_number, channel,
                    effectnum, effectparams);
             return 0;
@@ -336,7 +336,7 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
             }
             else // Error
             {
-                printf("Unsupported effect at pattern %d, step %d, channel %d: "
+                printf("WARNING: Unsupported effect at pattern %d, step %d, channel %d: "
                        "%01X%02X\n", pattern_number, step_number, channel,
                        effectnum, effectparams);
                 return 0;
@@ -347,7 +347,7 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
         {
             if (effectparams > 0x1F) // Nothing
             {
-                printf("Unsupported BPM speed effect at pattern %d, step %d, "
+                printf("WARNING: Unsupported BPM speed effect at pattern %d, step %d, "
                        "channel %d: %01X%02X\n", pattern_number, step_number,
                        channel, effectnum, effectparams);
                 return 0;
@@ -362,7 +362,7 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
         }
         default: // Nothing
         {
-            printf("Unsupported effect at pattern %d, step %d, channel %d: "
+            printf("WARNING: Unsupported effect at pattern %d, step %d, channel %d: "
                    "%01X%02X\n", pattern_number, step_number, channel,
                    effectnum, effectparams);
             return 0;
@@ -407,7 +407,7 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
                 {
                     if (effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel"
+                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
                                " 1: %01X%02X\n", pattern_number, step_number,
                                effectnum, effectparams);
                     }
@@ -449,12 +449,12 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
             }
             else // Note + No effect!! -> Bad, we need at least volume change!!
             {
-                printf("Invalid command at pattern %d, step %d, channel 1: "
+                printf("WARNING: Invalid command at pattern %d, step %d, channel 1: "
                        "%01X%02X\n", pattern_number, step_number, effectnum,
                        effectparams);
 
                 if (effectnum == 0)
-                    printf("Volume must be set when using a note.\n");
+                    printf("WARNING: Volume must be set when using a note.\n");
             }
         }
     }
@@ -510,7 +510,7 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
                 {
                     if (effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel"
+                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
                                " 2: %01X%02X\n", pattern_number, step_number,
                                effectnum, effectparams);
                     }
@@ -552,12 +552,12 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
             }
             else // Note + No effect!! -> We need at least volume change!
             {
-                printf("Invalid command at pattern %d, step %d, channel 2: "
+                printf("WARNING: Invalid command at pattern %d, step %d, channel 2: "
                        "%01X%02X\n", pattern_number, step_number, effectnum,
                        effectparams);
 
                 if (effectnum == 0)
-                    printf("Volume must be set when using a new note.\n");
+                    printf("WARNING: Volume must be set when using a new note.\n");
             }
         }
     }
@@ -649,7 +649,7 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
             {
                 if (converted_num > 7)
                 {
-                    printf("Invalid command at pattern %d, step %d, channel 3: "
+                    printf("WARNING: Invalid command at pattern %d, step %d, channel 3: "
                            "%01X%02X\nOnly 0-7 allowed in this mode.\n",
                            pattern_number, step_number, effectnum,
                            effectparams);
@@ -665,7 +665,7 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
             }
             else // Note + No effect!! -> We need at least volume change!
             {
-                printf("Invalid command at pattern %d, step %d, channel 3: "
+                printf("WARNING: Invalid command at pattern %d, step %d, channel 3: "
                        "%01X%02X\n", pattern_number, step_number, effectnum,
                        effectparams);
 
@@ -724,7 +724,7 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
                 {
                     if (effectnum != 0)
                     {
-                        printf("Invalid command at pattern %d, step %d, channel"
+                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
                                " 4: %01X%02X\n", pattern_number, step_number,
                                effectnum, effectparams);
                     }
@@ -768,7 +768,7 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
             }
             else // Note + No effect!! -> We need at least volume change!
             {
-                printf("Invalid command at pattern %d, step %d, channel 4: "
+                printf("WARNING: Invalid command at pattern %d, step %d, channel 4: "
                        "%01X%02X\n", pattern_number, step_number, effectnum,
                        effectparams);
 
@@ -936,7 +936,7 @@ int main(int argc, char *argv[])
     char *filename = malloc(strlen(label_name) + strlen(extension));
     if (filename == NULL)
     {
-        printf("Can't allocate memory for file name\n");
+        printf("ERROR: Can't allocate memory for file name\n");
         return -4;
     }
 
