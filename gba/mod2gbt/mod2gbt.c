@@ -6,16 +6,12 @@
  * Copyright (c) 2009-2022 Antonio Niño Díaz <antonio_nd@outlook.com>
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int perform_speed_conversion = 1;
-
-typedef unsigned char u8;
-typedef signed   char s8;
-typedef unsigned short int u16;
-typedef signed   short int s16;
 
 #define abs(x) (((x) > 0) ? (x) : -(x))
 #define BIT(n) (1 << (n))
@@ -27,27 +23,27 @@ typedef signed   short int s16;
 //------------------------------------------------------------------------------
 
 typedef struct __attribute__((packed)) {
-    char name[22];
-    u16  length;
-    u8   finetune; // 4 lower bits
-    u8   volume; // 0-64
-    u16  repeat_point;
-    u16  repeat_length; // Loop if length > 1
+    char        name[22];
+    uint16_t    length;
+    uint8_t     finetune; // 4 lower bits
+    uint8_t     volume; // 0-64
+    uint16_t    repeat_point;
+    uint16_t    repeat_length; // Loop if length > 1
 } _sample_t;
 
 typedef struct __attribute__((packed)) {
-    u8 info[64][4][4]; // [step][channel][byte]
+    uint8_t     info[64][4][4]; // [step][channel][byte]
 } _pattern_t;
 
 typedef struct __attribute__((packed)) {
-    char name[20];
-    _sample_t sample[31];
-    u8 song_length; // Length in patterns
-    u8 unused; // Set to 127, used by Noisetracker
-    u8 pattern_table[128]; //0..63
-    char identifier[4];
+    char        name[20];
+    _sample_t   sample[31];
+    uint8_t     song_length; // Length in patterns
+    uint8_t     unused; // Set to 127, used by Noisetracker
+    uint8_t     pattern_table[128]; //0..63
+    char        identifier[4];
     // Only 64 patterns allowed (see pattern_table) but set to 256 anyway...
-    _pattern_t pattern[256];
+    _pattern_t  pattern[256];
     // Followed by sample data, unused by the converter
 } mod_file_t;
 
@@ -98,8 +94,8 @@ void *load_file(const char *filename)
 
 //------------------------------------------------------------------------------
 
-void unpack_info(u8 *info, u8 *sample_num, u16 *sample_period, u8 *effect_num,
-                 u8 *effect_param)
+void unpack_info(uint8_t *info, uint8_t *sample_num, uint16_t *sample_period,
+                 uint8_t *effect_num, uint8_t *effect_param)
 {
     *sample_num    = (info[0] & 0xF0) | ((info[2] & 0xF0) >> 4);
     *sample_period =  info[1]         | ((info[0] & 0x0F) << 8);
@@ -107,7 +103,7 @@ void unpack_info(u8 *info, u8 *sample_num, u16 *sample_period, u8 *effect_num,
     *effect_param  =  info[3];
 }
 
-const u16 mod_period[6 * 12] = {
+const uint16_t mod_period[6 * 12] = {
     1712,1616,1524,1440,1356,1280,1208,1140,1076,1016, 960, 907,
      856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
      428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
@@ -116,7 +112,7 @@ const u16 mod_period[6 * 12] = {
       53,  50,  47,  45,  42,  40,  37,  35,  33,  31,  30,  28
 };
 
-u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
+uint8_t mod_get_index_from_period(uint16_t period, int pattern, int step, int channel)
 {
     if (period > 0)
     {
@@ -149,8 +145,8 @@ u8 mod_get_index_from_period(u16 period, int pattern, int step, int channel)
 
     // Couldn't find exact match... get nearest value
 
-    u16 nearest_value = 0xFFFF;
-    u8 nearest_index = 0;
+    uint16_t nearest_value = 0xFFFF;
+    uint8_t nearest_index = 0;
     for (i = 0; i < 6 * 12; i++)
     {
         int test_distance = abs(((int)period) - ((int)mod_period[i]));
@@ -185,12 +181,12 @@ void out_write_str(const char *asm_str)
     fprintf(output_file, "%s", asm_str);
 }
 
-void out_write_dec(u8 number)
+void out_write_dec(uint8_t number)
 {
     fprintf(output_file, "%d", number);
 }
 
-void out_write_hex(u8 number)
+void out_write_hex(uint8_t number)
 {
     fprintf(output_file, "0x%02X", number);
 }
@@ -270,9 +266,9 @@ int speed_mod_to_gb(int s)
 }
 
 // Returns 1 if ok
-int effect_mod_to_gb(u8 pattern_number, u8 step_number, u8 channel,
-                     u8 effectnum, u8 effectparams, u8 *converted_num,
-                     u8 *converted_params)
+int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
+                     uint8_t channel, uint8_t effectnum, uint8_t effectparams,
+                     uint8_t *converted_num, uint8_t *converted_params)
 {
     switch (effectnum)
     {
@@ -307,8 +303,8 @@ int effect_mod_to_gb(u8 pattern_number, u8 step_number, u8 channel,
         {
             if ((effectparams & 0xF0) == 0x80) // Pan
             {
-                u8 left = 0;
-                u8 right = 0;
+                uint8_t left = 0;
+                uint8_t right = 0;
 
                 switch (effectparams & 0xF)
                 {
@@ -375,13 +371,14 @@ int effect_mod_to_gb(u8 pattern_number, u8 step_number, u8 channel,
     return 0;
 }
 
-void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
-                      u8 samplenum, u8 effectnum, u8 effectparams)
+void convert_channel1(uint8_t pattern_number, uint8_t step_number,
+                      uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
+                      uint8_t effectparams)
 {
-    u8 result[3] = {0, 0, 0};
+    uint8_t result[3] = {0, 0, 0};
     int command_len = 1; // NOP
 
-    u8 instrument = samplenum & 3;
+    uint8_t instrument = samplenum & 3;
 
     if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
     {
@@ -397,7 +394,7 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
             else
             {
                 // Others
-                u8 converted_num, converted_params;
+                uint8_t converted_num, converted_params;
                 if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
                                      effectparams, &converted_num,
                                      &converted_params) == 1)
@@ -430,7 +427,7 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
     }
     else // New note
     {
-        u8 converted_num, converted_params;
+        uint8_t converted_num, converted_params;
         if (effectnum == 0xC)
         {
             // Note + Volume
@@ -477,13 +474,14 @@ void convert_channel1(u8 pattern_number, u8 step_number, u8 note_index,
     }
 }
 
-void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
-                      u8 samplenum, u8 effectnum, u8 effectparams)
+void convert_channel2(uint8_t pattern_number, uint8_t step_number,
+                      uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
+                      uint8_t effectparams)
 {
-    u8 result[3] = {0, 0, 0};
+    uint8_t result[3] = {0, 0, 0};
     int command_len = 1; // NOP
 
-    u8 instrument = samplenum & 3;
+    uint8_t instrument = samplenum & 3;
 
     if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
     {
@@ -499,7 +497,7 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
             else
             {
                 // Others
-                u8 converted_num, converted_params;
+                uint8_t converted_num, converted_params;
                 if (effect_mod_to_gb(pattern_number, step_number, 2, effectnum,
                                      effectparams, &converted_num,
                                      &converted_params) == 1)
@@ -532,7 +530,7 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
     }
     else // New note
     {
-        u8 converted_num, converted_params;
+        uint8_t converted_num, converted_params;
         if (effectnum == 0xC)
         {
             // Note + Volume
@@ -579,10 +577,11 @@ void convert_channel2(u8 pattern_number, u8 step_number, u8 note_index,
     }
 }
 
-void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
-                      u8 samplenum, u8 effectnum, u8 effectparams)
+void convert_channel3(uint8_t pattern_number, uint8_t step_number,
+                      uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
+                      uint8_t effectparams)
 {
-    u8 result[3] = {0, 0, 0};
+    uint8_t result[3] = {0, 0, 0};
     int command_len = 1; // NOP
 
     if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
@@ -599,7 +598,7 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
             else
             {
                 // Others
-                u8 converted_num, converted_params;
+                uint8_t converted_num, converted_params;
                 if (effect_mod_to_gb(pattern_number, step_number, 3, effectnum,
                                      effectparams, &converted_num,
                                      &converted_params) == 1)
@@ -632,9 +631,9 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
     }
     else // New note
     {
-        u8 instrument = (samplenum - 8) & 15; // Only 0-7 implemented
+        uint8_t instrument = (samplenum - 8) & 15; // Only 0-7 implemented
 
-        u8 converted_num, converted_params;
+        uint8_t converted_num, converted_params;
         if (effectnum == 0xC)
         {
             // Note + Volume
@@ -691,10 +690,11 @@ void convert_channel3(u8 pattern_number, u8 step_number, u8 note_index,
     }
 }
 
-void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
-                      u8 samplenum, u8 effectnum, u8 effectparams)
+void convert_channel4(uint8_t pattern_number, uint8_t step_number,
+                      uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
+                      uint8_t effectparams)
 {
-    u8 result[3] = {0, 0, 0};
+    uint8_t result[3] = {0, 0, 0};
     int command_len = 1; // NOP
 
     if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
@@ -711,7 +711,7 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
             else
             {
                 // Others
-                u8 converted_num, converted_params;
+                uint8_t converted_num, converted_params;
                 if (effect_mod_to_gb(pattern_number, step_number, 4, effectnum,
                                      effectparams, &converted_num,
                                      &converted_params) == 1)
@@ -744,9 +744,9 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
     }
     else // New note (not a real note...)
     {
-        u8 instrument = (samplenum - 16) & 0x1F; // Only 0 - 0xF implemented
+        uint8_t instrument = (samplenum - 16) & 0x1F; // Only 0 - 0xF implemented
 
-        u8 converted_num, converted_params;
+        uint8_t converted_num, converted_params;
         if (effectnum == 0xC)
         {
             // Note + Volume
@@ -793,7 +793,7 @@ void convert_channel4(u8 pattern_number, u8 step_number, u8 note_index,
     }
 }
 
-void convert_pattern(_pattern_t *pattern, u8 number)
+void convert_pattern(_pattern_t *pattern, uint8_t number)
 {
     out_write_str("static const uint8_t ");
     out_write_str(label_name);
@@ -806,13 +806,13 @@ void convert_pattern(_pattern_t *pattern, u8 number)
     {
         out_write_str("    ");
 
-        u8 data[4]; // Packed data
+        uint8_t data[4]; // Packed data
 
-        u8 samplenum; // Unpacked data
-        u16 sampleperiod;
-        u8 effectnum, effectparams;
+        uint8_t samplenum; // Unpacked data
+        uint16_t sampleperiod;
+        uint8_t effectnum, effectparams;
 
-        u8 note_index;
+        uint8_t note_index;
 
         // Channel 1
         memcpy(data, pattern->info[step][0], 4);
@@ -921,7 +921,7 @@ int main(int argc, char *argv[])
             printf("%c", modfile->name[i]);
     printf("\n");
 
-    u8 num_patterns = 0;
+    uint8_t num_patterns = 0;
 
     for (i = 0; i < 128; i++)
         if (modfile->pattern_table[i] > num_patterns)
