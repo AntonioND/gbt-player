@@ -138,8 +138,7 @@ uint8_t mod_get_index_from_period(uint16_t period, int pattern, int step, int ch
         return -1;
     }
 
-    int i;
-    for (i = 0; i < 6 * 12; i++)
+    for (int i = 0; i < 6 * 12; i++)
         if (period == mod_period[i])
             return i;
 
@@ -147,7 +146,7 @@ uint8_t mod_get_index_from_period(uint16_t period, int pattern, int step, int ch
 
     uint16_t nearest_value = 0xFFFF;
     uint8_t nearest_index = 0;
-    for (i = 0; i < 6 * 12; i++)
+    for (int i = 0; i < 6 * 12; i++)
     {
         int test_distance = abs(((int)period) - ((int)mod_period[i]));
         int nearest_distance = abs(((int)period) - nearest_value);
@@ -228,7 +227,7 @@ Anyway, they don't sound the same...
 
 int volume_mod_to_gb(int v) // Channels 1,2,4
 {
-    return (v == 64) ? 0xF : (v >> 2);
+    return (v >= 64) ? 0xF : (v >> 2);
 }
 
 int volume_mod_to_gb_ch3(int v) // Channel 3
@@ -371,106 +370,88 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
     return 0;
 }
 
+#define HAS_VOLUME      BIT(4)
+#define HAS_INSTRUMENT  BIT(5)
+#define HAS_EFFECT      BIT(6)
+#define HAS_NOTE        BIT(7)
+#define HAS_KIT         BIT(7)
+
 void convert_channel1(uint8_t pattern_number, uint8_t step_number,
                       uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
                       uint8_t effectparams)
 {
-    uint8_t result[3] = {0, 0, 0};
-    int command_len = 1; // NOP
+    uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
+    int frequency_ptr = 1; // Destination of the frequency
+    int command_size = 1;
 
-    uint8_t instrument = samplenum & 3;
+    int volume = -1;
 
-    if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
+    // If the effect is "Set Volume", handle it before and clear it so that it
+    // isn't handled later.
+    if (effectnum == 0xC)
     {
-        if ((effectnum != 0) || (effectparams != 0))
-        {
-            // Volume or others?
-            if (effectnum == 0xC)
-            {
-                // Volume
-                result[0] = BIT(5) | volume_mod_to_gb(effectparams);
-                command_len = 1;
-            }
-            else
-            {
-                // Others
-                uint8_t converted_num, converted_params;
-                if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
-                                     effectparams, &converted_num,
-                                     &converted_params) == 1)
-                {
-                    result[0] = BIT(6) | (instrument << 4) | converted_num;
-                    result[1] = converted_params;
-                    command_len = 2;
-                }
-                else
-                {
-                    if (effectnum != 0)
-                    {
-                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
-                               " 1: %01X%02X\n", pattern_number, step_number,
-                               effectnum, effectparams);
-                    }
-
-                    // NOP
-                    result[0] = 0;
-                    command_len = 1;
-                }
-            }
-        }
-        else
-        {
-            // NOP
-            result[0] = 0;
-            command_len = 1;
-        }
+        volume = effectparams;
+        effectnum = 0;
+        effectparams = 0;
     }
-    else // New note
+
+    // Check if there is a sample defined
+    if (samplenum > 0)
+    {
+        uint32_t instrument = (samplenum - 1) & 3;
+
+        command[0] |= HAS_INSTRUMENT;
+        command[1] = (instrument << 4) & 0x30;
+        frequency_ptr = 2;
+        command_size = 2;
+    }
+
+    if ((effectnum != 0) || (effectparams != 0))
     {
         uint8_t converted_num, converted_params;
-        if (effectnum == 0xC)
+        if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
+                             effectparams, &converted_num,
+                             &converted_params))
         {
-            // Note + Volume
-            result[0] = BIT(7) | note_index;
-            result[1] = (instrument << 4) | volume_mod_to_gb(effectparams);
-            command_len = 2;
+            command[0] |= HAS_EFFECT;
+            command[1] |= converted_num & 0x0F;
+            command[2] = converted_params & 0xFF;
+
+            frequency_ptr = 3;
+            command_size = 3;
         }
         else
         {
-            if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
-                                 effectparams, &converted_num,
-                                 &converted_params) == 1)
-            {
-                // Note + Effect
-                result[0] = BIT(7) | note_index;
-                result[1] = BIT(7) | (instrument << 4) | converted_num;
-                result[2] = converted_params;
-                command_len = 3;
-            }
-            else // Note + No effect!! -> Bad, we need at least volume change!!
-            {
-                printf("WARNING: Invalid command at pattern %d, step %d, channel 1: "
-                       "%01X%02X\n", pattern_number, step_number, effectnum,
-                       effectparams);
-
-                if (effectnum == 0)
-                    printf("WARNING: Volume must be set when using a note.\n");
-            }
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 1: "
+                   "%01X%02X\n", pattern_number, step_number,
+                   effectnum, effectparams);
         }
     }
 
-    out_write_hex(result[0]);
-
-    if (command_len > 1)
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
     {
-        out_write_str(", ");
-        out_write_hex(result[1]);
+        command[0] |= HAS_NOTE;
+        command[frequency_ptr] = note_index & 0x7F;
+        command_size = frequency_ptr + 1;
 
-        if (command_len > 2)
-        {
-            out_write_str(", ");
-            out_write_hex(result[2]);
-        }
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
+    // Check if it's needed to add a volume
+    if (volume > -1)
+    {
+        command[0] |= HAS_VOLUME;
+        command[0] |= volume_mod_to_gb(volume) & 0x0F;
+    }
+
+    for (int i = 0; i < command_size; i++)
+    {
+        out_write_hex(command[i]);
+        out_write_str(",");
     }
 }
 
@@ -478,102 +459,78 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
                       uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
                       uint8_t effectparams)
 {
-    uint8_t result[3] = {0, 0, 0};
-    int command_len = 1; // NOP
+    uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
+    int frequency_ptr = 1; // Destination of the frequency
+    int command_size = 1;
 
-    uint8_t instrument = samplenum & 3;
+    int volume = -1;
 
-    if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
+    // If the effect is "Set Volume", handle it before and clear it so that it
+    // isn't handled later.
+    if (effectnum == 0xC)
     {
-        if ((effectnum != 0) || (effectparams != 0))
-        {
-            // Volume or others?
-            if (effectnum == 0xC)
-            {
-                // Volume
-                result[0] = BIT(5) | volume_mod_to_gb(effectparams);
-                command_len = 1;
-            }
-            else
-            {
-                // Others
-                uint8_t converted_num, converted_params;
-                if (effect_mod_to_gb(pattern_number, step_number, 2, effectnum,
-                                     effectparams, &converted_num,
-                                     &converted_params) == 1)
-                {
-                    result[0] = BIT(6) | (instrument << 4) | converted_num;
-                    result[1] = converted_params;
-                    command_len = 2;
-                }
-                else
-                {
-                    if (effectnum != 0)
-                    {
-                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
-                               " 2: %01X%02X\n", pattern_number, step_number,
-                               effectnum, effectparams);
-                    }
-
-                    // NOP
-                    result[0] = 0;
-                    command_len = 1;
-                }
-            }
-        }
-        else
-        {
-            // NOP
-            result[0] = 0;
-            command_len = 1;
-        }
+        volume = effectparams;
+        effectnum = 0;
+        effectparams = 0;
     }
-    else // New note
+
+    // Check if there is a sample defined
+    if (samplenum > 0)
+    {
+        uint32_t instrument = (samplenum - 1) & 3;
+
+        command[0] |= HAS_INSTRUMENT;
+        command[1] = (instrument << 4) & 0x30;
+        frequency_ptr = 2;
+        command_size = 2;
+    }
+
+    if ((effectnum != 0) || (effectparams != 0))
     {
         uint8_t converted_num, converted_params;
-        if (effectnum == 0xC)
+        if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
+                             effectparams, &converted_num,
+                             &converted_params))
         {
-            // Note + Volume
-            result[0] = BIT(7) | note_index;
-            result[1] = (instrument << 4) | volume_mod_to_gb(effectparams);
-            command_len = 2;
+            command[0] |= HAS_EFFECT;
+            command[1] |= converted_num & 0x0F;
+            command[2] = converted_params & 0xFF;
+
+            frequency_ptr = 3;
+            command_size = 3;
         }
         else
         {
-            if (effect_mod_to_gb(pattern_number, step_number, 2, effectnum,
-                                 effectparams, &converted_num,
-                                 &converted_params) == 1)
-            {
-                // Note + Effect
-                result[0] = BIT(7) | note_index;
-                result[1] = BIT(7) | (instrument << 4) | converted_num;
-                result[2] = converted_params;
-                command_len = 3;
-            }
-            else // Note + No effect!! -> We need at least volume change!
-            {
-                printf("WARNING: Invalid command at pattern %d, step %d, channel 2: "
-                       "%01X%02X\n", pattern_number, step_number, effectnum,
-                       effectparams);
-
-                if (effectnum == 0)
-                    printf("WARNING: Volume must be set when using a new note.\n");
-            }
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 2: "
+                   "%01X%02X\n", pattern_number, step_number,
+                   effectnum, effectparams);
         }
     }
 
-    out_write_hex(result[0]);
-
-    if (command_len > 1)
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
     {
-        out_write_str(", ");
-        out_write_hex(result[1]);
+        command[0] |= HAS_NOTE;
+        command[frequency_ptr] = note_index & 0x7F;
+        command_size = frequency_ptr + 1;
 
-        if (command_len > 2)
-        {
-            out_write_str(", ");
-            out_write_hex(result[2]);
-        }
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
+    // Check if it's needed to add a volume
+    if (volume > -1)
+    {
+        command[0] |= HAS_VOLUME;
+        command[0] |= volume_mod_to_gb(volume) & 0x0F;
+    }
+
+    for (int i = 0; i < command_size; i++)
+    {
+        out_write_hex(command[i]);
+        out_write_str(",");
     }
 }
 
@@ -581,112 +538,78 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
                       uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
                       uint8_t effectparams)
 {
-    uint8_t result[3] = {0, 0, 0};
-    int command_len = 1; // NOP
+    uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
+    int frequency_ptr = 1; // Destination of the frequency
+    int command_size = 1;
 
-    if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
+    int volume = -1;
+
+    // If the effect is "Set Volume", handle it before and clear it so that it
+    // isn't handled later.
+    if (effectnum == 0xC)
     {
-        if ((effectnum != 0) || (effectparams != 0))
-        {
-            // Volume or others?
-            if (effectnum == 0xC)
-            {
-                // Volume
-                result[0] = BIT(5) | volume_mod_to_gb_ch3(effectparams);
-                command_len = 1;
-            }
-            else
-            {
-                // Others
-                uint8_t converted_num, converted_params;
-                if (effect_mod_to_gb(pattern_number, step_number, 3, effectnum,
-                                     effectparams, &converted_num,
-                                     &converted_params) == 1)
-                {
-                    result[0] = BIT(6) | converted_num;
-                    result[1] = converted_params;
-                    command_len = 2;
-                }
-                else
-                {
-                    if (effectnum != 0)
-                    {
-                        printf("Invalid command at pattern %d, step %d, channel"
-                               " 3: %01X%02X\n", pattern_number, step_number,
-                               effectnum, effectparams);
-                    }
-
-                    // NOP
-                    result[0] = 0;
-                    command_len = 1;
-                }
-            }
-        }
-        else
-        {
-            // NOP
-            result[0] = 0;
-            command_len = 1;
-        }
+        volume = effectparams;
+        effectnum = 0;
+        effectparams = 0;
     }
-    else // New note
-    {
-        uint8_t instrument = (samplenum - 8) & 15; // Only 0-7 implemented
 
+    // Check if there is a sample defined
+    if (samplenum > 0)
+    {
+        uint32_t instrument = samplenum & 0x7;
+
+        command[0] |= HAS_INSTRUMENT;
+        command[1] = (instrument << 4) & 0xF0;
+        frequency_ptr = 2;
+        command_size = 2;
+    }
+
+    if ((effectnum != 0) || (effectparams != 0))
+    {
         uint8_t converted_num, converted_params;
-        if (effectnum == 0xC)
+        if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
+                             effectparams, &converted_num,
+                             &converted_params))
         {
-            // Note + Volume
-            result[0] = BIT(7) | note_index;
-            result[1] = (volume_mod_to_gb_ch3(effectparams) << 4) | instrument;
-            command_len = 2;
+            command[0] |= HAS_EFFECT;
+            command[1] |= converted_num & 0x0F;
+            command[2] = converted_params & 0xFF;
+
+            frequency_ptr = 3;
+            command_size = 3;
         }
         else
         {
-            if (effect_mod_to_gb(pattern_number, step_number, 3, effectnum,
-                                 effectparams, &converted_num,
-                                 &converted_params) == 1)
-            {
-                if (converted_num > 7)
-                {
-                    printf("WARNING: Invalid command at pattern %d, step %d, channel 3: "
-                           "%01X%02X\nOnly 0-7 allowed in this mode.\n",
-                           pattern_number, step_number, effectnum,
-                           effectparams);
-                }
-                else
-                {
-                    // Note + Effect
-                    result[0] = BIT(7) | note_index;
-                    result[1] = BIT(7) | (converted_num << 4) | instrument;
-                    result[2] = converted_params;
-                    command_len = 3;
-                }
-            }
-            else // Note + No effect!! -> We need at least volume change!
-            {
-                printf("WARNING: Invalid command at pattern %d, step %d, channel 3: "
-                       "%01X%02X\n", pattern_number, step_number, effectnum,
-                       effectparams);
-
-                if (effectnum == 0)
-                    printf("Volume must be set when using a note.\n");
-            }
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 3: "
+                   "%01X%02X\n", pattern_number, step_number,
+                   effectnum, effectparams);
         }
     }
 
-    out_write_hex(result[0]);
-
-    if (command_len > 1)
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
     {
-        out_write_str(", ");
-        out_write_hex(result[1]);
+        command[0] |= HAS_NOTE;
+        command[frequency_ptr] = note_index & 0x7F;
+        command_size = frequency_ptr + 1;
 
-        if (command_len > 2)
-        {
-            out_write_str(", ");
-            out_write_hex(result[2]);
-        }
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
+    // Check if it's needed to add a volume
+    if (volume > -1)
+    {
+        command[0] |= HAS_VOLUME;
+        command[0] |= volume_mod_to_gb_ch3(volume) & 0x07;
+    }
+
+    for (int i = 0; i < command_size; i++)
+    {
+        out_write_hex(command[i]);
+        out_write_str(",");
     }
 }
 
@@ -694,102 +617,70 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
                       uint8_t note_index, uint8_t samplenum, uint8_t effectnum,
                       uint8_t effectparams)
 {
-    uint8_t result[3] = {0, 0, 0};
-    int command_len = 1; // NOP
+    uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
+    int kit_ptr = 1; // Destination of the kit
+    int command_size = 1;
 
-    if (note_index > (6 * 12 - 1)) // Not valid note -> check if any effect
+    int volume = -1;
+
+    // If the effect is "Set Volume", handle it before and clear it so that it
+    // isn't handled later.
+    if (effectnum == 0xC)
     {
-        if ((effectnum != 0) || (effectparams != 0))
-        {
-            // Volume or others?
-            if (effectnum == 0xC)
-            {
-                // Volume
-                result[0] = BIT(5) | volume_mod_to_gb(effectparams);
-                command_len = 1;
-            }
-            else
-            {
-                // Others
-                uint8_t converted_num, converted_params;
-                if (effect_mod_to_gb(pattern_number, step_number, 4, effectnum,
-                                     effectparams, &converted_num,
-                                     &converted_params) == 1)
-                {
-                    result[0] = BIT(6) | converted_num;
-                    result[1] = converted_params;
-                    command_len = 2;
-                }
-                else
-                {
-                    if (effectnum != 0)
-                    {
-                        printf("WARNING: Invalid command at pattern %d, step %d, channel"
-                               " 4: %01X%02X\n", pattern_number, step_number,
-                               effectnum, effectparams);
-                    }
-
-                    // NOP
-                    result[0] = 0;
-                    command_len = 1;
-                }
-            }
-        }
-        else
-        {
-            // NOP
-            result[0] = 0;
-            command_len = 1;
-        }
+        volume = effectparams;
+        effectnum = 0;
+        effectparams = 0;
     }
-    else // New note (not a real note...)
-    {
-        uint8_t instrument = (samplenum - 16) & 0x1F; // Only 0 - 0xF implemented
 
+    if ((effectnum != 0) || (effectparams != 0))
+    {
         uint8_t converted_num, converted_params;
-        if (effectnum == 0xC)
+        if (effect_mod_to_gb(pattern_number, step_number, 1, effectnum,
+                             effectparams, &converted_num,
+                             &converted_params))
         {
-            // Note + Volume
-            result[0] = BIT(7) | instrument;
-            result[1] = volume_mod_to_gb(effectparams);
-            command_len = 2;
+            command[0] |= HAS_EFFECT;
+            command[1] |= converted_num & 0x0F;
+            command[2] = converted_params & 0xFF;
+
+            kit_ptr = 3;
+            command_size = 3;
         }
         else
         {
-            if (effect_mod_to_gb(pattern_number, step_number, 4, effectnum,
-                                 effectparams, &converted_num,
-                                 &converted_params) == 1)
-            {
-                // Note + Effect
-                result[0] = BIT(7) | instrument;
-                result[1] = BIT(7) | converted_num;
-                result[2] = converted_params;
-                command_len = 3;
-            }
-            else // Note + No effect!! -> We need at least volume change!
-            {
-                printf("WARNING: Invalid command at pattern %d, step %d, channel 4: "
-                       "%01X%02X\n", pattern_number, step_number, effectnum,
-                       effectparams);
-
-                if(effectnum == 0)
-                    printf("Volume must be set when using a new note.\n");
-            }
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 4: "
+                   "%01X%02X\n", pattern_number, step_number,
+                   effectnum, effectparams);
         }
     }
 
-    out_write_hex(result[0]);
-
-    if (command_len > 1)
+    // Check if there is a sample defined
+    if (samplenum > 0)
     {
-        out_write_str(", ");
-        out_write_hex(result[1]);
+        uint32_t kit = (samplenum - 1) & 0xF;
 
-        if (command_len > 2)
-        {
-            out_write_str(", ");
-            out_write_hex(result[2]);
-        }
+        command[0] |= HAS_KIT;
+        command[kit_ptr] = kit & 0x0F;
+
+        command_size++;
+
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
+    // Check if it's needed to add a volume
+    if (volume > -1)
+    {
+        command[0] |= HAS_VOLUME;
+        command[0] |= volume_mod_to_gb(volume) & 0x0F;
+    }
+
+    for (int i = 0; i < command_size; i++)
+    {
+        out_write_hex(command[i]);
+        out_write_str(",");
     }
 }
 
@@ -820,7 +711,8 @@ void convert_pattern(_pattern_t *pattern, uint8_t number)
         note_index = mod_get_index_from_period(sampleperiod, number, step, 1);
         convert_channel1(number, step, note_index, samplenum, effectnum,
                          effectparams);
-        out_write_str(", ");
+
+        out_write_str(" ");
 
         // Channel 2
         memcpy(data, pattern->info[step][1], 4);
@@ -828,24 +720,26 @@ void convert_pattern(_pattern_t *pattern, uint8_t number)
         note_index = mod_get_index_from_period(sampleperiod, number, step, 2);
         convert_channel2(number, step, note_index, samplenum, effectnum,
                          effectparams);
-        out_write_str(", ");
 
-        //Channel 3
+        out_write_str(" ");
+
+        // Channel 3
         memcpy(data, pattern->info[step][2], 4);
         unpack_info(data, &samplenum, &sampleperiod, &effectnum, &effectparams);
         note_index = mod_get_index_from_period(sampleperiod, number, step, 3);
         convert_channel3(number, step, note_index, samplenum, effectnum,
                          effectparams);
-        out_write_str(", ");
 
-        //Channel 4
+        out_write_str(" ");
+
+        // Channel 4
         memcpy(data, pattern->info[step][3], 4);
         unpack_info(data, &samplenum, &sampleperiod, &effectnum, &effectparams);
         note_index = mod_get_index_from_period(sampleperiod, number, step, 4);
         convert_channel4(number, step, note_index, samplenum, effectnum,
                          effectparams);
 
-        out_write_str(",\n");
+        out_write_str("\n");
     }
 
     out_write_str("};\n");
@@ -867,8 +761,6 @@ void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-    int i;
-
     printf("mod2gbt v4.0.0 (part of GBT Player)\n");
     printf("Copyright (c) 2009-2022 Antonio Niño Díaz "
            "<antonio_nd@outlook.com>\n");
@@ -883,7 +775,7 @@ int main(int argc, char *argv[])
 
     strncpy(label_name, argv[2], sizeof(label_name));
 
-    for (i = 3; i < argc; i++)
+    for (int i = 3; i < argc; i++)
     {
         if (strcmp(argv[i], "-speed") == 0)
         {
@@ -916,14 +808,14 @@ int main(int argc, char *argv[])
     }
 
     printf("\nSong name: ");
-    for (i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++)
         if (modfile->name[i])
             printf("%c", modfile->name[i]);
     printf("\n");
 
     uint8_t num_patterns = 0;
 
-    for (i = 0; i < 128; i++)
+    for (int i = 0; i < 128; i++)
         if (modfile->pattern_table[i] > num_patterns)
             num_patterns = modfile->pattern_table[i];
 
@@ -948,7 +840,7 @@ int main(int argc, char *argv[])
                   "#include <stddef.h>\n#include <stdint.h>\n\n");
 
     printf("\nConverting patterns...\n");
-    for (i = 0; i < num_patterns; i++)
+    for (int i = 0; i < num_patterns; i++)
     {
         printf(".");
         convert_pattern(&(modfile->pattern[i]), i);
@@ -960,7 +852,7 @@ int main(int argc, char *argv[])
     out_write_str(label_name);
     out_write_str("_data[] = {\n");
 
-    for (i = 0; i < modfile->song_length; i++)
+    for (int i = 0; i < modfile->song_length; i++)
     {
         out_write_str("    ");
         out_write_str(label_name);
