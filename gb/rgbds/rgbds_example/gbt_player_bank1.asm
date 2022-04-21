@@ -1169,7 +1169,7 @@ gbt_channel_4_handle:: ; de = info
 
     ; Has instrument
 
-    and     a,$1F
+    and     a,$0F
     ld      hl,gbt_noise
     ld      c,a
     ld      b,0

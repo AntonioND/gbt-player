@@ -1187,7 +1187,7 @@ ch4_has_instrument$:
 
 	; Has instrument
 
-	and	a,#0x1F
+	and	a,#0x0F
 	ld	hl,#gbt_noise
 	ld	c,a
 	ld	b,#0

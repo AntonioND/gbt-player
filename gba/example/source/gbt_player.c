@@ -840,7 +840,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 
     if (b & BIT(7)) // Has instrument
     {
-        uint32_t index = b & 0x1F;
+        uint32_t index = b & 0x0F;
         gbt.instr[3] = gbt_noise[index];
 
         b = *data++;
