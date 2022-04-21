@@ -52,10 +52,9 @@ typedef struct {
     // Cut note
     uint8_t cut_note_tick[4]; // If tick == gbt.cut_note_tick, stop note.
 
-    // Last step of last pattern this is set to 1
-    uint8_t have_to_stop_next_step;
-
-    uint8_t update_pattern_pointers; // set to 1 by jump effects
+    uint8_t jump_requested; // set to 1 by jump effects
+    uint8_t jump_target_step;
+    uint8_t jump_target_pattern;
 
 } gbt_player_info_t;
 
@@ -100,12 +99,11 @@ void gbt_play(const void *song, int speed)
 
     gbt_get_pattern_ptr(0);
 
-    gbt.current_step = -1;
+    gbt.current_step = 0;
     gbt.current_pattern = 0;
     gbt.ticks_elapsed = 0;
     gbt.loop_enabled = 0;
-    gbt.have_to_stop_next_step = 0;
-    gbt.update_pattern_pointers = 0;
+    gbt.jump_requested = 0;
 
     // Force refresh as soon as possible
     gbt.ticks_elapsed = gbt.speed - 1;
@@ -234,30 +232,18 @@ static int gbt_ch1234_speed(uint32_t args)
 
 static int gbt_ch1234_jump_pattern(uint32_t args)
 {
-    gbt.current_pattern = args;
-
-    gbt.current_step = 0;
-    gbt.have_to_stop_next_step = 0; // Clear stop flag
-
-    gbt.update_pattern_pointers = 1;
+    gbt.jump_requested = 1;
+    gbt.jump_target_step = 0;
+    gbt.jump_target_pattern = args;
 
     return 0;
 }
 
 static int gbt_ch1234_jump_position(uint32_t args)
 {
-    gbt.current_step = args;
-
-    gbt.current_pattern++;
-
-    // Check to see if jump puts us past end of song
-    gbt_get_pattern_ptr(gbt.current_pattern);
-    if (gbt.current_step_data_ptr == NULL)
-    {
-        gbt.current_pattern = 0;
-    }
-
-    gbt.update_pattern_pointers = 1;
+    gbt.jump_requested = 1;
+    gbt.jump_target_step = args;
+    gbt.jump_target_pattern = gbt.current_pattern + 1;
 
     return 0;
 }
@@ -916,51 +902,27 @@ void gbt_update(void)
 
     gbt_update_effects_internal();
 
-    // Check if last step
-    // ------------------
+    // Check if the song has ended
+    // ---------------------------
 
-    if (gbt.have_to_stop_next_step)
+    if (gbt.current_step_data_ptr == NULL)
     {
-        gbt_stop();
-        gbt.have_to_stop_next_step = 0;
-        return;
-    }
-
-    // Increment step/pattern
-    // ----------------------
-
-    gbt.current_step++;
-    if (gbt.current_step == 64)
-    {
-        // Increment pattern
-
-        gbt.current_step = 0;
-
-        gbt.current_pattern++;
-
-        gbt_get_pattern_ptr(gbt.current_pattern);
-
-        if (gbt.current_step_data_ptr == NULL)
+        if (gbt.loop_enabled)
         {
-            // The song has ended
-
-            if (gbt.loop_enabled)
-            {
-                // If loop is enabled, jump to pattern 0
-                gbt.current_pattern = 0;
-                gbt_get_pattern_ptr(gbt.current_pattern);
-            }
-            else
-            {
-                // If loop is disabled, stop song
-                // Stop it next step, if not this step won't be played
-
-                gbt.have_to_stop_next_step = 1;
-            }
+            // If loop is enabled, jump to pattern 0
+            gbt.current_pattern = 0;
+            gbt_get_pattern_ptr(gbt.current_pattern);
+        }
+        else
+        {
+            // If loop is disabled, stop song
+            gbt_stop();
+            return;
         }
     }
 
     // Update channels
+    // ---------------
 
     const uint8_t *ptr = gbt.current_step_data_ptr;
 
@@ -972,6 +934,7 @@ void gbt_update(void)
     gbt.current_step_data_ptr = ptr;
 
     // Handle panning
+    // --------------
 
     uint16_t mask =
         SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT |
@@ -983,29 +946,45 @@ void gbt_update(void)
 
     REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
 
-    // Check if any effect has changed the pattern or step
-    if (gbt.update_pattern_pointers)
-    {
-        gbt.update_pattern_pointers = 0; // clear flag
+    // Increment step
+    // --------------
 
-        gbt.have_to_stop_next_step = 0; // clear stop flag
+    if (gbt.jump_requested == 0)
+    {
+        gbt.current_step++;
+
+        if (gbt.current_step == 64)
+        {
+            // Increment pattern
+            gbt.current_step = 0;
+            gbt.current_pattern++;
+            gbt_get_pattern_ptr(gbt.current_pattern);
+        }
+    }
+    else
+    {
+        gbt.jump_requested = 0;
+
+        gbt.current_step = gbt.jump_target_step;
+        gbt.current_pattern = gbt.jump_target_pattern;
 
         gbt_get_pattern_ptr(gbt.current_pattern); // set ptr to start of pattern
 
-        // Search the step
+        // Seek the requested step
 
         const uint8_t *src_search = gbt.current_step_data_ptr;
 
-        for (int i = 0; i < 4 * gbt.current_step; i++)
+        for (int i = 0; i < gbt.current_step; i++)
         {
-            if (i < 4)
+            for (int j = 0; j < 3; j++) // Channels 1-3
             {
                 // Note: The volume bit doesn't affect the final size.
                 const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
                 uint8_t bits = (*src_search) >> 5;
                 src_search += sizes[bits];
             }
-            else
+
+            // Channel 4
             {
                 // Note: The volume bit doesn't affect the final size.
                 const uint8_t sizes[4] = { 1, 3, 2, 4 };

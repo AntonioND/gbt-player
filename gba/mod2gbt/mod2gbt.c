@@ -277,10 +277,11 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
             *converted_params = effectparams;
             return 1;
         }
-        case 0xB: // Jump
+        case 0xB: // Jump to pattern
         {
             *converted_num = 8;
             *converted_params = effectparams;
+            // TODO: Fail if this jumps out of bounds
             return 1;
         }
         case 0xC: // Volume -> Not handled here
@@ -295,7 +296,6 @@ int effect_mod_to_gb(uint8_t pattern_number, uint8_t step_number,
             *converted_num = 9; // Effect value is BCD, convert to integer
             *converted_params = (((effectparams & 0xF0) >> 4) * 10)
                               +   (effectparams & 0x0F);
-            //*converted_params = effectparams; // ... or not?
             return 1;
         }
         case 0xE:
