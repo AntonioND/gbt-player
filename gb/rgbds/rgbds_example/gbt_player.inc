@@ -9,7 +9,7 @@
 ;###############################################################################
 
     IF !DEF(GBT_PLAYER_INC)
-GBT_PLAYER_INC = 1
+    DEF GBT_PLAYER_INC = 1
 
 ;###############################################################################
 
@@ -43,7 +43,7 @@ GBT_PLAYER_INC = 1
 ; - If it's commented, only 256 banks are allowed, it's a little bit faster
 ;   and saves a few bytes. MBC1, MBC3 and MBC5 (and others).
 
-;GBT_USE_MBC5_512BANKS SET 1
+;    DEF GBT_USE_MBC5_512BANKS = 1
 
 ;###############################################################################
 
