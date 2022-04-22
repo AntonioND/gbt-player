@@ -381,8 +381,7 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
                       uint8_t effectparams)
 {
     uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
-    int frequency_ptr = 1; // Destination of the frequency
-    int command_size = 1;
+    int command_ptr = 1;
 
     int volume = -1;
 
@@ -395,15 +394,26 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
         effectparams = 0;
     }
 
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
+    {
+        command[0] |= HAS_NOTE;
+        command[command_ptr] = note_index & 0x7F;
+        command_ptr++;
+
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
     // Check if there is a sample defined
     if (samplenum > 0)
     {
         uint32_t instrument = (samplenum - 1) & 3;
 
         command[0] |= HAS_INSTRUMENT;
-        command[1] = (instrument << 4) & 0x30;
-        frequency_ptr = 2;
-        command_size = 2;
+        command[command_ptr] = (instrument << 4) & 0x30;
     }
 
     if ((effectnum != 0) || (effectparams != 0))
@@ -414,11 +424,9 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
                              &converted_params))
         {
             command[0] |= HAS_EFFECT;
-            command[1] |= converted_num & 0x0F;
-            command[2] = converted_params & 0xFF;
-
-            frequency_ptr = 3;
-            command_size = 3;
+            command[command_ptr] |= converted_num & 0x0F;
+            command_ptr++;
+            command[command_ptr] = converted_params & 0xFF;
         }
         else
         {
@@ -428,19 +436,6 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
         }
     }
 
-    // Check if it's needed to add a note
-    if (note_index <= (6 * 12 - 1))
-    {
-        command[0] |= HAS_NOTE;
-        command[frequency_ptr] = note_index & 0x7F;
-        command_size = frequency_ptr + 1;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        if (volume == -1)
-            volume = 64;
-    }
-
     // Check if it's needed to add a volume
     if (volume > -1)
     {
@@ -448,7 +443,11 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
         command[0] |= volume_mod_to_gb(volume) & 0x0F;
     }
 
-    for (int i = 0; i < command_size; i++)
+    // Note: The volume bit doesn't affect the final size.
+    const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
+    uint8_t bits = command[0] >> 5;
+
+    for (int i = 0; i < sizes[bits]; i++)
     {
         out_write_hex(command[i]);
         out_write_str(",");
@@ -460,8 +459,7 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
                       uint8_t effectparams)
 {
     uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
-    int frequency_ptr = 1; // Destination of the frequency
-    int command_size = 1;
+    int command_ptr = 1;
 
     int volume = -1;
 
@@ -474,15 +472,26 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
         effectparams = 0;
     }
 
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
+    {
+        command[0] |= HAS_NOTE;
+        command[command_ptr] = note_index & 0x7F;
+        command_ptr++;
+
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
     // Check if there is a sample defined
     if (samplenum > 0)
     {
         uint32_t instrument = (samplenum - 1) & 3;
 
         command[0] |= HAS_INSTRUMENT;
-        command[1] = (instrument << 4) & 0x30;
-        frequency_ptr = 2;
-        command_size = 2;
+        command[command_ptr] = (instrument << 4) & 0x30;
     }
 
     if ((effectnum != 0) || (effectparams != 0))
@@ -493,31 +502,16 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
                              &converted_params))
         {
             command[0] |= HAS_EFFECT;
-            command[1] |= converted_num & 0x0F;
-            command[2] = converted_params & 0xFF;
-
-            frequency_ptr = 3;
-            command_size = 3;
+            command[command_ptr] |= converted_num & 0x0F;
+            command_ptr++;
+            command[command_ptr] = converted_params & 0xFF;
         }
         else
         {
-            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 2: "
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 1: "
                    "%01X%02X\n", pattern_number, step_number,
                    effectnum, effectparams);
         }
-    }
-
-    // Check if it's needed to add a note
-    if (note_index <= (6 * 12 - 1))
-    {
-        command[0] |= HAS_NOTE;
-        command[frequency_ptr] = note_index & 0x7F;
-        command_size = frequency_ptr + 1;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        if (volume == -1)
-            volume = 64;
     }
 
     // Check if it's needed to add a volume
@@ -527,7 +521,11 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
         command[0] |= volume_mod_to_gb(volume) & 0x0F;
     }
 
-    for (int i = 0; i < command_size; i++)
+    // Note: The volume bit doesn't affect the final size.
+    const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
+    uint8_t bits = command[0] >> 5;
+
+    for (int i = 0; i < sizes[bits]; i++)
     {
         out_write_hex(command[i]);
         out_write_str(",");
@@ -539,8 +537,7 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
                       uint8_t effectparams)
 {
     uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
-    int frequency_ptr = 1; // Destination of the frequency
-    int command_size = 1;
+    int command_ptr = 1;
 
     int volume = -1;
 
@@ -553,15 +550,26 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
         effectparams = 0;
     }
 
+    // Check if it's needed to add a note
+    if (note_index <= (6 * 12 - 1))
+    {
+        command[0] |= HAS_NOTE;
+        command[command_ptr] = note_index & 0x7F;
+        command_ptr++;
+
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
     // Check if there is a sample defined
     if (samplenum > 0)
     {
         uint32_t instrument = samplenum & 0x7;
 
         command[0] |= HAS_INSTRUMENT;
-        command[1] = (instrument << 4) & 0xF0;
-        frequency_ptr = 2;
-        command_size = 2;
+        command[command_ptr] = (instrument << 4) & 0xF0;
     }
 
     if ((effectnum != 0) || (effectparams != 0))
@@ -572,31 +580,16 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
                              &converted_params))
         {
             command[0] |= HAS_EFFECT;
-            command[1] |= converted_num & 0x0F;
-            command[2] = converted_params & 0xFF;
-
-            frequency_ptr = 3;
-            command_size = 3;
+            command[command_ptr] |= converted_num & 0x0F;
+            command_ptr++;
+            command[command_ptr] = converted_params & 0xFF;
         }
         else
         {
-            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 3: "
+            printf("WARNING: Invalid command: Pattern %d, Step %d, Channel 1: "
                    "%01X%02X\n", pattern_number, step_number,
                    effectnum, effectparams);
         }
-    }
-
-    // Check if it's needed to add a note
-    if (note_index <= (6 * 12 - 1))
-    {
-        command[0] |= HAS_NOTE;
-        command[frequency_ptr] = note_index & 0x7F;
-        command_size = frequency_ptr + 1;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        if (volume == -1)
-            volume = 64;
     }
 
     // Check if it's needed to add a volume
@@ -606,7 +599,11 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
         command[0] |= volume_mod_to_gb_ch3(volume) & 0x07;
     }
 
-    for (int i = 0; i < command_size; i++)
+    // Note: The volume bit doesn't affect the final size.
+    const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
+    uint8_t bits = command[0] >> 5;
+
+    for (int i = 0; i < sizes[bits]; i++)
     {
         out_write_hex(command[i]);
         out_write_str(",");
@@ -618,8 +615,7 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
                       uint8_t effectparams)
 {
     uint8_t command[4] = { 0, 0, 0, 0 }; // NOP
-    int kit_ptr = 1; // Destination of the kit
-    int command_size = 1;
+    int command_ptr = 1;
 
     int volume = -1;
 
@@ -632,6 +628,21 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
         effectparams = 0;
     }
 
+    // Check if there is a sample defined
+    if (samplenum > 0)
+    {
+        uint32_t kit = (samplenum - 1) & 0xF;
+
+        command[0] |= HAS_KIT;
+        command[command_ptr] = kit & 0x0F;
+        command_ptr++;
+
+        // If a note is set with no volume, set volume to the max
+        // TODO: This should take the volume from the sample volume
+        if (volume == -1)
+            volume = 64;
+    }
+
     if ((effectnum != 0) || (effectparams != 0))
     {
         uint8_t converted_num, converted_params;
@@ -640,11 +651,9 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
                              &converted_params))
         {
             command[0] |= HAS_EFFECT;
-            command[1] |= converted_num & 0x0F;
-            command[2] = converted_params & 0xFF;
-
-            kit_ptr = 3;
-            command_size = 3;
+            command[command_ptr] |= converted_num & 0x0F;
+            command_ptr++;
+            command[command_ptr] = converted_params & 0xFF;
         }
         else
         {
@@ -654,22 +663,6 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
         }
     }
 
-    // Check if there is a sample defined
-    if (samplenum > 0)
-    {
-        uint32_t kit = (samplenum - 1) & 0xF;
-
-        command[0] |= HAS_KIT;
-        command[kit_ptr] = kit & 0x0F;
-
-        command_size++;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        if (volume == -1)
-            volume = 64;
-    }
-
     // Check if it's needed to add a volume
     if (volume > -1)
     {
@@ -677,7 +670,11 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
         command[0] |= volume_mod_to_gb(volume) & 0x0F;
     }
 
-    for (int i = 0; i < command_size; i++)
+    // Note: The volume bit doesn't affect the final size.
+    const uint8_t sizes[4] = { 1, 3, 2, 4 };
+    uint8_t bits = command[0] >> 6;
+
+    for (int i = 0; i < sizes[bits]; i++)
     {
         out_write_hex(command[i]);
         out_write_str(",");

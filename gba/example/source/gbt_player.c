@@ -347,6 +347,14 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
         has_to_update_registers = 1;
     }
 
+    if (has_note)
+    {
+        uint32_t index = *data++ & 0x7F;
+        gbt.arpeggio_freq_index[0][0] = index;
+        gbt.freq[0] = _gbt_get_freq_from_index(index);
+        has_to_update_registers = 1;
+    }
+
     if (has_instrument)
     {
         gbt.instr[0] = (*data & 0x30) << 2;
@@ -358,15 +366,6 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
         uint8_t effect = (*data++) & 0x0F;
         uint8_t args = *data;
         has_to_update_registers |= gbt_channel_1_set_effect(effect, args);
-    }
-
-    if (has_note)
-    {
-        data++;
-        uint32_t index = *data & 0x7F;
-        gbt.arpeggio_freq_index[0][0] = index;
-        gbt.freq[0] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
     }
 
     if (has_to_update_registers)
@@ -499,6 +498,14 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
         has_to_update_registers = 1;
     }
 
+    if (has_note)
+    {
+        uint32_t index = *data++ & 0x7F;
+        gbt.arpeggio_freq_index[1][0] = index;
+        gbt.freq[1] = _gbt_get_freq_from_index(index);
+        has_to_update_registers = 1;
+    }
+
     if (has_instrument)
     {
         gbt.instr[1] = (*data & 0x30) << 2;
@@ -510,15 +517,6 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
         uint8_t effect = (*data++) & 0x0F;
         uint8_t args = *data;
         has_to_update_registers |= gbt_channel_2_set_effect(effect, args);
-    }
-
-    if (has_note)
-    {
-        data++;
-        uint32_t index = *data & 0x7F;
-        gbt.arpeggio_freq_index[1][0] = index;
-        gbt.freq[1] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
     }
 
     if (has_to_update_registers)
@@ -669,6 +667,14 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
         has_to_update_registers = 1;
     }
 
+    if (has_note)
+    {
+        uint32_t index = *data++ & 0x7F;
+        gbt.arpeggio_freq_index[2][0] = index;
+        gbt.freq[2] = _gbt_get_freq_from_index(index);
+        has_to_update_registers = 1;
+    }
+
     if (has_instrument)
     {
         gbt.instr[2] = (*data & 0x70) >> 4;
@@ -680,15 +686,6 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
         uint8_t effect = (*data++) & 0x0F;
         uint8_t args = *data;
         has_to_update_registers |= gbt_channel_3_set_effect(effect, args);
-    }
-
-    if (has_note)
-    {
-        data++;
-        uint32_t index = *data & 0x7F;
-        gbt.arpeggio_freq_index[2][0] = index;
-        gbt.freq[2] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
     }
 
     if (has_to_update_registers)
@@ -809,18 +806,18 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
         has_to_update_registers = 1;
     }
 
+    if (has_kit)
+    {
+        uint32_t index = *data++ & 0x0F;
+        gbt.instr[3] = gbt_noise[index];
+        has_to_update_registers = 1;
+    }
+
     if (has_effect)
     {
         uint8_t effect = (*data++) & 0x0F;
         uint8_t args = *data++;
         has_to_update_registers |= gbt_channel_4_set_effect(effect, args);
-    }
-
-    if (has_kit)
-    {
-        uint32_t index = *data & 0x0F;
-        gbt.instr[3] = gbt_noise[index];
-        has_to_update_registers = 1;
     }
 
     if (has_to_update_registers)
