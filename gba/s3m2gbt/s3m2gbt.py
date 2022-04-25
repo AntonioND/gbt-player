@@ -144,7 +144,7 @@ def convert_channel1(pattern_number, step_number,
 
     # Check if there is a sample defined
     if samplenum > 0:
-        instrument = (samplenum - 1) & 3
+        instrument = samplenum & 3
 
         command[0] |= HAS_INSTRUMENT
         command[command_ptr] = (instrument << 4) & 0x30
@@ -189,7 +189,7 @@ def convert_channel2(pattern_number, step_number,
 
     # Check if there is a sample defined
     if samplenum > 0:
-        instrument = (samplenum - 1) & 3
+        instrument = samplenum & 3
 
         command[0] |= HAS_INSTRUMENT
         command[command_ptr] = (instrument << 4) & 0x30
