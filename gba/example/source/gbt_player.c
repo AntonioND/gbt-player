@@ -775,7 +775,7 @@ static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 static void channel4_refresh_registers(void)
 {
     REG_SOUND4CNT_L = gbt.vol[3];
-    REG_SOUND4CNT_H = SOUND2CNT_H_RESTART | gbt.instr[3];
+    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.instr[3];
 }
 
 static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
