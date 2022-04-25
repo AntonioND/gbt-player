@@ -38,12 +38,3 @@ ECn - Cut Note after n ticks. If n > speed or n = 0, it won't work.
 Fnn - Sets speed to nn (in hexadecimal). Valid values are 01h to 1Fh.
       The higher the value, the slower the song. BPM speed not supported.
 
-Effects are limited in channel 3 when setting a new note (only half of them
-are available). It shouldn't be a problem since the effects that can't be
-used are control commands that can be used by other channels.
-
-**********************************************************************
-* You should set volume and instrument whenever you put a new note!! *
-* You should set instrument whenever you change volume in CH3!!      *
-* You should always put an instrument whenever you use arpeggio!!    *
-**********************************************************************
