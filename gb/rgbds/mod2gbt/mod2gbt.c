@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[])
 
     const char *extension = export_to_gba ? ".c" : ".asm";
 
-    char *filename = malloc(strlen(label_name) + strlen(extension));
+    char *filename = malloc(strlen(label_name) + strlen(extension) + 1);
     if (filename == NULL)
     {
         printf("Can't allocate memory for file name\n");

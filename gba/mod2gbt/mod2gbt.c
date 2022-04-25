@@ -830,7 +830,7 @@ int main(int argc, char *argv[])
 
     const char *extension = ".c";
 
-    char *filename = malloc(strlen(label_name) + strlen(extension));
+    char *filename = malloc(strlen(label_name) + strlen(extension) + 1);
     if (filename == NULL)
     {
         printf("ERROR: Can't allocate memory for file name\n");
