@@ -1,4 +1,4 @@
-// GBT Player v3.1.0
+// GBT Player v4.0.0
 //
 // SPDX-License-Identifier: MIT
 //
@@ -17,6 +17,9 @@
 typedef int (*effect_handler)(uint32_t args);
 
 typedef struct {
+
+    // Array of commands to run before the start of the song (or NULL)
+    const uint8_t *startup_cmds_ptr;
 
     // Pointer to the pattern pointer array
     uint8_t * const *pattern_array_ptr;
@@ -92,9 +95,50 @@ static void gbt_get_pattern_ptr(int pattern_number)
     gbt.current_step_data_ptr = gbt.pattern_array_ptr[pattern_number];
 }
 
+static void gbt_run_startup_commands(const uint8_t *ptr)
+{
+    if (ptr == NULL)
+        return;
+
+    while (1)
+    {
+        uint8_t cmd = *ptr++;
+
+        if (cmd == 0) // End setup
+        {
+            break;
+        }
+        else if (cmd == 1) // Initial speed
+        {
+            gbt.speed = *ptr++;
+        }
+        else if (cmd == 2) // Initial panning
+        {
+            gbt.pan[0] = *ptr++;
+            gbt.pan[1] = *ptr++;
+            gbt.pan[2] = *ptr++;
+            gbt.pan[3] = *ptr++;
+        }
+    }
+}
+
 void gbt_play(const void *song, int speed)
 {
-    gbt.pattern_array_ptr = song;
+    // If the user hasn't specified a speed, set the default value
+
+    if (speed <= 0)
+        speed = 6;
+
+    // Load pointers to startup commands and to list of patterns
+
+    uint8_t * const *ptr = song;
+
+    gbt.startup_cmds_ptr = ptr[0];
+    gbt.pattern_array_ptr = ptr;
+    gbt.pattern_array_ptr++;
+
+    // Initialize player state
+
     gbt.speed = speed;
 
     gbt_get_pattern_ptr(0);
@@ -140,6 +184,12 @@ void gbt_play(const void *song, int speed)
     gbt.cut_note_tick[2] = 0xFF;
     gbt.cut_note_tick[3] = 0xFF;
 
+    // Run startup commands after internal player status has been initialized
+
+    gbt_run_startup_commands(gbt.startup_cmds_ptr);
+
+    // Initialize hardware registers
+
     REG_SOUNDCNT_X = SOUNDCNT_X_MASTER_ENABLE;
 
     REG_SOUNDCNT_L = 0;
@@ -160,6 +210,8 @@ void gbt_play(const void *song, int speed)
 
     REG_SOUNDCNT_L = SOUNDCNT_L_PSG_VOL_RIGHT_SET(7)
                    | SOUNDCNT_L_PSG_VOL_LEFT_SET(7);
+
+    // Everything is ready
 
     gbt.playing = 1;
 }
@@ -909,6 +961,7 @@ void gbt_update(void)
             // If loop is enabled, jump to pattern 0
             gbt.current_pattern = 0;
             gbt_get_pattern_ptr(gbt.current_pattern);
+            gbt_run_startup_commands(gbt.startup_cmds_ptr);
         }
         else
         {

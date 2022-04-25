@@ -847,7 +847,9 @@ int main(int argc, char *argv[])
 
     out_write_str("const uint8_t *");
     out_write_str(label_name);
-    out_write_str("_data[] = {\n");
+    out_write_str("[] = {\n");
+
+    out_write_str("    NULL,\n"); // MOD files have no initial state
 
     for (int i = 0; i < modfile->song_length; i++)
     {

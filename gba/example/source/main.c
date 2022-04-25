@@ -1,4 +1,4 @@
-// GBT Player v3.1.0
+// GBT Player v4.0.0
 //
 // SPDX-License-Identifier: MIT
 //
@@ -8,14 +8,14 @@
 
 #include "gbt_player.h"
 
-extern const uint8_t *template_data[];
+extern const uint8_t *template[];
 
 int main(int argc, char *argv[])
 {
     irqInit();
     irqEnable(IRQ_VBLANK);
 
-    gbt_play(template_data, 5);
+    gbt_play(template, -1);
 
     while (1)
     {
