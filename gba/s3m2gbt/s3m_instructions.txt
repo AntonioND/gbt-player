@@ -1,3 +1,15 @@
+                       INITIAL STATUS
+                       --------------
+
+You can set the global song speed in the song settings, as well as the initial
+panning for each channel. It isn't needed to set them by using them as effects.
+
+Don't change the BPM of the song, it's set so that it matches the refresh
+frequency of the GB/GBC/GBA.
+
+The converter ignores global volumes, as well as sample volumes. The only
+volumes used are the ones in the patterns.
+
                          FREQUENCIES
                          -----------
 
@@ -24,23 +36,22 @@ channel 3 is a square wave).
                            EFFECTS
                            -------
 
-0xy - Arpeggio. Only channels 1, 2 and 3.
+Ann - Sets speed to nn (in hexadecimal). Valid values 01h and higher.
+      The higher the value, the slower the song.
 
 Bnn - Jump to pattern in order nn (in hexadecimal).
+
+Cnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
+      If used the last step of a pattern it will jump two patterns, not one!
+
+Jxy - Arpeggio. Only channels 1, 2 and 3.
 
 Cnn - Sets the volume to nn (in hexadecimal). Valid values from 00h to 40h.
       Channel 3 can only be set to 0%, 25%, 50% and 100%. Others can be set
       in a range of 0-Fh. On GBA, channel 3 can also be set to 75%.
 
-Dnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
-      If used the last step of a pattern it will jump two patterns, not one!
-
-E8n - Sets the panning to n (in hexadecimal).
+S8n - Sets the panning to n (in hexadecimal).
       Left --- Both --- Right
       0123   456789AB    CDEF
 
-ECn - Cut Note after n ticks. If n > speed or n = 0, it won't work.
-
-Fnn - Sets speed to nn (in hexadecimal). Valid values are 01h to 1Fh.
-      The higher the value, the slower the song. BPM speed not supported.
-
+SCn - Cut Note after n ticks. If n > speed or n = 0, it won't work.
