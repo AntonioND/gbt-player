@@ -29,12 +29,21 @@ format and build a sample ROM:
 
 3. Run ``sh make_rom.sh`` on your terminal.
 
-You can also use MOD files instead of S3M, but it is highly discouraged. For
-that, you need to compile ``mod2gbt``.
+Legacy songs in MOD format
+--------------------------
+
+You can also use MOD files instead of S3M, but it is highly discouraged. This
+should only be done if you are using songs that were already in MOD format and
+don't want to convert them to S3M.
+
+You will need to compile and use ``mod2gbt``:
 
 1. Go to the ``mod2gbt`` folder in a terminal.
 
 2. Type ``make``
+
+This converter tries to imitate bugs present in v3.X (like incorrect volume
+handling when a note is set but no volume is set).
 
 Notes
 -----
