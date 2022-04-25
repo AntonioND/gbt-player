@@ -39,6 +39,11 @@ work. It would be nice to you tell me if you use it, anyway. :)
 Changelog
 ---------
 
+- Version 4.0.1 (2022/4/25)
+
+  - Fix compatibility with old MOD songs in ``mod2gbt`` in the GBA port.
+  - Fix crash in ``mod2gbt``.
+
 - Version 4.0.0 (2022/4/25)
 
   - This is a GBA only release.

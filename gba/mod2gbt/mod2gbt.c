@@ -1,5 +1,5 @@
 /*
- * mod2gbt v4.0.0 (Part of GBT Player)
+ * mod2gbt v4.0.1 (Part of GBT Player)
  *
  * SPDX-License-Identifier: MIT
  *
@@ -766,7 +766,7 @@ void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-    printf("mod2gbt v4.0.0 (part of GBT Player)\n");
+    printf("mod2gbt v4.0.1 (part of GBT Player)\n");
     printf("Copyright (c) 2009-2022 Antonio Niño Díaz "
            "<antonio_nd@outlook.com>\n");
     printf("All rights reserved\n");
