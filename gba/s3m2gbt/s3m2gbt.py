@@ -41,7 +41,11 @@ def s3m_note_to_gb(note, pattern, step, channel):
     # This function shouldn't be called for channel 4
     assert channel != 4
 
-    # TODO: s3mNoteOff = 0xFE || s3mNoteNone = 0xFF ?
+    # Note cut with ^^
+    if note == 0xFE:
+        return 0xFE
+
+    # Note off and ^^ note cut should be handled before calling this function
     assert note <= 0x7F
 
     note -= 32
@@ -134,7 +138,7 @@ def convert_channel1(pattern_number, step_number,
     if note_index != -1:
         note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 1)
         command[0] |= HAS_NOTE
-        command[command_ptr] = note_index & 0x7F
+        command[command_ptr] = note_index
         command_ptr = command_ptr + 1
 
         # If a note is set with no volume, set volume to the max
@@ -179,7 +183,7 @@ def convert_channel2(pattern_number, step_number,
     if note_index != -1:
         note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 2)
         command[0] |= HAS_NOTE
-        command[command_ptr] = note_index & 0x7F
+        command[command_ptr] = note_index
         command_ptr = command_ptr + 1
 
         # If a note is set with no volume, set volume to the max
@@ -224,7 +228,7 @@ def convert_channel3(pattern_number, step_number,
     if note_index != -1:
         note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 3)
         command[0] |= HAS_NOTE
-        command[command_ptr] = note_index & 0x7F
+        command[command_ptr] = note_index
         command_ptr = command_ptr + 1
 
         # If a note is set with no volume, set volume to the max
@@ -265,11 +269,21 @@ def convert_channel4(pattern_number, step_number,
     command = [ 0, 0, 0, 0 ] # NOP
     command_ptr = 1
 
+    # Note cut using ^^ as note
+    if note_index == 0xFE:
+        if samplenum > 0:
+            print("WARN: Note cut + Sample in same step: Sample will be ignored.")
+            print(f"  {pattern_number}-{step_number}:Ch 4")
+        samplenum = 0xFE
+
     # Check if there is a sample defined
     if samplenum > 0:
-        kit = samplenum & 0xF;
+        if samplenum == 0xFE:
+            kit = 0xFE;
+        else:
+            kit = samplenum & 0xF;
         command[0] |= HAS_KIT
-        command[command_ptr] = kit & 0xF
+        command[command_ptr] = kit
         command_ptr += 1
 
         # If a note is set with no volume, set volume to the max

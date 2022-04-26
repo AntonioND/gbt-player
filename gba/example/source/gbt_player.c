@@ -392,6 +392,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
     int has_note = header & HAS_NOTE;
 
     int has_to_update_registers = 0;
+    int note_cut = 0;
 
     if (has_volume)
     {
@@ -401,10 +402,17 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 
     if (has_note)
     {
-        uint32_t index = *data++ & 0x7F;
-        gbt.arpeggio_freq_index[0][0] = index;
-        gbt.freq[0] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
+        uint32_t index = *data++;
+        if (index == 0xFE)
+        {
+            note_cut = 1;
+        }
+        else
+        {
+            gbt.arpeggio_freq_index[0][0] = index;
+            gbt.freq[0] = _gbt_get_freq_from_index(index);
+            has_to_update_registers = 1;
+        }
     }
 
     if (has_instrument)
@@ -420,7 +428,12 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
         has_to_update_registers |= gbt_channel_1_set_effect(effect, args);
     }
 
-    if (has_to_update_registers)
+    if (note_cut)
+    {
+        REG_SOUND1CNT_H = 0; // Set volume to 0
+        REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
+    }
+    else if (has_to_update_registers)
     {
         channel1_refresh_registers();
     }
@@ -543,6 +556,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
     int has_note = header & HAS_NOTE;
 
     int has_to_update_registers = 0;
+    int note_cut = 0;
 
     if (has_volume)
     {
@@ -552,10 +566,17 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 
     if (has_note)
     {
-        uint32_t index = *data++ & 0x7F;
-        gbt.arpeggio_freq_index[1][0] = index;
-        gbt.freq[1] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
+        uint32_t index = *data++;
+        if (index == 0xFE)
+        {
+            note_cut = 1;
+        }
+        else
+        {
+            gbt.arpeggio_freq_index[1][0] = index;
+            gbt.freq[1] = _gbt_get_freq_from_index(index);
+            has_to_update_registers = 1;
+        }
     }
 
     if (has_instrument)
@@ -571,7 +592,12 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
         has_to_update_registers |= gbt_channel_2_set_effect(effect, args);
     }
 
-    if (has_to_update_registers)
+    if (note_cut)
+    {
+        REG_SOUND2CNT_L = 0; // Set volume to 0
+        REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
+    }
+    else if (has_to_update_registers)
     {
         channel2_refresh_registers();
     }
@@ -712,6 +738,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
     int has_note = header & HAS_NOTE;
 
     int has_to_update_registers = 0;
+    int note_cut = 0;
 
     if (has_volume)
     {
@@ -721,10 +748,17 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 
     if (has_note)
     {
-        uint32_t index = *data++ & 0x7F;
-        gbt.arpeggio_freq_index[2][0] = index;
-        gbt.freq[2] = _gbt_get_freq_from_index(index);
-        has_to_update_registers = 1;
+        uint32_t index = *data++;
+        if (index == 0xFE)
+        {
+            note_cut = 1;
+        }
+        else
+        {
+            gbt.arpeggio_freq_index[2][0] = index;
+            gbt.freq[2] = _gbt_get_freq_from_index(index);
+            has_to_update_registers = 1;
+        }
     }
 
     if (has_instrument)
@@ -740,7 +774,13 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
         has_to_update_registers |= gbt_channel_3_set_effect(effect, args);
     }
 
-    if (has_to_update_registers)
+    if (note_cut)
+    {
+        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+        REG_SOUND3CNT_H = SOUND3CNT_H_VOLUME_0;
+        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+    }
+    else if (has_to_update_registers)
     {
         channel3_refresh_registers();
     }
@@ -851,6 +891,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
     int has_kit = header & HAS_KIT;
 
     int has_to_update_registers = 0;
+    int note_cut = 0;
 
     if (has_volume)
     {
@@ -860,9 +901,17 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 
     if (has_kit)
     {
-        uint32_t index = *data++ & 0x0F;
-        gbt.instr[3] = gbt_noise[index];
-        has_to_update_registers = 1;
+        uint32_t index = *data++;
+        if (index == 0xFE)
+        {
+            note_cut = 1;
+        }
+        else
+        {
+            index &= 0x0F;
+            gbt.instr[3] = gbt_noise[index];
+            has_to_update_registers = 1;
+        }
     }
 
     if (has_effect)
@@ -872,7 +921,12 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
         has_to_update_registers |= gbt_channel_4_set_effect(effect, args);
     }
 
-    if (has_to_update_registers)
+    if (note_cut)
+    {
+        REG_SOUND4CNT_L = 0; // Set volume to 0
+        REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
+    }
+    else if (has_to_update_registers)
     {
         channel4_refresh_registers();
     }
