@@ -103,6 +103,9 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
         val = (((effectparams & 0xF0) >> 4) * 10) + (effectparams & 0x0F)
         return (9, val)
 
+    elif effectnum == 'H': # Vibrato
+        return (3, effectparams)
+
     elif effectnum == 'J': # Arpeggio
         return (1, effectparams)
 

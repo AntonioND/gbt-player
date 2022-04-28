@@ -1,0 +1,50 @@
+
+Effects:
+
+     0: Pan position
+        - Arg: Position (0 - 15)
+
+     1: Arpeggio
+        - Arg: Arpeggio args
+
+     2: Note cut
+        - Arg: Steps to wait
+
+     3: Vibrato
+        - Arg: Vibrato args
+
+        Note that vibrato feels stronger for high pitched notes than for low
+        pitched notes. This is because the vibrato is calculated using the
+        period of the note, not the frequency. Both the Amiga and the GB use the
+        period and add a delta to it for vigrato, which means that low
+        frequencies are affected less than high frequencies:
+
+        Low frequency note:  Period = 2000 +/- 20
+        High frequency note: Period = 100 +/- 20
+
+     4: UNUSED
+
+     5: UNUSED
+
+     6: UNUSED
+
+     7: UNUSED
+
+     8: Pattern jump
+        - Arg: Pattern order to jump to
+
+     9: Break + Set step
+        - Arg: Step in next pattern (BCD): value = (arg & 0xF) + (arg >> 4) * 10
+
+    10: Set speed
+        - Arg: Speed (1 - 0xXX)
+
+    11: UNUSED
+
+    12: UNUSED
+
+    13: UNUSED
+
+    14: UNUSED
+
+    15: UNUSED
