@@ -144,11 +144,6 @@ def convert_channel1(pattern_number, step_number,
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
 
-        # If a note is set with no volume, set volume to the max
-        # TODO: This should take the volume from the sample volume
-        if volume == -1:
-            volume = 64
-
     # Check if there is a sample defined
     if samplenum > 0:
         instrument = samplenum & 3
@@ -189,11 +184,6 @@ def convert_channel2(pattern_number, step_number,
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
 
-        # If a note is set with no volume, set volume to the max
-        # TODO: This should take the volume from the sample volume
-        if volume == -1:
-            volume = 64
-
     # Check if there is a sample defined
     if samplenum > 0:
         instrument = samplenum & 3
@@ -233,11 +223,6 @@ def convert_channel3(pattern_number, step_number,
         command[0] |= HAS_NOTE
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
-
-        # If a note is set with no volume, set volume to the max
-        # TODO: This should take the volume from the sample volume
-        if volume == -1:
-            volume = 64
 
     # Check if there is a sample defined
     if samplenum > 0:
@@ -288,11 +273,6 @@ def convert_channel4(pattern_number, step_number,
         command[0] |= HAS_KIT
         command[command_ptr] = kit
         command_ptr += 1
-
-        # If a note is set with no volume, set volume to the max
-        # TODO: This should take the volume from the sample volume
-        if volume == -1:
-            volume = 64
 
     if effectnum is not None:
         [converted_num, converted_params] = effect_mod_to_gb(

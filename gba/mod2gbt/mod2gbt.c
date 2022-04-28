@@ -400,13 +400,6 @@ void convert_channel1(uint8_t pattern_number, uint8_t step_number,
         command[0] |= HAS_NOTE;
         command[command_ptr] = note_index & 0x7F;
         command_ptr++;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        // It is disabled here because old versions of mod2gbt didn't do it, and
-        // it would break some old songs.
-        //if (volume == -1)
-        //    volume = 64;
     }
 
     // Check if there is a sample defined
@@ -480,13 +473,6 @@ void convert_channel2(uint8_t pattern_number, uint8_t step_number,
         command[0] |= HAS_NOTE;
         command[command_ptr] = note_index & 0x7F;
         command_ptr++;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        // It is disabled here because old versions of mod2gbt didn't do it, and
-        // it would break some old songs.
-        //if (volume == -1)
-        //    volume = 64;
     }
 
     // Check if there is a sample defined
@@ -560,13 +546,6 @@ void convert_channel3(uint8_t pattern_number, uint8_t step_number,
         command[0] |= HAS_NOTE;
         command[command_ptr] = note_index & 0x7F;
         command_ptr++;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        // It is disabled here because old versions of mod2gbt didn't do it, and
-        // it would break some old songs.
-        //if (volume == -1)
-        //    volume = 64;
     }
 
     // Check if there is a sample defined
@@ -642,13 +621,6 @@ void convert_channel4(uint8_t pattern_number, uint8_t step_number,
         command[0] |= HAS_KIT;
         command[command_ptr] = kit & 0x0F;
         command_ptr++;
-
-        // If a note is set with no volume, set volume to the max
-        // TODO: This should take the volume from the sample volume
-        // It is disabled here because old versions of mod2gbt didn't do it, and
-        // it would break some old songs.
-        //if (volume == -1)
-        //    volume = 64;
     }
 
     if ((effectnum != 0) || (effectparams != 0))
