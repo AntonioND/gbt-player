@@ -486,6 +486,8 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 // Returns 1 if it needed to update sound registers
 static int channel1_update_effects(void)
 {
+    int ret = 0;
+
     // Cut note
     // --------
 
@@ -511,7 +513,7 @@ static int channel1_update_effects(void)
         uint32_t index = gbt.arpeggio_freq_index[0][tick];
         gbt.freq[0] = _gbt_get_freq_from_index(index);
 
-        return 1;
+        ret = 1;
     }
 
     // Vibrato
@@ -534,10 +536,10 @@ static int channel1_update_effects(void)
             freq = 0x7FF;
         gbt.freq[0] = freq;
 
-        return 1;
+        ret = 1;
     }
 
-    return 0;
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -687,6 +689,8 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 // Returns 1 if it needed to update sound registers
 static int channel2_update_effects(void)
 {
+    int ret = 0;
+
     // Cut note
     // --------
 
@@ -712,7 +716,7 @@ static int channel2_update_effects(void)
         uint32_t index = gbt.arpeggio_freq_index[1][tick];
         gbt.freq[1] = _gbt_get_freq_from_index(index);
 
-        return 1;
+        ret = 1;
     }
 
     // Vibrato
@@ -735,10 +739,10 @@ static int channel2_update_effects(void)
             freq = 0x7FF;
         gbt.freq[1] = freq;
 
-        return 1;
+        ret = 1;
     }
 
-    return 0;
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -907,6 +911,8 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 // Returns 1 if it needed to update sound registers
 static int channel3_update_effects(void)
 {
+    int ret = 0;
+
     // Cut note
     // --------
 
@@ -933,7 +939,7 @@ static int channel3_update_effects(void)
         uint32_t index = gbt.arpeggio_freq_index[2][tick];
         gbt.freq[2] = _gbt_get_freq_from_index(index);
 
-        return 1;
+        ret = 1;
     }
 
     // Vibrato
@@ -956,10 +962,10 @@ static int channel3_update_effects(void)
             freq = 0x7FF;
         gbt.freq[2] = freq;
 
-        return 1;
+        ret = 1;
     }
 
-    return 0;
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -1076,6 +1082,8 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 // Returns 1 if it needed to update sound registers
 static int channel4_update_effects(void)
 {
+    int ret = 0;
+
     // Cut note
     // --------
 
@@ -1087,7 +1095,7 @@ static int channel4_update_effects(void)
         REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
     }
 
-    return 0;
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
