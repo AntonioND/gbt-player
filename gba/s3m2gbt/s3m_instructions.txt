@@ -74,6 +74,8 @@ Dxy - Volume slide. Only channels 1, 2, and 4.
 
       - Fine volume slide is not allowed (DFy or DxF).
 
+Hxy - Vibrato. Only channels 1, 2 and 3.
+
 Jxy - Arpeggio. Only channels 1, 2 and 3.
 
 Cnn - Sets the volume to nn (in hexadecimal). Valid values from 00h to 40h.
