@@ -50,12 +50,12 @@ def s3m_note_to_gb(note, pattern, step, channel):
 
     note -= 32
     if note < 0:
-        print("ERROR: Note too low!")
-        print(f"  {pattern}-{step}:Ch {channel}")
+        print(f"ERROR: {pattern}-{step}-CH{channel}: ", end='')
+        print("Note too low!")
         sys.exit(1)
     elif note > 32 + 16 * 6:
-        print("ERROR: Note too hig!")
-        print(f"  {pattern}-{step}:Ch {channel}")
+        print(f"ERROR: {pattern}-{step}-CH{channel}: ", end='')
+        print("Note too high!")
         sys.exit(1)
 
     note = (note & 0xF) + ((note & 0xF0) >> 4) * 12
@@ -88,9 +88,9 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
 
     if effectnum == 'A': # Set Speed
         if effectparams == 0:
-            print("WARN: Speed must not be zero.")
-            print(f"  {pattern_number}-{step_number}:Ch {channel}")
-            return (None, None)
+            print(f"ERROR: {pattern}-{step}-CH{channel}: ", end='')
+            print("Speed must not be zero.")
+            sys.exit(1)
 
         return (10, effectparams)
 
@@ -105,9 +105,9 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
 
     elif effectnum == 'D': # Volume Slide
         if channel == 3:
-            print("WARN: Volume slide not supported in channel 3")
-            print(f"  {pattern_number}-{step_number}:Ch {channel}")
-            return (None, None)
+            print(f"ERROR: {pattern_number}-{step_number}: ", end='')
+            print("Volume slide not supported in channel 3")
+            sys.exit(1)
         else:
             if effectparams == 0:
                 # Ignore volume slide commands that just continue the effect
@@ -117,16 +117,16 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
             lower = effectparams & 0xF
 
             if upper == 0xF or lower == 0xF:
-                print("WARN: Fine volume slide not supported")
-                print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
+                print("Fine volume slide not supported")
                 return (None, None)
 
             elif lower == 0: # Volume goes up
                 params = 1 << 3 # Increase
                 delay = 7 - upper + 1
                 if delay <= 0:
-                    print("WARN: Volume slide too steep")
-                    print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
+                    print("Volume slide too steep")
                     return (None, None)
                 params |= delay
                 return (4, params)
@@ -134,14 +134,14 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
                 params = 0 << 3 # Decrease
                 delay = 7 - lower + 1
                 if delay <= 0:
-                    print("WARN: Volume slide too steep")
-                    print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
+                    print("Volume slide too steep")
                     return (None, None)
                 params = delay
                 return (4, params)
             else:
-                print("WARN: Unknown volume slide arguments")
-                print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
+                print("Unknown volume slide arguments")
                 return (None, None)
 
             return (4, effectparams)
@@ -164,8 +164,8 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
         if subeffectnum == 0xC: # Notecut
             return (2, subeffectparams)
 
-    print(f"WARN: Unsupported effect: {effectnum}{effectparams:02X}")
-    print(f"  {pattern_number}-{step_number}:Ch {channel}")
+    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
+    print(f"Unsupported effect: {effectnum}{effectparams:02X}")
 
     return (None, None)
 
@@ -303,8 +303,10 @@ def convert_channel4(pattern_number, step_number,
     # Note cut using ^^ as note
     if note_index == 0xFE:
         if samplenum > 0:
-            print("WARN: Note cut + Sample in same step: Sample will be ignored.")
-            print(f"  {pattern_number}-{step_number}:Ch 4")
+            # This limitation is only for channel 4. It should never happen in a
+            # regular song.
+            print(f"WARN: {pattern}-{step}-CH4: ", end='')
+            print("Note cut + Sample in same step: Sample will be ignored.")
         samplenum = 0xFE
 
     # Check if there is a sample defined
