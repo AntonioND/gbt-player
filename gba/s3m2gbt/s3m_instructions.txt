@@ -46,6 +46,34 @@ Bnn - Jump to pattern in order nn (in hexadecimal).
 Cnn - Ends this pattern and jumps to position nn (in decimal) in next pattern.
       If used the last step of a pattern it will jump two patterns, not one!
 
+Dxy - Volume slide. Only channels 1, 2, and 4.
+
+      Notes:
+
+      - The PSG channels can't stop the volume slide after it has started. You
+        need to either set a new volume manually, or wait until it goes to the
+        minimum or maximum volume.
+
+      - This means that after the first Dxy effect you should add D00 effects in
+        your pattern until the note is silent. The effects are ignored on the
+        GBA, but they are needed so that the S3M playback matches the GBA
+        playback. Don't repeat the original Dxy effect! It would sound ok in the
+        S3M player, but in the GBA it wouldn't work.
+
+                 OK       |      Not OK
+            ------------------------------
+            C3 01 v64 D06 |  C3 01 v64 D06
+                      D00 |            D06
+                      D00 |            D06
+            C4 01 v64 --- |  C4 01 v64 ---
+
+      - Only values 1-7 are allowed. (D10 to D70 and D01 to D07). This is
+        because the hardware volume slide of the PSG channels only has 7
+        different speeds. Software volume slides create a lot of clicks, so they
+        sound terrible, and can't be used as an alternative.
+
+      - Fine volume slide is not allowed (DFy or DxF).
+
 Jxy - Arpeggio. Only channels 1, 2 and 3.
 
 Cnn - Sets the volume to nn (in hexadecimal). Valid values from 00h to 40h.

@@ -57,6 +57,9 @@ typedef struct {
     uint8_t vibrato_position[3];
     uint8_t vibrato_args[3];
 
+    // Volume slide
+    uint16_t volslide_args[3];
+
     // Cut note
     uint8_t cut_note_tick[4]; // If tick == gbt.cut_note_tick, stop note.
 
@@ -206,6 +209,10 @@ void gbt_play(const void *song, int speed)
     gbt.vibrato_args[0] = 0;
     gbt.vibrato_args[1] = 0;
     gbt.vibrato_args[2] = 0;
+
+    gbt.volslide_args[0] = 0;
+    gbt.volslide_args[1] = 0;
+    gbt.volslide_args[2] = 0;
 
     gbt.cut_note_tick[0] = 0xFF;
     gbt.cut_note_tick[1] = 0xFF;
@@ -379,12 +386,18 @@ static int gbt_ch1_vibrato(uint32_t args)
     return 1;
 }
 
+static int gbt_ch1_volslide(uint32_t args)
+{
+    gbt.volslide_args[0] = args << 8; // Move to the right location
+    return 1;
+}
+
 static effect_handler gbt_ch1_jump_table[16] = {
     gbt_ch1_pan,
     gbt_ch1_arpeggio,
     gbt_ch1_cut_note,
     gbt_ch1_vibrato,
-    gbt_ch1234_nop,
+    gbt_ch1_volslide,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
@@ -407,7 +420,7 @@ static int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
 static void channel1_refresh_registers(void)
 {
     REG_SOUND1CNT_L = 0;
-    REG_SOUND1CNT_H = gbt.vol[0] | gbt.instr[0];
+    REG_SOUND1CNT_H = gbt.instr[0] | gbt.vol[0] | gbt.volslide_args[0];
     REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt.freq[0];
 }
 
@@ -583,12 +596,18 @@ static int gbt_ch2_vibrato(uint32_t args)
     return 1;
 }
 
+static int gbt_ch2_volslide(uint32_t args)
+{
+    gbt.volslide_args[1] = args << 8; // Move to the right location
+    return 1;
+}
+
 static effect_handler gbt_ch2_jump_table[16] = {
     gbt_ch2_pan,
     gbt_ch2_arpeggio,
     gbt_ch2_cut_note,
     gbt_ch2_vibrato,
-    gbt_ch1234_nop,
+    gbt_ch2_volslide,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
@@ -610,7 +629,7 @@ static int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
 
 static void channel2_refresh_registers(void)
 {
-    REG_SOUND2CNT_L = gbt.vol[1] | gbt.instr[1];
+    REG_SOUND2CNT_L = gbt.instr[1] | gbt.vol[1] | gbt.volslide_args[1];
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt.freq[1];
 }
 
@@ -984,12 +1003,19 @@ static int gbt_ch4_cut_note(uint32_t args)
     return 0;
 }
 
+static int gbt_ch4_volslide(uint32_t args)
+{
+    // Volume slide index 2
+    gbt.volslide_args[2] = args << 8; // Move to the right location
+    return 1;
+}
+
 static effect_handler gbt_ch4_jump_table[16] = {
     gbt_ch4_pan,
     gbt_ch1234_nop,
     gbt_ch4_cut_note,
     gbt_ch1234_nop,
-    gbt_ch1234_nop,
+    gbt_ch4_volslide,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
@@ -1011,7 +1037,7 @@ static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 
 static void channel4_refresh_registers(void)
 {
-    REG_SOUND4CNT_L = gbt.vol[3];
+    REG_SOUND4CNT_L = gbt.vol[3] | gbt.volslide_args[2]; // Volume slide index 2
     REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.instr[3];
 }
 
@@ -1145,6 +1171,10 @@ void gbt_update(void)
     gbt.vibrato_enabled[0] = 0; // Disable vibrato
     gbt.vibrato_enabled[1] = 0;
     gbt.vibrato_enabled[2] = 0;
+
+    gbt.volslide_args[0] = 0; // Disable volume slide
+    gbt.volslide_args[1] = 0;
+    gbt.volslide_args[2] = 0;
 
     gbt.cut_note_tick[0] = 0xFF; // Disable cut note
     gbt.cut_note_tick[1] = 0xFF;

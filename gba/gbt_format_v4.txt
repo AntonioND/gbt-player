@@ -22,7 +22,8 @@ Effects:
         Low frequency note:  Period = 2000 +/- 20
         High frequency note: Period = 100 +/- 20
 
-     4: UNUSED
+     4: Volume slide
+        - Arg: Value to be written to the registers of the GBA.
 
      5: UNUSED
 

@@ -103,6 +103,49 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
         val = (((effectparams & 0xF0) >> 4) * 10) + (effectparams & 0x0F)
         return (9, val)
 
+    elif effectnum == 'D': # Volume Slide
+        if channel == 3:
+            print("WARN: Volume slide not supported in channel 3")
+            print(f"  {pattern_number}-{step_number}:Ch {channel}")
+            return (None, None)
+        else:
+            if effectparams == 0:
+                # Ignore volume slide commands that just continue the effect
+                return (None, None)
+
+            upper = (effectparams >> 4) & 0xF
+            lower = effectparams & 0xF
+
+            if upper == 0xF or lower == 0xF:
+                print("WARN: Fine volume slide not supported")
+                print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                return (None, None)
+
+            elif lower == 0: # Volume goes up
+                params = 1 << 3 # Increase
+                delay = 7 - upper + 1
+                if delay <= 0:
+                    print("WARN: Volume slide too steep")
+                    print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                    return (None, None)
+                params |= delay
+                return (4, params)
+            elif upper == 0: # Volume goes down
+                params = 0 << 3 # Decrease
+                delay = 7 - lower + 1
+                if delay <= 0:
+                    print("WARN: Volume slide too steep")
+                    print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                    return (None, None)
+                params = delay
+                return (4, params)
+            else:
+                print("WARN: Unknown volume slide arguments")
+                print(f"  {pattern_number}-{step_number}:Ch {channel}")
+                return (None, None)
+
+            return (4, effectparams)
+
     elif effectnum == 'H': # Vibrato
         return (3, effectparams)
 
