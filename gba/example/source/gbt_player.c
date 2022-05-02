@@ -231,17 +231,17 @@ void gbt_play(const void *song, int speed)
 
     REG_SOUND1CNT_L = 0;
     REG_SOUND1CNT_H = 0;
-    REG_SOUND1CNT_X = 0;
+    REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
 
     REG_SOUND2CNT_L = 0;
-    REG_SOUND2CNT_H = 0;
+    REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
 
     REG_SOUND3CNT_L = 0;
     REG_SOUND3CNT_H = 0;
-    REG_SOUND3CNT_X = 0;
+    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
 
     REG_SOUND4CNT_L = 0;
-    REG_SOUND4CNT_H = 0;
+    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
 
     REG_SOUNDCNT_L = SOUNDCNT_L_PSG_VOL_RIGHT_SET(7)
                    | SOUNDCNT_L_PSG_VOL_LEFT_SET(7);
@@ -419,6 +419,8 @@ static int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
 
 static void channel1_refresh_registers(void)
 {
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
+
     REG_SOUND1CNT_L = 0;
     REG_SOUND1CNT_H = gbt.instr[0] | gbt.vol[0] | gbt.volslide_args[0];
     REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt.freq[0];
@@ -507,6 +509,8 @@ static int channel1_update_effects(void)
     if (gbt.cut_note_tick[0] == gbt.ticks_elapsed)
     {
         gbt.cut_note_tick[0] = 0xFF; // Disable cut note
+
+        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
 
         REG_SOUND1CNT_H = 0; // Set volume to 0
         REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
@@ -629,6 +633,8 @@ static int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
 
 static void channel2_refresh_registers(void)
 {
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
+
     REG_SOUND2CNT_L = gbt.instr[1] | gbt.vol[1] | gbt.volslide_args[1];
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt.freq[1];
 }
@@ -716,6 +722,8 @@ static int channel2_update_effects(void)
     if (gbt.cut_note_tick[1] == gbt.ticks_elapsed)
     {
         gbt.cut_note_tick[1] = 0xFF; // Disable cut note
+
+        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
 
         REG_SOUND2CNT_L = 0; // Set volume to 0
         REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
@@ -832,6 +840,12 @@ static int gbt_channel_3_set_effect(uint32_t effect, uint8_t data)
 
 static void channel3_refresh_registers(void)
 {
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
+
+    // On the GBA, the output of channel 3 is inverted. This causes the channel
+    // to output a loud spike when disabled. It’s a good idea to "remove" the
+    // channel using NR51 before refreshing wave RAM.
+
     // Disable channel and set bank 0 as writable
     REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
 
@@ -847,6 +861,7 @@ static void channel3_refresh_registers(void)
         gbt.channel3_loaded_instrument = instr;
     }
 
+    // Set bank 0 as active and use the 32 samples mode
     REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_32 | SOUND3CNT_L_BANK_SET(0) |
                       SOUND3CNT_L_ENABLE;
 
@@ -938,6 +953,8 @@ static int channel3_update_effects(void)
     if (gbt.cut_note_tick[2] == gbt.ticks_elapsed)
     {
         gbt.cut_note_tick[2] = 0xFF; // Disable cut note
+
+        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
 
         REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
         REG_SOUND3CNT_H = SOUND3CNT_H_VOLUME_0;
@@ -1037,6 +1054,8 @@ static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 
 static void channel4_refresh_registers(void)
 {
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
+
     REG_SOUND4CNT_L = gbt.vol[3] | gbt.volslide_args[2]; // Volume slide index 2
     REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.instr[3];
 }
@@ -1117,6 +1136,8 @@ static int channel4_update_effects(void)
     {
         gbt.cut_note_tick[3] = 0xFF; // Disable cut note
 
+        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
+
         REG_SOUND4CNT_L = 0; // Set volume to 0
         REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
     }
@@ -1143,6 +1164,19 @@ static void gbt_update_effects_internal(void)
         channel4_refresh_registers();
 }
 
+static void gbt_update_refresh_panning(void)
+{
+    const uint16_t mask =
+        SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT;
+
+    uint16_t new_pan = gbt.pan[0] | gbt.pan[1] | gbt.pan[2] | gbt.pan[3];
+
+    REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
+}
+
 void gbt_update(void)
 {
     // If not playing, return
@@ -1156,6 +1190,7 @@ void gbt_update(void)
     {
         // Update effects and exit
         gbt_update_effects_internal();
+        gbt_update_refresh_panning();
         return;
     }
 
@@ -1221,15 +1256,7 @@ void gbt_update(void)
     // Handle panning
     // --------------
 
-    uint16_t mask =
-        SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT;
-
-    uint16_t new_pan = gbt.pan[0] | gbt.pan[1] | gbt.pan[2] | gbt.pan[3];
-
-    REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
+    gbt_update_refresh_panning();
 
     // Increment step
     // --------------
