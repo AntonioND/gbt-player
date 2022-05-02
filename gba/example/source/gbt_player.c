@@ -44,6 +44,13 @@ typedef struct {
     uint16_t freq[3]; // Ch 1-3 | Active frequence
     uint16_t base_freq[3]; // Ch 1-3 | Original frequence read from the pattern
 
+    // The volume setting in REG_SOUNDCNT_L can't actually silence the music.
+    // The best it can do is set it to 1/8th of the maximum volume. To be able
+    // to reach zero, it is needed to use the flags that enable output to the
+    // left and right speakers.
+    uint16_t global_volume;
+    uint16_t pan_volume_mask;
+
     // Currently loaded instrument (0xFF if none)
     uint8_t channel3_loaded_instrument;
 
@@ -243,12 +250,42 @@ void gbt_play(const void *song, int speed)
     REG_SOUND4CNT_L = 0;
     REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
 
-    REG_SOUNDCNT_L = SOUNDCNT_L_PSG_VOL_RIGHT_SET(7)
-                   | SOUNDCNT_L_PSG_VOL_LEFT_SET(7);
+    gbt_volume(GBT_VOLUME_MAX, GBT_VOLUME_MAX);
 
     // Everything is ready
 
     gbt.playing = 1;
+}
+
+void gbt_volume(unsigned int left, unsigned int right)
+{
+    const uint16_t left_mask =
+        SOUNDCNT_L_PSG_1_ENABLE_LEFT | SOUNDCNT_L_PSG_2_ENABLE_LEFT |
+        SOUNDCNT_L_PSG_3_ENABLE_LEFT | SOUNDCNT_L_PSG_4_ENABLE_LEFT;
+    const uint16_t right_mask =
+        SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_RIGHT |
+        SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_RIGHT;
+
+    gbt.pan_volume_mask = 0;
+    gbt.global_volume = 0;
+
+    if (left > 8)
+        left = 8;
+
+    if (right > 8)
+        right = 8;
+
+    if (left > 0)
+    {
+        gbt.global_volume |= SOUNDCNT_L_PSG_VOL_LEFT_SET(left - 1);
+        gbt.pan_volume_mask |= left_mask;
+    }
+
+    if (right > 0)
+    {
+        gbt.global_volume |= SOUNDCNT_L_PSG_VOL_RIGHT_SET(right - 1);
+        gbt.pan_volume_mask |= right_mask;
+    }
 }
 
 void gbt_pause(int play)
@@ -1166,15 +1203,10 @@ static void gbt_update_effects_internal(void)
 
 static void gbt_update_refresh_panning(void)
 {
-    const uint16_t mask =
-        SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT |
-        SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT;
-
     uint16_t new_pan = gbt.pan[0] | gbt.pan[1] | gbt.pan[2] | gbt.pan[3];
+    new_pan = (new_pan << 8) & gbt.pan_volume_mask;
 
-    REG_SOUNDCNT_L = (REG_SOUNDCNT_L & ~mask) | (new_pan << 8);
+    REG_SOUNDCNT_L = gbt.global_volume | new_pan;
 }
 
 void gbt_update(void)
