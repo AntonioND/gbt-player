@@ -354,19 +354,77 @@ def print_step(fileout, cmd1, cmd2, cmd3, cmd4):
 
     fileout.write("\n")
 
-def initial_state_array(speed, panning_array):
+def initial_state_array(speed, panning_array, instruments):
     array = []
 
+    # Initial speed
+    # -------------
+
     array.extend([1, speed])
+
+    # Initial panning
+    # ---------------
 
     array.extend([2])
     array.extend(panning_array)
 
-    array.extend([0]) # End
+    # Channel 3 instruments
+    # ---------------------
+
+    if instruments is not None:
+        print("Exporting instruments...")
+        count = 0
+        for i in instruments:
+            # In the tracker, instruments start at index 1, but they start at
+            # index 0 in the file data.
+            count += 1
+
+            if count < 8 or count > 15:
+                continue
+
+            try:
+                body = i.body
+
+                name = body.sample_name.decode("utf-8")
+                print(f"Sample name: {name}")
+                if body.type != S3m.Instrument.InstTypes.sample:
+                    print("Unsupported instrument type!")
+                    continue
+
+                # TODO: body.tuning_hz ?
+
+                size = len(body.body.sample)
+                if size != 32 and size != 64:
+                    print("Invalid sample length!")
+                    continue
+                else:
+                    flags = count - 8
+                    if size == 64:
+                        flags |= 1 << 7
+
+                    array.extend([3, flags])
+
+                    # Convert from 8 bit to 4 bit
+                    for i in range(0, size, 2):
+                        sample_hi = body.body.sample[i + 0] >> 4
+                        sample_lo = body.body.sample[i + 1] >> 4
+                        value = (sample_hi << 4) | sample_lo
+                        array.extend([value])
+
+            except kaitaistruct.ValidationNotEqualError as e:
+                if e.src_path == u"/types/instrument/seq/6":
+                    print("Invalid magic in instrument")
+                else:
+                    print(vars(e))
+
+    # End commands
+    # ------------
+
+    array.extend([0])
 
     return array
 
-def convert_file(module_path, song_name, output_path):
+def convert_file(module_path, song_name, output_path, export_instruments):
 
     data = S3m.from_file(module_path)
 
@@ -379,15 +437,6 @@ def convert_file(module_path, song_name, output_path):
     print(f"Song Name: '{name}'")
     print(f"Num. Orders: {data.num_orders}")
     print(f"Num. Patterns: {data.num_patterns}")
-
-    #for i in data.instruments:
-    #    try:
-    #        print(vars(i.body))
-    #    except kaitaistruct.ValidationNotEqualError as e:
-    #        if e.src_path == u"/types/instrument/seq/6":
-    #            print("Invalid magic in instrument")
-    #        else:
-    #            print(vars(e))
 
     fileout.write("// File created by s3m2gbt\n\n"
                   "#include <stddef.h>\n#include <stdint.h>\n\n")
@@ -491,11 +540,30 @@ def convert_file(module_path, song_name, output_path):
         s3m_pan_to_gb(default_pan[3], 4)
     ]
 
-    state_array = initial_state_array(data.initial_speed, gb_default_pan)
-    fileout.write("    ")
-    for s in state_array:
-        fileout.write(f"0x{s:02X},")
-    fileout.write("\n")
+    instr = None
+    if export_instruments:
+        instr = data.instruments
+
+    state_array = initial_state_array(data.initial_speed, gb_default_pan, instr)
+
+    while True:
+        left = len(state_array)
+
+        write = []
+        if left == 0:
+            break
+        elif left <= 8:
+            write = state_array
+            state_array = []
+        else:
+            write = state_array[0:8]
+            state_array = state_array[8:]
+
+        fileout.write("    ")
+        for s in write:
+            fileout.write(f"0x{s:02X},")
+        fileout.write("\n")
+
     fileout.write("};\n")
     fileout.write("\n")
 
@@ -537,10 +605,15 @@ if __name__ == "__main__":
     print("")
 
     parser = argparse.ArgumentParser(description='Convert S3M files into GBT format.')
-    parser.add_argument("--input", default=None, required=True, help="input file")
-    parser.add_argument("--name", default=None, required=True, help="output song name")
-    parser.add_argument("--output", default=None, required=False, help="output file")
+    parser.add_argument("--input", default=None, required=True,
+                        help="input file")
+    parser.add_argument("--name", default=None, required=True,
+                        help="output song name")
+    parser.add_argument("--output", default=None, required=False,
+                        help="output file")
+    parser.add_argument("--instruments", default=False, required=False,
+                        action='store_true', help="export channel 3 instruments")
 
     args = parser.parse_args()
 
-    convert_file(args.input, args.name, args.output)
+    convert_file(args.input, args.name, args.output, args.instruments)

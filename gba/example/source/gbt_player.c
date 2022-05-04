@@ -74,28 +74,50 @@ typedef struct {
     uint8_t jump_target_step;
     uint8_t jump_target_pattern;
 
+    // Channel 3 instruments
+    uint8_t ch3_instrument_flags[8];
+    const uint8_t *ch3_instrument[8];
+
 } gbt_player_info_t;
 
 EWRAM_BSS static gbt_player_info_t gbt;
 
-static const uint8_t gbt_wave[8][16] = { // 8 sounds
-    { 0xA5, 0xD7, 0xC9, 0xE1, 0xBC, 0x9A, 0x76, 0x31,
-      0x0C, 0xBA, 0xDE, 0x60, 0x1B, 0xCA, 0x03, 0x93 }, // random
-    { 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87,
-      0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F },
-    { 0xFD, 0xEC, 0xDB, 0xCA, 0xB9, 0xA8, 0x97, 0x86,
-      0x79, 0x68, 0x57, 0x46, 0x35, 0x24, 0x13, 0x02 }, // up-downs
-    { 0xDE, 0xFE, 0xDC, 0xBA, 0x9A, 0xA9, 0x87, 0x77,
-      0x88, 0x87, 0x65, 0x56, 0x54, 0x32, 0x10, 0x12 },
-    { 0xAB, 0xCD, 0xEF, 0xED, 0xCB, 0xA0, 0x12, 0x3E,
-      0xDC, 0xBA, 0xBC, 0xDE, 0xFE, 0xDC, 0x32, 0x10 }, // triangular broken
-    { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
-      0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00 }, // triangular
-    { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // square
-    { 0x79, 0xBC, 0xDE, 0xEF, 0xFF, 0xEE, 0xDC, 0xB9,
-      0x75, 0x43, 0x21, 0x10, 0x00, 0x11, 0x23, 0x45 }, // sine
+// Waveforms of the default channel 3 instruments
+
+static const uint8_t gbt_default_wave_0[16] = { // random
+    0xA5, 0xD7, 0xC9, 0xE1, 0xBC, 0x9A, 0x76, 0x31,
+    0x0C, 0xBA, 0xDE, 0x60, 0x1B, 0xCA, 0x03, 0x93
 };
+static const uint8_t gbt_default_wave_1[16] = {
+    0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87,
+    0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F
+};
+static const uint8_t gbt_default_wave_2[16] = { // up-downs
+    0xFD, 0xEC, 0xDB, 0xCA, 0xB9, 0xA8, 0x97, 0x86,
+    0x79, 0x68, 0x57, 0x46, 0x35, 0x24, 0x13, 0x02
+};
+static const uint8_t gbt_default_wave_3[16] = {
+    0xDE, 0xFE, 0xDC, 0xBA, 0x9A, 0xA9, 0x87, 0x77,
+    0x88, 0x87, 0x65, 0x56, 0x54, 0x32, 0x10, 0x12
+};
+static const uint8_t gbt_default_wave_4[16] = { // triangular broken
+    0xAB, 0xCD, 0xEF, 0xED, 0xCB, 0xA0, 0x12, 0x3E,
+    0xDC, 0xBA, 0xBC, 0xDE, 0xFE, 0xDC, 0x32, 0x10
+};
+static const uint8_t gbt_default_wave_5[16] = { // triangular
+    0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
+    0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00
+};
+static const uint8_t gbt_default_wave_6[16] = { // square
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+static const uint8_t gbt_default_wave_7[16] = { // sine
+    0x79, 0xBC, 0xDE, 0xEF, 0xFF, 0xEE, 0xDC, 0xB9,
+    0x75, 0x43, 0x21, 0x10, 0x00, 0x11, 0x23, 0x45
+};
+
+// Parameters of the channel 4 instruments
 
 static const uint8_t gbt_noise[16] = { // 16 sounds
     // 7 bit
@@ -104,6 +126,8 @@ static const uint8_t gbt_noise[16] = { // 16 sounds
     0x90, 0x80, 0x70, 0x50, 0x00,
     0x67, 0x63, 0x53
 };
+
+// Sine wave used for vibrato effect
 
 static const int16_t vibrato_sine[64] = {
        0,   24,   49,   74,   97,  120,  141,  161,
@@ -144,6 +168,20 @@ static void gbt_run_startup_commands(const uint8_t *ptr)
             gbt.pan[1] = *ptr++;
             gbt.pan[2] = *ptr++;
             gbt.pan[3] = *ptr++;
+        }
+        else if (cmd == 3) // Set channel 3 sample
+        {
+            uint8_t flags = *ptr++;
+            uint8_t index = flags & 0x3F;
+            gbt.ch3_instrument_flags[index] = flags;
+
+            gbt.ch3_instrument[index] = ptr;
+
+            uint32_t len = 32 / 2;
+            if (flags & BIT(7))
+                len = 64 / 2;
+
+            ptr += len;
         }
     }
 }
@@ -225,6 +263,25 @@ void gbt_play(const void *song, int speed)
     gbt.cut_note_tick[1] = 0xFF;
     gbt.cut_note_tick[2] = 0xFF;
     gbt.cut_note_tick[3] = 0xFF;
+
+    // Default channel 3 instruments
+
+    gbt.ch3_instrument_flags[0] = 0;
+    gbt.ch3_instrument_flags[1] = 0;
+    gbt.ch3_instrument_flags[2] = 0;
+    gbt.ch3_instrument_flags[3] = 0;
+    gbt.ch3_instrument_flags[4] = 0;
+    gbt.ch3_instrument_flags[5] = 0;
+    gbt.ch3_instrument_flags[6] = 0;
+    gbt.ch3_instrument_flags[7] = 0;
+    gbt.ch3_instrument[0] = &gbt_default_wave_0[0];
+    gbt.ch3_instrument[1] = &gbt_default_wave_1[0];
+    gbt.ch3_instrument[2] = &gbt_default_wave_2[0];
+    gbt.ch3_instrument[3] = &gbt_default_wave_3[0];
+    gbt.ch3_instrument[4] = &gbt_default_wave_4[0];
+    gbt.ch3_instrument[5] = &gbt_default_wave_5[0];
+    gbt.ch3_instrument[6] = &gbt_default_wave_6[0];
+    gbt.ch3_instrument[7] = &gbt_default_wave_7[0];
 
     // Run startup commands after internal player status has been initialized
 
@@ -883,24 +940,49 @@ static void channel3_refresh_registers(void)
     // to output a loud spike when disabled. It’s a good idea to "remove" the
     // channel using NR51 before refreshing wave RAM.
 
-    // Disable channel and set bank 0 as writable
-    REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
-
     uint32_t instr = gbt.instr[2];
+
     if (gbt.channel3_loaded_instrument != instr)
     {
+        const uint8_t *wave = gbt.ch3_instrument[instr];
+        uint8_t flags = gbt.ch3_instrument_flags[instr];
+
+        // Disable channel and set bank 0 as writable
+        REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
+
         for (int i = 0; i < 16; i += 2)
         {
-            REG_WAVE_RAM[i / 2] = (uint16_t)gbt_wave[instr][i] |
-                                 ((uint16_t)gbt_wave[instr][i + 1] << 8);
+            uint16_t wave_lo = *wave++;
+            uint16_t wave_hi = *wave++;
+            REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
         }
 
+        if (flags & BIT(7)) // 64 samples
+        {
+            // Disable channel and set bank 1 as writable
+            REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(0);
+
+            for (int i = 0; i < 16; i += 2)
+            {
+                uint16_t wave_lo = *wave++;
+                uint16_t wave_hi = *wave++;
+                REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
+            }
+
+            // Use the 64 samples mode
+            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_64 | SOUND3CNT_L_ENABLE;
+        }
+        else
+        {
+            // Set bank 0 as active and use the 32 samples mode
+            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_32 | SOUND3CNT_L_BANK_SET(0) |
+                            SOUND3CNT_L_ENABLE;
+        }
+
+
+        // Done
         gbt.channel3_loaded_instrument = instr;
     }
-
-    // Set bank 0 as active and use the 32 samples mode
-    REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_32 | SOUND3CNT_L_BANK_SET(0) |
-                      SOUND3CNT_L_ENABLE;
 
     REG_SOUND3CNT_H = gbt.vol[2];
     REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt.freq[2];
