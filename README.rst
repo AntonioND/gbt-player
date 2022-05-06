@@ -39,6 +39,19 @@ work. It would be nice to you tell me if you use it, anyway. :)
 Changelog
 ---------
 
+- Version 4.1.0 (2022/5/6)
+
+  - GBA-only release.
+  - Improve S3M support:
+
+    - Note cut with ``^^`` supported.
+    - Vibrato is now supported.
+    - Fix notes with no defined volume (that should preserve the volume of the
+      channel).
+    - Implement volume slides.
+    - Add ``gbt_volume()`` function.
+    - Let user replace channel 3 waveforms by exporting them from the S3M file.
+
 - Version 4.0.1 (2022/4/25)
 
   - Fix compatibility with old MOD songs in ``mod2gbt`` in the GBA port.

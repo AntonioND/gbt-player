@@ -1,5 +1,5 @@
-s3m2gbt
-=======
+s3m2gbt v4.1.0
+==============
 
 This tool can convert a special template of S3M into a GBT converted song.
 
@@ -69,9 +69,7 @@ Effects
 - ``Cnn``: Ends this pattern and jumps to position nn (in decimal) in next
   pattern.
 
-- ``Dxy``: Volume slide. Only channels 1, 2, and 4.
-
-  Notes:
+- ``Dxy``: Volume slide. Only channels 1, 2, and 4. Notes:
 
   - The PSG channels can't stop the volume slide after it has started. You need
     to either set a new volume manually, or wait until it goes to the minimum or
@@ -101,7 +99,7 @@ Effects
 
 - ``Jxy``: Arpeggio. Only channels 1, 2 and 3.
 
-- ``S8n``: Sets the panning to n (in hexadecimal).::
+- ``S8n``: Sets the panning to ``n`` (in hexadecimal).::
 
       Left --- Both --- Right
       0123   456789AB    CDEF
