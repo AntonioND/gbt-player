@@ -1,4 +1,4 @@
-GBT Player v4.1.0
+GBT Player v4.1.1
 =================
 
 Music player library and converter kit for Game Boy Advance. It only uses the

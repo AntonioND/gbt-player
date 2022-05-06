@@ -39,6 +39,11 @@ work. It would be nice to you tell me if you use it, anyway. :)
 Changelog
 ---------
 
+- Version 4.1.1 (2022/5/6)
+
+  - Add sample S3M modules for vibrato and channel 3 instrument change.
+  - Make samples of channels 1 and 2 more accurate.
+
 - Version 4.1.0 (2022/5/6)
 
   - GBA-only release.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# s3m2gbt v4.1.0 (Part of GBT Player)
+# s3m2gbt v4.1.1 (Part of GBT Player)
 #
 # SPDX-License-Identifier: MIT
 #
@@ -598,7 +598,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
 if __name__ == "__main__":
 
-    print("s3m2gbt v4.1.0 (part of GBT Player)")
+    print("s3m2gbt v4.1.1 (part of GBT Player)")
     print("Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>")
     print("Copyright (c) 2015-2022 Kaitai Project")
     print("All rights reserved")
