@@ -27,6 +27,16 @@ You can use notes from ``C3`` to ``B8``.
 
 ``^^`` note cuts are supported.
 
+Volumes
+-------
+
+S3M supports values 0 to 64 as volume. However, in the GBA, it's different.
+Channels 1, 2 and 4 have a range of 0 to 15, and channel 3 can have the
+following levels: 0%, 25%, 50%, 75% and 100%.
+
+When the conversion is done, the converter will get the closest value that is
+valid for that specific channel.
+
 Samples
 -------
 
