@@ -20,6 +20,9 @@ class StepConversionError(Exception):
     def __str__(self):
         return f"Order {self.order} | Row {self.step} | Channel {self.channel} | {self.message}"
 
+class S3MFormatError(Exception):
+    pass
+
 def print_warning(self, order, step, channel, message):
     print(f"WARN: Order {order} | Row {step} | Channel {channel} | {message}")
 
@@ -382,24 +385,22 @@ def initial_state_array(speed, panning_array, instruments):
             # index 0 in the file data.
             count += 1
 
+            # Only handle instruments assigned to channel 3
             if count < 8 or count > 15:
                 continue
 
             try:
                 body = i.body
-
                 name = body.sample_name.decode("utf-8")
-                print(f"Sample name: {name}")
-                if body.type != S3m.Instrument.InstTypes.sample:
-                    print("Unsupported instrument type!")
-                    continue
 
-                # TODO: body.tuning_hz ?
+                if body.type != S3m.Instrument.InstTypes.sample:
+                    raise S3MFormatError(f"Sample '{name}': Unsupported instrument type!")
+
+                # TODO: Check body.tuning_hz?
 
                 size = len(body.body.sample)
                 if size != 32 and size != 64:
-                    print("Invalid sample length!")
-                    continue
+                    raise S3MFormatError(f"Sample '{name}': Invalid sample length: {size}")
                 else:
                     flags = count - 8
                     if size == 64:
@@ -416,9 +417,12 @@ def initial_state_array(speed, panning_array, instruments):
 
             except kaitaistruct.ValidationNotEqualError as e:
                 if e.src_path == u"/types/instrument/seq/6":
+                    # This may be caused by an empty instrument, don't crash!
                     print("Invalid magic in instrument")
                 else:
-                    print(vars(e))
+                    raise S3MFormatError("Error while decoding instruments")
+            except Exception as e:
+                raise e
 
     # End commands
     # ------------
@@ -511,10 +515,12 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                                             note, instrument, volume,
                                             effectnum, effectparams)
                 else:
-                    print(f"Too many channels: {c.channel_num}")
+                    channels = c.channel_num + 1
+                    raise S3MFormatError(f"Too many channels: {channels}")
 
         except kaitaistruct.ValidationNotEqualError as e:
-            print(vars(e))
+            info = str(vars(e))
+            raise S3MFormatError(f"Unknown error: {info}")
 
         fileout.write("};\n")
         fileout.write("\n")
@@ -594,11 +600,6 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
     fileout.close()
 
-    # All done!
-    # ---------
-
-    print(f"Done!")
-
 if __name__ == "__main__":
 
     import argparse
@@ -627,5 +628,10 @@ if __name__ == "__main__":
     except StepConversionError as e:
         print("ERROR: " + str(e))
         sys.exit(1)
+    except S3MFormatError as e:
+        print("ERROR: Invalid S3M file: " + str(e))
+        sys.exit(1)
+
+    print("Done!")
 
     sys.exit(0)
