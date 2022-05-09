@@ -10,6 +10,19 @@ import kaitaistruct
 
 from s3m import S3m
 
+class StepConversionError(Exception):
+    def __init__(self, order, step, channel, message):
+        self.order = order
+        self.step = step
+        self.channel = channel + 1
+        self.message = message
+
+    def __str__(self):
+        return f"Order {self.order} | Row {self.step} | Channel {self.channel} | {self.message}"
+
+def print_warning(self, order, step, channel, message):
+    print(f"WARN: Order {order} | Row {step} | Channel {channel} | {message}")
+
 # Channels 1, 2, 4
 def s3m_volume_to_gb(s3m_vol):
     if s3m_vol >= 64:
@@ -48,13 +61,9 @@ def s3m_note_to_gb(note, pattern, step, channel):
 
     note -= 32
     if note < 0:
-        print(f"ERROR: {pattern}-{step}-CH{channel}: ", end='')
-        print("Note too low!")
-        raise Exception("Invalid note")
+        raise StepConversionError(pattern, step, channel, "Note too low")
     elif note > 32 + 16 * 6:
-        print(f"ERROR: {pattern}-{step}-CH{channel}: ", end='')
-        print("Note too high!")
-        raise Exception("Invalid note")
+        raise StepConversionError(pattern, step, channel, "Note too high")
 
     note = (note & 0xF) + ((note & 0xF0) >> 4) * 12
     return note
@@ -86,9 +95,8 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
 
     if effectnum == 'A': # Set Speed
         if effectparams == 0:
-            print(f"ERROR: {pattern_number}-{step_number}-CH{channel}: ", end='')
-            print("Speed must not be zero.")
-            raise Exception("Invalid song speed")
+            raise StepConversionError(pattern_number, step_number, channel,
+                                      "Speed must not be zero")
 
         return (10, effectparams)
 
@@ -103,9 +111,8 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
 
     elif effectnum == 'D': # Volume Slide
         if channel == 3:
-            print(f"ERROR: {pattern_number}-{step_number}: ", end='')
-            print("Volume slide not supported in channel 3")
-            raise Exception("Volume slide in channel 3 not supported")
+            raise StepConversionError(pattern_number, step_number, channel,
+                                      "Volume slide not supported in channel 3")
         else:
             if effectparams == 0:
                 # Ignore volume slide commands that just continue the effect
@@ -115,16 +122,16 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
             lower = effectparams & 0xF
 
             if upper == 0xF or lower == 0xF:
-                print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
-                print("Fine volume slide not supported")
+                print_warning(pattern_number, step_number, channel,
+                              "Fine volume slide not supported")
                 return (None, None)
 
             elif lower == 0: # Volume goes up
                 params = 1 << 3 # Increase
                 delay = 7 - upper + 1
                 if delay <= 0:
-                    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
-                    print("Volume slide too steep")
+                    print_warning(pattern_number, step_number, channel,
+                                  "Volume slide too steep")
                     return (None, None)
                 params |= delay
                 return (4, params)
@@ -132,14 +139,14 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
                 params = 0 << 3 # Decrease
                 delay = 7 - lower + 1
                 if delay <= 0:
-                    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
-                    print("Volume slide too steep")
+                    print_warning(pattern_number, step_number, channel,
+                                  "Volume slide too steep")
                     return (None, None)
                 params = delay
                 return (4, params)
             else:
-                print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
-                print("Unknown volume slide arguments")
+                print_warning(pattern_number, step_number, channel,
+                              "Unknown volume slide arguments")
                 return (None, None)
 
             return (4, effectparams)
@@ -162,9 +169,8 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
         if subeffectnum == 0xC: # Notecut
             return (2, subeffectparams)
 
-    print(f"WARN: {pattern_number}-{step_number}-CH{channel}: ", end='')
-    print(f"Unsupported effect: {effectnum}{effectparams:02X}")
-
+    print_warning(pattern_number, step_number, channel,
+                  f"Unsupported effect: {effectnum}{effectparams:02X}")
     return (None, None)
 
 HAS_VOLUME      = 1 << 4
@@ -303,8 +309,7 @@ def convert_channel4(pattern_number, step_number,
         if samplenum > 0:
             # This limitation is only for channel 4. It should never happen in a
             # regular song.
-            print(f"WARN: {pattern}-{step}-CH4: ", end='')
-            print("Note cut + Sample in same step: Sample will be ignored.")
+            print_warning("Note cut + Sample in same step: Sample will be ignored.")
         samplenum = 0xFE
 
     # Check if there is a sample defined
@@ -619,8 +624,8 @@ if __name__ == "__main__":
 
     try:
         convert_file(args.input, args.name, args.output, args.instruments)
-    except Exception as e:
-        print("Failed to convert file: " + str(e))
+    except StepConversionError as e:
+        print("ERROR: " + str(e))
         sys.exit(1)
 
     sys.exit(0)
