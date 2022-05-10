@@ -91,8 +91,10 @@ def s3m_pan_to_gb(pan, channel):
 
     return val
 
-# Returns (converted_num, converted_params) if there was a valid effect. On
-# error, it returns (None, None).
+# Returns (converted_num, converted_params) if there was a valid effect. If
+# there is none, it returns (None, None). Note that it is needed to pass the
+# channel to this function because some effects behave differently depending on
+# the channel (like panning).
 def effect_mod_to_gb(pattern_number, step_number, channel,
                      effectnum, effectparams):
 
@@ -118,7 +120,8 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
                                       "Volume slide not supported in channel 3")
         else:
             if effectparams == 0:
-                # Ignore volume slide commands that just continue the effect
+                # Ignore volume slide commands that just continue the effect,
+                # they are only needed for the S3M player.
                 return (None, None)
 
             upper = (effectparams >> 4) & 0xF
@@ -382,7 +385,7 @@ def initial_state_array(speed, panning_array, instruments):
         count = 0
         for i in instruments:
             # In the tracker, instruments start at index 1, but they start at
-            # index 0 in the file data.
+            # index 0 in the S3M file.
             count += 1
 
             # Only handle instruments assigned to channel 3
@@ -555,6 +558,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
     state_array = initial_state_array(data.initial_speed, gb_default_pan, instr)
 
+    # Write rows of 8 bytes until the end of the array
     while True:
         left = len(state_array)
 
