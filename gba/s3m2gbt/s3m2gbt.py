@@ -380,8 +380,6 @@ def initial_state_array(speed, panning_array, instruments):
                 if body.type != S3m.Instrument.InstTypes.sample:
                     raise S3MFormatError(f"Sample '{name}': Unsupported instrument type!")
 
-                # TODO: Check body.tuning_hz?
-
                 size = len(body.body.sample)
                 if size != 32 and size != 64:
                     raise S3MFormatError(f"Sample '{name}': Invalid sample length: {size}")
@@ -440,6 +438,8 @@ def convert_file(module_path, song_name, output_path, export_instruments):
     pattern = 0
     for p in data.patterns:
 
+        # TODO: Check if pattern is actually used in the order list. If it isn't
+        # used, don't export it.
         fileout.write(f"static const uint8_t {song_name}_{pattern}[] = ")
         fileout.write("{\n")
 
