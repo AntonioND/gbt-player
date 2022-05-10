@@ -84,6 +84,15 @@ def s3m_pan_to_gb(pan, channel):
 
     return val
 
+EFFECT_PAN              = 0
+EFFECT_ARPEGGIO         = 1
+EFFECT_NOTE_CUT         = 2
+EFFECT_VIBRATO          = 3
+EFFECT_VOLUME_SLIDE     = 4
+EFFECT_PATTERN_JUMP     = 8
+EFFECT_BREAK_SET_STEP   = 9
+EFFECT_SPEED            = 10
+
 # Returns (converted_num, converted_params) if there was a valid effect. If
 # there is none, it returns (None, None). Note that it is needed to pass the
 # channel to this function because some effects behave differently depending on
@@ -94,16 +103,16 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
         if effectparams == 0:
             raise StepConversionError("Speed must not be zero")
 
-        return (10, effectparams)
+        return (EFFECT_SPEED, effectparams)
 
     if effectnum == 'B': # Pattern jump
         # TODO: Fail if this jumps out of bounds
-        return (8, effectparams)
+        return (EFFECT_PATTERN_JUMP, effectparams)
 
     elif effectnum == 'C': # Break + Set step
         # Effect value is BCD, convert to integer
         val = (((effectparams & 0xF0) >> 4) * 10) + (effectparams & 0x0F)
-        return (9, val)
+        return (EFFECT_BREAK_SET_STEP, val)
 
     elif effectnum == 'D': # Volume Slide
         if channel == 3:
@@ -126,24 +135,24 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
             if delay <= 0:
                 raise StepConversionError("Volume slide too steep")
             params |= delay
-            return (4, params)
+            return (EFFECT_VOLUME_SLIDE, params)
         elif upper == 0: # Volume goes down
             params = 0 << 3 # Decrease
             delay = 7 - lower + 1
             if delay <= 0:
                 raise StepConversionError("Volume slide too steep")
             params = delay
-            return (4, params)
+            return (EFFECT_VOLUME_SLIDE, params)
         else:
             raise StepConversionError("Invalid volume slide arguments")
 
-        return (4, effectparams)
+        return (EFFECT_VOLUME_SLIDE, effectparams)
 
     elif effectnum == 'H': # Vibrato
-        return (3, effectparams)
+        return (EFFECT_VIBRATO, effectparams)
 
     elif effectnum == 'J': # Arpeggio
-        return (1, effectparams)
+        return (EFFECT_ARPEGGIO, effectparams)
 
     elif effectnum == 'S': # This effect is subdivided into many
 
@@ -152,10 +161,10 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
 
         if subeffectnum == 0x8: # Pan position
             val = s3m_pan_to_gb(subeffectparams, channel)
-            return (0, val)
+            return (EFFECT_PAN, val)
 
         if subeffectnum == 0xC: # Notecut
-            return (2, subeffectparams)
+            return (EFFECT_NOTE_CUT, subeffectparams)
 
     raise(f"Unsupported effect: {effectnum}{effectparams:02X}")
 
