@@ -11,20 +11,17 @@ import kaitaistruct
 from s3m import S3m
 
 class StepConversionError(Exception):
-    def __init__(self, order, step, channel, message):
-        self.order = order
+    def __init__(self, message, pattern = -1, step = -1, channel = -1):
+        self.pattern = pattern
         self.step = step
         self.channel = channel + 1
         self.message = message
 
     def __str__(self):
-        return f"Order {self.order} | Row {self.step} | Channel {self.channel} | {self.message}"
+        return f"Pattern {self.pattern} | Row {self.step} | Channel {self.channel} | {self.message}"
 
 class S3MFormatError(Exception):
     pass
-
-def print_warning(self, order, step, channel, message):
-    print(f"WARN: Order {order} | Row {step} | Channel {channel} | {message}")
 
 # Channels 1, 2, 4
 def s3m_volume_to_gb(s3m_vol):
@@ -50,11 +47,7 @@ def s3m_volume_to_gb_ch3(s3m_vol):
     else:
         return 0
 
-def s3m_note_to_gb(note, pattern, step, channel):
-
-    # This function shouldn't be called for channel 4
-    assert channel != 4
-
+def s3m_note_to_gb(note):
     # Note cut with ^^
     if note == 0xFE:
         return 0xFE
@@ -64,9 +57,9 @@ def s3m_note_to_gb(note, pattern, step, channel):
 
     note -= 32
     if note < 0:
-        raise StepConversionError(pattern, step, channel, "Note too low")
+        raise StepConversionError("Note too low")
     elif note > 32 + 16 * 6:
-        raise StepConversionError(pattern, step, channel, "Note too high")
+        raise StepConversionError("Note too high")
 
     note = (note & 0xF) + ((note & 0xF0) >> 4) * 12
     return note
@@ -95,13 +88,11 @@ def s3m_pan_to_gb(pan, channel):
 # there is none, it returns (None, None). Note that it is needed to pass the
 # channel to this function because some effects behave differently depending on
 # the channel (like panning).
-def effect_mod_to_gb(pattern_number, step_number, channel,
-                     effectnum, effectparams):
+def effect_s3m_to_gb(channel, effectnum, effectparams):
 
     if effectnum == 'A': # Set Speed
         if effectparams == 0:
-            raise StepConversionError(pattern_number, step_number, channel,
-                                      "Speed must not be zero")
+            raise StepConversionError("Speed must not be zero")
 
         return (10, effectparams)
 
@@ -116,46 +107,37 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
 
     elif effectnum == 'D': # Volume Slide
         if channel == 3:
-            raise StepConversionError(pattern_number, step_number, channel,
-                                      "Volume slide not supported in channel 3")
+            raise StepConversionError("Volume slide not supported in channel 3")
+
+        if effectparams == 0:
+            # Ignore volume slide commands that just continue the effect,
+            # they are only needed for the S3M player.
+            return (None, None)
+
+        upper = (effectparams >> 4) & 0xF
+        lower = effectparams & 0xF
+
+        if upper == 0xF or lower == 0xF:
+            raise StepConversionError("Fine volume slide not supported")
+
+        elif lower == 0: # Volume goes up
+            params = 1 << 3 # Increase
+            delay = 7 - upper + 1
+            if delay <= 0:
+                raise StepConversionError("Volume slide too steep")
+            params |= delay
+            return (4, params)
+        elif upper == 0: # Volume goes down
+            params = 0 << 3 # Decrease
+            delay = 7 - lower + 1
+            if delay <= 0:
+                raise StepConversionError("Volume slide too steep")
+            params = delay
+            return (4, params)
         else:
-            if effectparams == 0:
-                # Ignore volume slide commands that just continue the effect,
-                # they are only needed for the S3M player.
-                return (None, None)
+            raise StepConversionError("Invalid volume slide arguments")
 
-            upper = (effectparams >> 4) & 0xF
-            lower = effectparams & 0xF
-
-            if upper == 0xF or lower == 0xF:
-                print_warning(pattern_number, step_number, channel,
-                              "Fine volume slide not supported")
-                return (None, None)
-
-            elif lower == 0: # Volume goes up
-                params = 1 << 3 # Increase
-                delay = 7 - upper + 1
-                if delay <= 0:
-                    print_warning(pattern_number, step_number, channel,
-                                  "Volume slide too steep")
-                    return (None, None)
-                params |= delay
-                return (4, params)
-            elif upper == 0: # Volume goes down
-                params = 0 << 3 # Decrease
-                delay = 7 - lower + 1
-                if delay <= 0:
-                    print_warning(pattern_number, step_number, channel,
-                                  "Volume slide too steep")
-                    return (None, None)
-                params = delay
-                return (4, params)
-            else:
-                print_warning(pattern_number, step_number, channel,
-                              "Unknown volume slide arguments")
-                return (None, None)
-
-            return (4, effectparams)
+        return (4, effectparams)
 
     elif effectnum == 'H': # Vibrato
         return (3, effectparams)
@@ -175,9 +157,7 @@ def effect_mod_to_gb(pattern_number, step_number, channel,
         if subeffectnum == 0xC: # Notecut
             return (2, subeffectparams)
 
-    print_warning(pattern_number, step_number, channel,
-                  f"Unsupported effect: {effectnum}{effectparams:02X}")
-    return (None, None)
+    raise(f"Unsupported effect: {effectnum}{effectparams:02X}")
 
 HAS_VOLUME      = 1 << 4
 HAS_INSTRUMENT  = 1 << 5
@@ -185,14 +165,13 @@ HAS_EFFECT      = 1 << 6
 HAS_NOTE        = 1 << 7
 HAS_KIT         = 1 << 7
 
-def convert_channel1(pattern_number, step_number,
-                     note_index, samplenum, volume, effectnum, effectparams):
+def convert_channel1(note_index, samplenum, volume, effectnum, effectparams):
     command = [ 0, 0, 0, 0 ] # NOP
     command_ptr = 1
 
     # Check if it's needed to add a note
     if note_index != -1:
-        note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 1)
+        note_index = s3m_note_to_gb(note_index)
         command[0] |= HAS_NOTE
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
@@ -205,8 +184,7 @@ def convert_channel1(pattern_number, step_number,
         command[command_ptr] = (instrument << 4) & 0x30
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_mod_to_gb(
-                pattern_number, step_number, 1, effectnum, effectparams)
+        [converted_num, converted_params] = effect_s3m_to_gb(1, effectnum, effectparams)
 
         if converted_num is not None:
             command[0] |= HAS_EFFECT
@@ -225,14 +203,13 @@ def convert_channel1(pattern_number, step_number,
 
     return command[:command_size]
 
-def convert_channel2(pattern_number, step_number,
-                     note_index, samplenum, volume, effectnum, effectparams):
+def convert_channel2(note_index, samplenum, volume, effectnum, effectparams):
     command = [ 0, 0, 0, 0 ] # NOP
     command_ptr = 1
 
     # Check if it's needed to add a note
     if note_index != -1:
-        note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 2)
+        note_index = s3m_note_to_gb(note_index)
         command[0] |= HAS_NOTE
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
@@ -245,8 +222,7 @@ def convert_channel2(pattern_number, step_number,
         command[command_ptr] = (instrument << 4) & 0x30
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_mod_to_gb(
-                pattern_number, step_number, 2, effectnum, effectparams)
+        [converted_num, converted_params] = effect_s3m_to_gb(2, effectnum, effectparams)
 
         if converted_num is not None:
             command[0] |= HAS_EFFECT
@@ -265,14 +241,13 @@ def convert_channel2(pattern_number, step_number,
 
     return command[:command_size]
 
-def convert_channel3(pattern_number, step_number,
-                     note_index, samplenum, volume, effectnum, effectparams):
+def convert_channel3(note_index, samplenum, volume, effectnum, effectparams):
     command = [ 0, 0, 0, 0 ] # NOP
     command_ptr = 1
 
     # Check if it's needed to add a note
     if note_index != -1:
-        note_index = s3m_note_to_gb(note_index, pattern_number, step_number, 3)
+        note_index = s3m_note_to_gb(note_index)
         command[0] |= HAS_NOTE
         command[command_ptr] = note_index
         command_ptr = command_ptr + 1
@@ -285,8 +260,7 @@ def convert_channel3(pattern_number, step_number,
         command[command_ptr] = (instrument << 4) & 0xF0
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_mod_to_gb(
-                pattern_number, step_number, 3, effectnum, effectparams)
+        [converted_num, converted_params] = effect_s3m_to_gb(3, effectnum, effectparams)
 
         if converted_num is not None:
             command[0] |= HAS_EFFECT
@@ -305,8 +279,7 @@ def convert_channel3(pattern_number, step_number,
 
     return command[:command_size]
 
-def convert_channel4(pattern_number, step_number,
-                     note_index, samplenum, volume, effectnum, effectparams):
+def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
     command = [ 0, 0, 0, 0 ] # NOP
     command_ptr = 1
 
@@ -315,7 +288,7 @@ def convert_channel4(pattern_number, step_number,
         if samplenum > 0:
             # This limitation is only for channel 4. It should never happen in a
             # regular song.
-            print_warning("Note cut + Sample in same step: Sample will be ignored.")
+            raise("Note cut + Sample in same step: Not supported in channel 4")
         samplenum = 0xFE
 
     # Check if there is a sample defined
@@ -329,8 +302,7 @@ def convert_channel4(pattern_number, step_number,
         command_ptr += 1
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_mod_to_gb(
-                pattern_number, step_number, 4, effectnum, effectparams)
+        [converted_num, converted_params] = effect_s3m_to_gb(4, effectnum, effectparams)
 
         if converted_num is not None:
             command[0] |= HAS_EFFECT
@@ -501,25 +473,28 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                     effectnum = chr(c.fx_type + ord('A') - 1)
                     effectparams = c.fx_value
 
-                if c.channel_num == 0:
-                    cmd1 = convert_channel1(pattern, step,
-                                            note, instrument, volume,
-                                            effectnum, effectparams)
-                elif c.channel_num == 1:
-                    cmd2 = convert_channel2(pattern, step,
-                                            note, instrument, volume,
-                                            effectnum, effectparams)
-                elif c.channel_num == 2:
-                    cmd3 = convert_channel3(pattern, step,
-                                            note, instrument, volume,
-                                            effectnum, effectparams)
-                elif c.channel_num == 3:
-                    cmd4 = convert_channel4(pattern, step,
-                                            note, instrument, volume,
-                                            effectnum, effectparams)
-                else:
-                    channels = c.channel_num + 1
-                    raise S3MFormatError(f"Too many channels: {channels}")
+                channel = c.channel_num + 1
+
+                try:
+                    if channel == 1:
+                        cmd1 = convert_channel1(note, instrument, volume,
+                                                effectnum, effectparams)
+                    elif channel == 2:
+                        cmd2 = convert_channel2(note, instrument, volume,
+                                                effectnum, effectparams)
+                    elif channel == 3:
+                        cmd3 = convert_channel3(note, instrument, volume,
+                                                effectnum, effectparams)
+                    elif channel == 4:
+                        cmd4 = convert_channel4(note, instrument, volume,
+                                                effectnum, effectparams)
+                    else:
+                        raise S3MFormatError(f"Too many channels: {channel}")
+                except StepConversionError as e:
+                    e.step = step
+                    e.pattern = pattern
+                    e.channel = channel
+                    raise e
 
         except kaitaistruct.ValidationNotEqualError as e:
             info = str(vars(e))
