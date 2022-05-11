@@ -39,8 +39,21 @@ work. It would be nice to you tell me if you use it, anyway. :)
 Changelog
 ---------
 
+- Version 4.2.0 (2022/5/11)
+
+  - GBA-only release.
+  - Refactor `s3m2gbt`, specially error handling.
+
+    - Use Python exceptions.
+    - Any unknown effect causes an exception.
+    - Don't export unused patterns.
+
+  - Refactor player. Group variables on a per-channel basis.
+  - Fix notes with no defined volume (this time it's for real, unlike in 4.1.0).
+
 - Version 4.1.1 (2022/5/6)
 
+  - GBA-only release.
   - Add sample S3M modules for vibrato and channel 3 instrument change.
   - Make samples of channels 1 and 2 more accurate.
 
