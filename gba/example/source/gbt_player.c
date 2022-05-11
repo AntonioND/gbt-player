@@ -548,7 +548,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 
     if (has_volume)
     {
-        gbt.vol[0] = (header & 0xF) << 12;
+        gbt.vol[0] = ((uint16_t)(header & 0xF)) << 12;
         has_to_update_registers = 1;
     }
 
@@ -761,7 +761,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 
     if (has_volume)
     {
-        gbt.vol[1] = (header & 0xF) << 12;
+        gbt.vol[1] = ((uint16_t)(header & 0xF)) << 12;
         has_to_update_registers = 1;
     }
 
@@ -1016,7 +1016,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 
     if (has_volume)
     {
-        gbt.vol[2] = (header & 0x7) << 13;
+        gbt.vol[2] = ((uint16_t)(header & 0x7)) << 13;
         has_to_update_registers = 1;
     }
 
@@ -1206,7 +1206,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 
     if (has_volume)
     {
-        gbt.vol[3] = (header & 0xF) << 12;
+        gbt.vol[3] = ((uint16_t)(header & 0xF)) << 12;
         has_to_update_registers = 1;
     }
 
