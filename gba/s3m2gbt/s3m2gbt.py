@@ -423,11 +423,16 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
     print(f"Exporting patterns...")
 
-    pattern = 0
+    pattern = -1
     for p in data.patterns:
+        pattern += 1
 
-        # TODO: Check if pattern is actually used in the order list. If it isn't
-        # used, don't export it.
+        # Check if pattern is actually used in the order list. If it isn't used,
+        # don't export it.
+        if pattern not in data.orders:
+            print(f"Pattern {pattern} not exported: Not in the order list")
+            continue
+
         fileout.write(f"static const uint8_t {song_name}_{pattern}[] = ")
         fileout.write("{\n")
 
@@ -521,8 +526,6 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
         fileout.write("};\n")
         fileout.write("\n")
-
-        pattern += 1
 
     # Export initial state
     # --------------------
