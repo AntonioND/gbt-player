@@ -1,10 +1,10 @@
 GBT Player
 ==========
 
-Music player library and converter kit for Game Boy and Game Boy Color that can
-be used with `RGBDS <https://github.com/gbdev/rgbds>`__ (and, with
-limitations, with GBDK). It is also available for Game Boy Advance as a C
-library.
+Music player library and converter kit for the Game Boy family of consoles. It's
+available for the Game Boy Advance as a C library. It's also avaliable for Game
+Boy and Game Boy Color as a `RGBDS <https://github.com/gbdev/rgbds>`__ library.
+There is also a legacy version that uses GBDK.
 
 Introduction
 ------------
@@ -12,9 +12,9 @@ Introduction
 **GBT Player** is a music creation environment for GB, GBC and GBA. It is formed
 by:
 
-- **mod2gbt**: Converts MOD files into GBT (GameBoy Tracker) format.
-- **s3m2gbt**: Converts S3M files into GBT (GameBoy Tracker) format.
 - **GBT Player**: Library to play GBT format on GB, GBC or GBA.
+- **s3m2gbt**: Converts S3M files into GBT (GameBoy Tracker) format.
+- **mod2gbt**: Converts legacy MOD files into GBT (GameBoy Tracker) format.
 
 It's the same idea as the old Lemon player for Game Boy, but greatly improved.
 Because of this workflow, there are a lot of limitations that the GB/GBA
@@ -24,13 +24,13 @@ GB/GBA are similar.
 As of version 4.0.0 there is a big split between the GB/GBC version and the GBA
 version.
 
+- For GBA, the code is just in C, and it doesn't depend on any library apart from
+  a few standard library headers.
+
 - For GB/GBC, there is source code for **RGBDS**, the main option for Game Boy
   development (in my opinion). There is also legacy code for an old version that
   also supported **GBDK**, but it's mostly unmaintained. Note that there is no
   S3M support for GB/GBC, only for GBA.
-
-- For GBA, the code is just in C, and it doesn't depend on any library apart from
-  a few standard library headers.
 
 GBT Player is open source, and it is licensed under the MIT license. That means
 that you can use and modify it but you have to give credit for the original
@@ -197,6 +197,6 @@ All rights reserved.
 
 Email: antonio_nd@outlook.com
 
-Web: www.skylyrac.net/
+Web: www.skylyrac.net
 
 Latest version: https://github.com/AntonioND/gbt-player
