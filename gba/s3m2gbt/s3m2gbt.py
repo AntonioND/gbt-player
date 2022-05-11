@@ -193,13 +193,13 @@ def convert_channel1(note_index, samplenum, volume, effectnum, effectparams):
         command[command_ptr] = (instrument << 4) & 0x30
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_s3m_to_gb(1, effectnum, effectparams)
+        [num, params] = effect_s3m_to_gb(1, effectnum, effectparams)
 
-        if converted_num is not None:
+        if num is not None:
             command[0] |= HAS_EFFECT
-            command[command_ptr] |= converted_num & 0x0F
+            command[command_ptr] |= num & 0x0F
             command_ptr += 1
-            command[command_ptr] = converted_params & 0xFF
+            command[command_ptr] = params & 0xFF
 
     # Check if it's needed to add a volume
     if volume > -1:
@@ -231,13 +231,13 @@ def convert_channel2(note_index, samplenum, volume, effectnum, effectparams):
         command[command_ptr] = (instrument << 4) & 0x30
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_s3m_to_gb(2, effectnum, effectparams)
+        [num, params] = effect_s3m_to_gb(2, effectnum, effectparams)
 
-        if converted_num is not None:
+        if num is not None:
             command[0] |= HAS_EFFECT
-            command[command_ptr] |= converted_num & 0x0F
+            command[command_ptr] |= num & 0x0F
             command_ptr += 1
-            command[command_ptr] = converted_params & 0xFF
+            command[command_ptr] = params & 0xFF
 
     # Check if it's needed to add a volume
     if volume > -1:
@@ -269,13 +269,13 @@ def convert_channel3(note_index, samplenum, volume, effectnum, effectparams):
         command[command_ptr] = (instrument << 4) & 0xF0
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_s3m_to_gb(3, effectnum, effectparams)
+        [num, params] = effect_s3m_to_gb(3, effectnum, effectparams)
 
-        if converted_num is not None:
+        if num is not None:
             command[0] |= HAS_EFFECT
-            command[command_ptr] |= converted_num & 0x0F
+            command[command_ptr] |= num & 0x0F
             command_ptr += 1
-            command[command_ptr] = converted_params & 0xFF
+            command[command_ptr] = params & 0xFF
 
     # Check if it's needed to add a volume
     if volume > -1:
@@ -311,13 +311,13 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
         command_ptr += 1
 
     if effectnum is not None:
-        [converted_num, converted_params] = effect_s3m_to_gb(4, effectnum, effectparams)
+        [num, params] = effect_s3m_to_gb(4, effectnum, effectparams)
 
-        if converted_num is not None:
+        if num is not None:
             command[0] |= HAS_EFFECT
-            command[command_ptr] |= converted_num & 0x0F
+            command[command_ptr] |= num & 0x0F
             command_ptr += 1
-            command[command_ptr] = converted_params & 0xFF
+            command[command_ptr] = params & 0xFF
 
     # Check if it's needed to add a volume
     if volume > -1:
