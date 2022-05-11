@@ -400,7 +400,7 @@ def initial_state_array(speed, panning_array, instruments):
             except kaitaistruct.ValidationNotEqualError as e:
                 if e.src_path == u"/types/instrument/seq/6":
                     # This may be caused by an empty instrument, don't crash!
-                    print("Invalid magic in instrument")
+                    pass
                 else:
                     raise S3MFormatError("Error while decoding instruments")
             except Exception as e:
