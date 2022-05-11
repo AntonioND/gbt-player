@@ -46,7 +46,8 @@ is exactly 32 or 64 samples long, you can pass the ``--instruments`` flag to
 song. They will replace the default instruments of GBT Player for the duration
 of the song.
 
-Don't modify the tuning of the samples!
+You are allowed to change the default volume of the samples, but don't modify
+the tuning of the samples!
 
 The samples of the template are the corresponding ones to the default
 instruments of GBT Player. If you export the instruments of the template, the

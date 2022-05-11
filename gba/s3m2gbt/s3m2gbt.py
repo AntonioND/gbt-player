@@ -479,10 +479,11 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                     note = c.note
                     instrument = c.instrument
 
-                    # TODO: This assumes that the volume of the sample is always
-                    # the maximum. This could use volume of the sample.
-                    if volume == -1:
-                        volume = 64
+                    # Rows with note and instrument but no volume use the
+                    # default volume of the sample.
+                    if instrument > 0 and volume == -1:
+                        this_instrument = data.instruments[instrument - 1].body
+                        volume = this_instrument.body.default_volume
 
                 effectnum = None
                 effectparams = None
