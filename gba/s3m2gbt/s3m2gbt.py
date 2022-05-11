@@ -330,20 +330,6 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
 
     return command[:command_size]
 
-def print_step(fileout, cmd1, cmd2, cmd3, cmd4):
-    fileout.write("    ")
-
-    for b in cmd1:
-        fileout.write(f"0x{b:02X},")
-    for b in cmd2:
-        fileout.write(f"0x{b:02X},")
-    for b in cmd3:
-        fileout.write(f"0x{b:02X},")
-    for b in cmd4:
-        fileout.write(f"0x{b:02X},")
-
-    fileout.write("\n")
-
 def initial_state_array(speed, panning_array, instruments):
     array = []
 
@@ -459,7 +445,19 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                 if c.channel_num == 0 and (not c.has_volume) and \
                     (not c.has_fx) and (not c.has_note_and_instrument):
 
-                    print_step(fileout, cmd1, cmd2, cmd3, cmd4)
+                    # Write step
+                    fileout.write("    ")
+
+                    for b in cmd1:
+                        fileout.write(f"0x{b:02X},")
+                    for b in cmd2:
+                        fileout.write(f"0x{b:02X},")
+                    for b in cmd3:
+                        fileout.write(f"0x{b:02X},")
+                    for b in cmd4:
+                        fileout.write(f"0x{b:02X},")
+
+                    fileout.write("\n")
 
                     step = step + 1
 
