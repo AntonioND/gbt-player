@@ -330,6 +330,8 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
 
     return command[:command_size]
 
+SAMPLE_64_ENTRIES = 1 << 7
+
 def initial_state_array(speed, panning_array, instruments):
     array = []
 
@@ -372,7 +374,7 @@ def initial_state_array(speed, panning_array, instruments):
                 else:
                     flags = count - 8
                     if size == 64:
-                        flags |= 1 << 7
+                        flags |= SAMPLE_64_ENTRIES
 
                     array.extend([3, flags])
 

@@ -177,8 +177,10 @@ static void gbt_run_startup_commands(const uint8_t *ptr)
 
             gbt.ch3_instrument[index] = ptr;
 
+            const int SAMPLE_64_ENTRIES = BIT(7);
+
             uint32_t len = 32 / 2;
-            if (flags & BIT(7))
+            if (flags & SAMPLE_64_ENTRIES)
                 len = 64 / 2;
 
             ptr += len;
