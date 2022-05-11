@@ -52,7 +52,7 @@ def s3m_note_to_gb(note):
     if note == 0xFE:
         return 0xFE
 
-    # Note off and ^^ note cut should be handled before calling this function
+    # Note off and ^^ note cut should be handled before reaching this point
     assert note <= 0x7F
 
     note -= 32
@@ -452,6 +452,10 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
             for c in p.body.body.cells:
 
+                # If an end of row marker is reached, print the previous row.
+                # Trust that the S3M file is generated in a valid way and it
+                # doesn't have markers at weird positions, and that there is one
+                # marker right at the end of each pattern.
                 if c.channel_num == 0 and (not c.has_volume) and \
                     (not c.has_fx) and (not c.has_note_and_instrument):
 
