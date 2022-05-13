@@ -306,9 +306,34 @@ static void channel4_silence(void)
 // Player routines
 // ===============
 
-static void gbt_get_pattern_ptr(int pattern_number)
+static void gbt_refresh_pattern_ptr(void)
 {
-    gbt.current_step_data_ptr = gbt.pattern_array_ptr[pattern_number];
+    const uint8_t *src_search = gbt.pattern_array_ptr[gbt.current_pattern];
+
+    // Seek the requested step
+
+    for (int i = 0; i < gbt.current_step; i++)
+    {
+        for (int j = 0; j < 3; j++) // Channels 1-3
+        {
+            // Note: The volume bit doesn't affect the final size.
+            const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
+            uint8_t bits = (*src_search) >> 5;
+            src_search += sizes[bits];
+        }
+
+        // Channel 4
+        {
+            // Note: The volume bit doesn't affect the final size.
+            const uint8_t sizes[4] = { 1, 3, 2, 4 };
+            uint8_t bits = (*src_search) >> 6;
+            src_search += sizes[bits];
+        }
+    }
+
+    // Save pointer to current step
+
+    gbt.current_step_data_ptr = src_search;
 }
 
 static void gbt_run_startup_commands(const uint8_t *ptr)
@@ -373,13 +398,13 @@ void gbt_play(const void *song, int speed)
 
     gbt.speed = speed;
 
-    gbt_get_pattern_ptr(0);
-
     gbt.current_step = 0;
     gbt.current_pattern = 0;
     gbt.ticks_elapsed = 0;
     gbt.loop_enabled = 0;
     gbt.jump_requested = 0;
+
+    gbt_refresh_pattern_ptr();
 
     // Force refresh as soon as possible
     gbt.ticks_elapsed = gbt.speed - 1;
@@ -1409,7 +1434,7 @@ void gbt_update(void)
         {
             // If loop is enabled, jump to pattern 0
             gbt.current_pattern = 0;
-            gbt_get_pattern_ptr(gbt.current_pattern);
+            gbt_refresh_pattern_ptr();
             gbt_run_startup_commands(gbt.startup_cmds_ptr);
         }
         else
@@ -1449,7 +1474,7 @@ void gbt_update(void)
             // Increment pattern
             gbt.current_step = 0;
             gbt.current_pattern++;
-            gbt_get_pattern_ptr(gbt.current_pattern);
+            gbt_refresh_pattern_ptr();
         }
     }
     else
@@ -1459,31 +1484,11 @@ void gbt_update(void)
         gbt.current_step = gbt.jump_target_step;
         gbt.current_pattern = gbt.jump_target_pattern;
 
-        gbt_get_pattern_ptr(gbt.current_pattern); // set ptr to start of pattern
-
-        // Seek the requested step
-
-        const uint8_t *src_search = gbt.current_step_data_ptr;
-
-        for (int i = 0; i < gbt.current_step; i++)
-        {
-            for (int j = 0; j < 3; j++) // Channels 1-3
-            {
-                // Note: The volume bit doesn't affect the final size.
-                const uint8_t sizes[8] = { 1, 2, 3, 3, 2, 3, 4, 4 };
-                uint8_t bits = (*src_search) >> 5;
-                src_search += sizes[bits];
-            }
-
-            // Channel 4
-            {
-                // Note: The volume bit doesn't affect the final size.
-                const uint8_t sizes[4] = { 1, 3, 2, 4 };
-                uint8_t bits = (*src_search) >> 6;
-                src_search += sizes[bits];
-            }
-        }
-
-        gbt.current_step_data_ptr = src_search;
+        gbt_refresh_pattern_ptr();
     }
+
+
+
+
+
 }
