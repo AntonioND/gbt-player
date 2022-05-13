@@ -330,6 +330,11 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
 
     return command[:command_size]
 
+STARTUP_CMD_DONE                = 0
+STARTUP_CMD_SPEED               = 1
+STARTUP_CMD_PANING              = 2
+STARTUP_CMD_CHANNEL3_INSTRUMENT = 3
+
 SAMPLE_64_ENTRIES = 1 << 7
 
 def initial_state_array(speed, panning_array, instruments):
@@ -338,12 +343,12 @@ def initial_state_array(speed, panning_array, instruments):
     # Initial speed
     # -------------
 
-    array.extend([1, speed])
+    array.extend([STARTUP_CMD_SPEED, speed])
 
     # Initial panning
     # ---------------
 
-    array.extend([2])
+    array.extend([STARTUP_CMD_PANING])
     array.extend(panning_array)
 
     # Channel 3 instruments
@@ -376,7 +381,7 @@ def initial_state_array(speed, panning_array, instruments):
                     if size == 64:
                         flags |= SAMPLE_64_ENTRIES
 
-                    array.extend([3, flags])
+                    array.extend([STARTUP_CMD_CHANNEL3_INSTRUMENT, flags])
 
                     # Convert from 8 bit to 4 bit
                     for i in range(0, size, 2):
@@ -397,7 +402,7 @@ def initial_state_array(speed, panning_array, instruments):
     # End commands
     # ------------
 
-    array.extend([0])
+    array.extend([STARTUP_CMD_DONE])
 
     return array
 

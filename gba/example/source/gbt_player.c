@@ -336,6 +336,11 @@ static void gbt_refresh_pattern_ptr(void)
     gbt.current_step_data_ptr = src_search;
 }
 
+#define STARTUP_CMD_DONE                0
+#define STARTUP_CMD_SPEED               1
+#define STARTUP_CMD_PANING              2
+#define STARTUP_CMD_CHANNEL3_INSTRUMENT 3
+
 static void gbt_run_startup_commands(const uint8_t *ptr)
 {
     if (ptr == NULL)
@@ -345,22 +350,22 @@ static void gbt_run_startup_commands(const uint8_t *ptr)
     {
         uint8_t cmd = *ptr++;
 
-        if (cmd == 0) // End setup
+        if (cmd == STARTUP_CMD_DONE) // End setup
         {
             break;
         }
-        else if (cmd == 1) // Initial speed
+        else if (cmd == STARTUP_CMD_SPEED) // Initial speed
         {
             gbt.speed = *ptr++;
         }
-        else if (cmd == 2) // Initial panning
+        else if (cmd == STARTUP_CMD_PANING) // Initial panning
         {
             gbt.ch1.pan = *ptr++;
             gbt.ch2.pan = *ptr++;
             gbt.ch3.pan = *ptr++;
             gbt.ch4.pan = *ptr++;
         }
-        else if (cmd == 3) // Set channel 3 sample
+        else if (cmd == STARTUP_CMD_CHANNEL3_INSTRUMENT) // Set channel 3 sample
         {
             uint8_t flags = *ptr++;
             uint8_t index = flags & 0x3F;
