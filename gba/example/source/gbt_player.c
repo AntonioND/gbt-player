@@ -411,9 +411,6 @@ void gbt_play(const void *song, int speed)
 
     gbt_refresh_pattern_ptr();
 
-    // Force refresh as soon as possible
-    gbt.ticks_elapsed = gbt.speed - 1;
-
     gbt.ch3.loaded_instrument = 0xFF;
 
     gbt.channels_enabled = GBT_ENABLE_CH_ALL;
@@ -497,6 +494,10 @@ void gbt_play(const void *song, int speed)
     channel4_silence();
 
     gbt_volume(GBT_VOLUME_MAX, GBT_VOLUME_MAX);
+
+    // Force refresh as soon as possible
+
+    gbt.ticks_elapsed = gbt.speed - 1;
 
     // Everything is ready
 
