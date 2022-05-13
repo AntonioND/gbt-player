@@ -386,7 +386,9 @@ static void gbt_run_startup_commands(const uint8_t *ptr)
 
 void gbt_play(const void *song, int speed)
 {
-    // If the user hasn't specified a speed, set the default value
+    // If the user hasn't specified a speed, set the default value for MOD
+    // songs. In S3M songs this value is specified in the S3M file so it is
+    // overwriten during the startup commands handling.
 
     if (speed <= 0)
         speed = 6;
@@ -401,13 +403,13 @@ void gbt_play(const void *song, int speed)
 
     // Initialize player state
 
-    gbt.speed = speed;
+    gbt.loop_enabled = 0;
 
+    gbt.speed = speed; // This may be overwriten by gbt_run_startup_commands()
+
+    gbt.ticks_elapsed = 0;
     gbt.current_row = 0;
     gbt.current_order = 0;
-    gbt.ticks_elapsed = 0;
-    gbt.loop_enabled = 0;
-    gbt.jump_requested = 0;
 
     gbt_refresh_pattern_ptr();
 
@@ -458,6 +460,8 @@ void gbt_play(const void *song, int speed)
     gbt.ch2.cut_note_tick = 0xFF;
     gbt.ch3.cut_note_tick = 0xFF;
     gbt.ch4.cut_note_tick = 0xFF;
+
+    gbt.jump_requested = 0;
 
     // Default channel 3 instruments
 

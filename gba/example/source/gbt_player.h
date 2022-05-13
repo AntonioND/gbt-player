@@ -7,7 +7,9 @@
 #ifndef GBT_PLAYER_H__
 #define GBT_PLAYER_H__
 
-// Starts playing a song. If the speed is 0, it acts as if it was 256.
+// Starts playing a song. The speed is only used for MOD songs. S3M songs
+// include their own startup speed, so this value is ignored. If the speed is 0,
+// it acts as if it was 256.
 void gbt_play(const void *song, int speed);
 
 // Pauses or unpauses the song. 0 pauses the song, anything else unpauses it.
