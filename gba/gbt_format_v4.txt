@@ -34,8 +34,8 @@ Effects:
      8: Pattern jump
         - Arg: Pattern order to jump to
 
-     9: Break + Set step
-        - Arg: Step in next pattern (BCD): value = (arg & 0xF) + (arg >> 4) * 10
+     9: Break + Set row
+        - Arg: Row in next pattern (BCD): value = (arg & 0xF) + (arg >> 4) * 10
 
     10: Set speed
         - Arg: Speed (1 - 0xXX)

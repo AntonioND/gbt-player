@@ -10,15 +10,15 @@ import kaitaistruct
 
 from s3m import S3m
 
-class StepConversionError(Exception):
-    def __init__(self, message, pattern = -1, step = -1, channel = -1):
+class RowConversionError(Exception):
+    def __init__(self, message, pattern = -1, row = -1, channel = -1):
         self.pattern = pattern
-        self.step = step
+        self.row = row
         self.channel = channel + 1
         self.message = message
 
     def __str__(self):
-        return f"Pattern {self.pattern} | Row {self.step} | Channel {self.channel} | {self.message}"
+        return f"Pattern {self.pattern} | Row {self.row} | Channel {self.channel} | {self.message}"
 
 class S3MFormatError(Exception):
     pass
@@ -57,9 +57,9 @@ def s3m_note_to_gb(note):
 
     note -= 32
     if note < 0:
-        raise StepConversionError("Note too low")
+        raise RowConversionError("Note too low")
     elif note > 32 + 16 * 6:
-        raise StepConversionError("Note too high")
+        raise RowConversionError("Note too high")
 
     note = (note & 0xF) + ((note & 0xF0) >> 4) * 12
     return note
@@ -101,7 +101,7 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
 
     if effectnum == 'A': # Set Speed
         if effectparams == 0:
-            raise StepConversionError("Speed must not be zero")
+            raise RowConversionError("Speed must not be zero")
 
         return (EFFECT_SPEED, effectparams)
 
@@ -109,14 +109,14 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
         # TODO: Fail if this jumps out of bounds
         return (EFFECT_PATTERN_JUMP, effectparams)
 
-    elif effectnum == 'C': # Break + Set step
+    elif effectnum == 'C': # Break + Set row
         # Effect value is BCD, convert to integer
         val = (((effectparams & 0xF0) >> 4) * 10) + (effectparams & 0x0F)
         return (EFFECT_BREAK_SET_STEP, val)
 
     elif effectnum == 'D': # Volume Slide
         if channel == 3:
-            raise StepConversionError("Volume slide not supported in channel 3")
+            raise RowConversionError("Volume slide not supported in channel 3")
 
         if effectparams == 0:
             # Ignore volume slide commands that just continue the effect,
@@ -127,24 +127,24 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
         lower = effectparams & 0xF
 
         if upper == 0xF or lower == 0xF:
-            raise StepConversionError("Fine volume slide not supported")
+            raise RowConversionError("Fine volume slide not supported")
 
         elif lower == 0: # Volume goes up
             params = 1 << 3 # Increase
             delay = 7 - upper + 1
             if delay <= 0:
-                raise StepConversionError("Volume slide too steep")
+                raise RowConversionError("Volume slide too steep")
             params |= delay
             return (EFFECT_VOLUME_SLIDE, params)
         elif upper == 0: # Volume goes down
             params = 0 << 3 # Decrease
             delay = 7 - lower + 1
             if delay <= 0:
-                raise StepConversionError("Volume slide too steep")
+                raise RowConversionError("Volume slide too steep")
             params = delay
             return (EFFECT_VOLUME_SLIDE, params)
         else:
-            raise StepConversionError("Invalid volume slide arguments")
+            raise RowConversionError("Invalid volume slide arguments")
 
         return (EFFECT_VOLUME_SLIDE, effectparams)
 
@@ -297,7 +297,7 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
         if samplenum > 0:
             # This limitation is only for channel 4. It should never happen in a
             # regular song.
-            raise("Note cut + Sample in same step: Not supported in channel 4")
+            raise("Note cut + Sample in same row: Not supported in channel 4")
         samplenum = 0xFE
 
     # Check if there is a sample defined
@@ -441,7 +441,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
         fileout.write(f"static const uint8_t {song_name}_{pattern}[] = ")
         fileout.write("{\n")
 
-        step = 0
+        row = 0
         try:
             cmd1 = [0]
             cmd2 = [0]
@@ -457,7 +457,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                 if c.channel_num == 0 and (not c.has_volume) and \
                     (not c.has_fx) and (not c.has_note_and_instrument):
 
-                    # Write step
+                    # Write row
                     fileout.write("    ")
 
                     for b in cmd1:
@@ -471,7 +471,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
                     fileout.write("\n")
 
-                    step = step + 1
+                    row = row + 1
 
                     # Clear commands
                     cmd1 = [0]
@@ -519,8 +519,8 @@ def convert_file(module_path, song_name, output_path, export_instruments):
                                                 effectnum, effectparams)
                     else:
                         raise S3MFormatError(f"Too many channels: {channel}")
-                except StepConversionError as e:
-                    e.step = step
+                except RowConversionError as e:
+                    e.row = row
                     e.pattern = pattern
                     e.channel = channel
                     raise e
@@ -631,7 +631,7 @@ if __name__ == "__main__":
 
     try:
         convert_file(args.input, args.name, args.output, args.instruments)
-    except StepConversionError as e:
+    except RowConversionError as e:
         print("ERROR: " + str(e))
         sys.exit(1)
     except S3MFormatError as e:

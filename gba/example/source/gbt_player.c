@@ -27,8 +27,8 @@ typedef struct {
     // Pointer to the pattern pointer array
     uint8_t * const *pattern_array_ptr;
 
-    // Pointer to next step data
-    const uint8_t *current_step_data_ptr;
+    // Pointer to next row data
+    const uint8_t *current_row_data_ptr;
 
     uint8_t playing;
     uint8_t loop_enabled;
@@ -36,8 +36,8 @@ typedef struct {
     uint8_t speed;
 
     uint8_t ticks_elapsed;
-    uint8_t current_step;
-    uint8_t current_pattern;
+    uint8_t current_row;
+    uint8_t current_order;
 
     uint8_t channels_enabled;
 
@@ -113,8 +113,8 @@ typedef struct {
     uint16_t pan_volume_mask;
 
     uint8_t jump_requested; // set to 1 by jump effects
-    uint8_t jump_target_step;
-    uint8_t jump_target_pattern;
+    uint8_t jump_target_row;
+    uint8_t jump_target_order;
 
 } gbt_player_info_t;
 
@@ -187,7 +187,7 @@ static const int16_t vibrato_sine[64] = {
 static void channel1_refresh_registers(void)
 {
     REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
-    // Panning is set to the right values at the end of the step handling
+    // Panning is set to the right values at the end of the row handling
 
     REG_SOUND1CNT_L = 0;
     REG_SOUND1CNT_H = gbt.ch1.instr | gbt.ch1.vol | gbt.ch1.volslide_args;
@@ -206,7 +206,7 @@ static void channel1_silence(void)
 static void channel2_refresh_registers(void)
 {
     REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
-    // Panning is set to the right values at the end of the step handling
+    // Panning is set to the right values at the end of the row handling
 
     REG_SOUND2CNT_L = gbt.ch2.instr | gbt.ch2.vol | gbt.ch2.volslide_args;
     REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt.ch2.freq;
@@ -227,7 +227,7 @@ static void channel3_refresh_registers(void)
     // channel using NR51 (SOUNDCNT_L) before refreshing wave RAM.
 
     REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
-    // Panning is set to the right values at the end of the step handling
+    // Panning is set to the right values at the end of the row handling
 
     uint32_t instr = gbt.ch3.instr;
 
@@ -289,7 +289,7 @@ static void channel3_silence(void)
 static void channel4_refresh_registers(void)
 {
     REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
-    // Panning is set to the right values at the end of the step handling
+    // Panning is set to the right values at the end of the row handling
 
     REG_SOUND4CNT_L = gbt.ch4.vol | gbt.ch4.volslide_args; // Volume slide index 2
     REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.ch4.instr;
@@ -308,11 +308,11 @@ static void channel4_silence(void)
 
 static void gbt_refresh_pattern_ptr(void)
 {
-    const uint8_t *src_search = gbt.pattern_array_ptr[gbt.current_pattern];
+    const uint8_t *src_search = gbt.pattern_array_ptr[gbt.current_order];
 
-    // Seek the requested step
+    // Seek the requested row
 
-    for (int i = 0; i < gbt.current_step; i++)
+    for (int i = 0; i < gbt.current_row; i++)
     {
         for (int j = 0; j < 3; j++) // Channels 1-3
         {
@@ -331,9 +331,9 @@ static void gbt_refresh_pattern_ptr(void)
         }
     }
 
-    // Save pointer to current step
+    // Save pointer to current row
 
-    gbt.current_step_data_ptr = src_search;
+    gbt.current_row_data_ptr = src_search;
 }
 
 #define STARTUP_CMD_DONE                0
@@ -403,8 +403,8 @@ void gbt_play(const void *song, int speed)
 
     gbt.speed = speed;
 
-    gbt.current_step = 0;
-    gbt.current_pattern = 0;
+    gbt.current_row = 0;
+    gbt.current_order = 0;
     gbt.ticks_elapsed = 0;
     gbt.loop_enabled = 0;
     gbt.jump_requested = 0;
@@ -603,8 +603,8 @@ static int gbt_ch1234_speed(uint32_t args)
 static int gbt_ch1234_jump_pattern(uint32_t args)
 {
     gbt.jump_requested = 1;
-    gbt.jump_target_step = 0;
-    gbt.jump_target_pattern = args;
+    gbt.jump_target_row = 0;
+    gbt.jump_target_order = args;
 
     return 0;
 }
@@ -612,8 +612,8 @@ static int gbt_ch1234_jump_pattern(uint32_t args)
 static int gbt_ch1234_jump_position(uint32_t args)
 {
     gbt.jump_requested = 1;
-    gbt.jump_target_step = args;
-    gbt.jump_target_pattern = gbt.current_pattern + 1;
+    gbt.jump_target_row = args;
+    gbt.jump_target_order = gbt.current_order + 1;
 
     return 0;
 }
@@ -1433,12 +1433,12 @@ void gbt_update(void)
     // Check if the song has ended
     // ---------------------------
 
-    if (gbt.current_step_data_ptr == NULL)
+    if (gbt.current_row_data_ptr == NULL)
     {
         if (gbt.loop_enabled)
         {
             // If loop is enabled, jump to pattern 0
-            gbt.current_pattern = 0;
+            gbt.current_order = 0;
             gbt_refresh_pattern_ptr();
             gbt_run_startup_commands(gbt.startup_cmds_ptr);
         }
@@ -1453,32 +1453,32 @@ void gbt_update(void)
     // Update channels
     // ---------------
 
-    const uint8_t *ptr = gbt.current_step_data_ptr;
+    const uint8_t *ptr = gbt.current_row_data_ptr;
 
     ptr = gbt_channel_1_handle(ptr);
     ptr = gbt_channel_2_handle(ptr);
     ptr = gbt_channel_3_handle(ptr);
     ptr = gbt_channel_4_handle(ptr);
 
-    gbt.current_step_data_ptr = ptr;
+    gbt.current_row_data_ptr = ptr;
 
     // Handle panning
     // --------------
 
     gbt_update_refresh_panning();
 
-    // Increment step
-    // --------------
+    // Increment row
+    // -------------
 
     if (gbt.jump_requested == 0)
     {
-        gbt.current_step++;
+        gbt.current_row++;
 
-        if (gbt.current_step == 64)
+        if (gbt.current_row == 64)
         {
             // Increment pattern
-            gbt.current_step = 0;
-            gbt.current_pattern++;
+            gbt.current_row = 0;
+            gbt.current_order++;
             gbt_refresh_pattern_ptr();
         }
     }
@@ -1486,8 +1486,8 @@ void gbt_update(void)
     {
         gbt.jump_requested = 0;
 
-        gbt.current_step = gbt.jump_target_step;
-        gbt.current_pattern = gbt.jump_target_pattern;
+        gbt.current_row = gbt.jump_target_row;
+        gbt.current_order = gbt.jump_target_order;
 
         gbt_refresh_pattern_ptr();
     }
