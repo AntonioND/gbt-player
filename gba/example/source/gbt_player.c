@@ -16,6 +16,9 @@
 
 typedef int (*effect_handler)(uint32_t args);
 
+// Player state
+// ============
+
 typedef struct {
 
     // Array of commands to run before the start of the song (or NULL)
@@ -117,6 +120,9 @@ typedef struct {
 
 EWRAM_BSS static gbt_player_info_t gbt;
 
+// Player constants
+// ================
+
 // Waveforms of the default channel 3 instruments
 
 static const uint8_t gbt_default_wave_0[16] = { // random
@@ -174,6 +180,131 @@ static const int16_t vibrato_sine[64] = {
     -255, -253, -250, -244, -235, -224, -212, -197,
     -180, -161, -141, -120,  -97,  -74,  -49,  -24,
 };
+
+// Channel handling routines
+// =========================
+
+static void channel1_refresh_registers(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
+    // Panning is set to the right values at the end of the step handling
+
+    REG_SOUND1CNT_L = 0;
+    REG_SOUND1CNT_H = gbt.ch1.instr | gbt.ch1.vol | gbt.ch1.volslide_args;
+    REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt.ch1.freq;
+}
+
+static void channel1_silence(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
+
+    REG_SOUND1CNT_L = 0;
+    REG_SOUND1CNT_H = 0; // Set volume to 0
+    REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
+}
+
+static void channel2_refresh_registers(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
+    // Panning is set to the right values at the end of the step handling
+
+    REG_SOUND2CNT_L = gbt.ch2.instr | gbt.ch2.vol | gbt.ch2.volslide_args;
+    REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt.ch2.freq;
+}
+
+static void channel2_silence(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
+
+    REG_SOUND2CNT_L = 0; // Set volume to 0
+    REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
+}
+
+static void channel3_refresh_registers(void)
+{
+    // On the GBA, the output of channel 3 is inverted. This causes the channel
+    // to output a loud spike when disabled. It’s a good idea to "remove" the
+    // channel using NR51 (SOUNDCNT_L) before refreshing wave RAM.
+
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
+    // Panning is set to the right values at the end of the step handling
+
+    uint32_t instr = gbt.ch3.instr;
+
+    if (gbt.ch3.loaded_instrument != instr)
+    {
+        const uint8_t *wave = gbt.ch3.instrument[instr];
+        uint8_t flags = gbt.ch3.instrument_flags[instr];
+
+        // Disable channel and set bank 0 as writable
+        REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
+
+        for (int i = 0; i < 16; i += 2)
+        {
+            uint16_t wave_lo = *wave++;
+            uint16_t wave_hi = *wave++;
+            REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
+        }
+
+        if (flags & BIT(7)) // 64 samples
+        {
+            // Disable channel and set bank 1 as writable
+            REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(0);
+
+            for (int i = 0; i < 16; i += 2)
+            {
+                uint16_t wave_lo = *wave++;
+                uint16_t wave_hi = *wave++;
+                REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
+            }
+
+            // Use the 64 samples mode
+            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_64 | SOUND3CNT_L_ENABLE;
+        }
+        else
+        {
+            // Set bank 0 as active and use the 32 samples mode
+            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_32 | SOUND3CNT_L_BANK_SET(0) |
+                            SOUND3CNT_L_ENABLE;
+        }
+
+
+        // Done
+        gbt.ch3.loaded_instrument = instr;
+    }
+
+    REG_SOUND3CNT_H = gbt.ch3.vol;
+    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt.ch3.freq;
+}
+
+static void channel3_silence(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
+
+    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+    REG_SOUND3CNT_H = SOUND3CNT_H_VOLUME_0;
+    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+}
+
+static void channel4_refresh_registers(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
+    // Panning is set to the right values at the end of the step handling
+
+    REG_SOUND4CNT_L = gbt.ch4.vol | gbt.ch4.volslide_args; // Volume slide index 2
+    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.ch4.instr;
+}
+
+static void channel4_silence(void)
+{
+    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
+
+    REG_SOUND4CNT_L = 0; // Set volume to 0
+    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
+}
+
+// Player routines
+// ===============
 
 static void gbt_get_pattern_ptr(int pattern_number)
 {
@@ -330,19 +461,10 @@ void gbt_play(const void *song, int speed)
 
     REG_SOUNDCNT_L = 0;
 
-    REG_SOUND1CNT_L = 0;
-    REG_SOUND1CNT_H = 0;
-    REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
-
-    REG_SOUND2CNT_L = 0;
-    REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
-
-    REG_SOUND3CNT_L = 0;
-    REG_SOUND3CNT_H = 0;
-    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
-
-    REG_SOUND4CNT_L = 0;
-    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
+    channel1_silence();
+    channel2_silence();
+    channel3_silence();
+    channel4_silence();
 
     gbt_volume(GBT_VOLUME_MAX, GBT_VOLUME_MAX);
 
@@ -548,15 +670,6 @@ static int gbt_channel_1_set_effect(uint32_t effect, uint8_t data)
     return gbt_ch1_jump_table[effect](data);
 }
 
-static void channel1_refresh_registers(void)
-{
-    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
-
-    REG_SOUND1CNT_L = 0;
-    REG_SOUND1CNT_H = gbt.ch1.instr | gbt.ch1.vol | gbt.ch1.volslide_args;
-    REG_SOUND1CNT_X = SOUND1CNT_X_RESTART | gbt.ch1.freq;
-}
-
 static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 {
     // Calculate pointer to next channel
@@ -618,8 +731,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
 
     if (note_cut)
     {
-        REG_SOUND1CNT_H = 0; // Set volume to 0
-        REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
+        channel1_silence();
     }
     else if (has_to_update_registers)
     {
@@ -629,10 +741,9 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
     return next;
 }
 
-// Returns 1 if it needed to update sound registers
-static int channel1_update_effects(void)
+static void channel1_update_effects(void)
 {
-    int ret = 0;
+    int update_registers = 0;
 
     // Cut note
     // --------
@@ -641,10 +752,7 @@ static int channel1_update_effects(void)
     {
         gbt.ch1.cut_note_tick = 0xFF; // Disable cut note
 
-        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_1_ENABLE_RIGHT | SOUNDCNT_L_PSG_1_ENABLE_LEFT);
-
-        REG_SOUND1CNT_H = 0; // Set volume to 0
-        REG_SOUND1CNT_X = SOUND1CNT_X_RESTART;
+        channel1_silence();
     }
 
     // Arpeggio
@@ -661,7 +769,7 @@ static int channel1_update_effects(void)
         uint32_t index = gbt.ch1.arpeggio_freq_index[tick];
         gbt.ch1.freq = _gbt_get_freq_from_index(index);
 
-        ret = 1;
+        update_registers = 1;
     }
 
     // Vibrato
@@ -684,10 +792,14 @@ static int channel1_update_effects(void)
             freq = 0x7FF;
         gbt.ch1.freq = freq;
 
-        ret = 1;
+        update_registers = 1;
     }
 
-    return ret;
+    // Update channel registers if needed
+    // ----------------------------------
+
+    if (update_registers)
+        channel1_refresh_registers();
 }
 
 // -----------------------------------------------------------------------------
@@ -762,14 +874,6 @@ static int gbt_channel_2_set_effect(uint32_t effect, uint8_t data)
     return gbt_ch2_jump_table[effect](data);
 }
 
-static void channel2_refresh_registers(void)
-{
-    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
-
-    REG_SOUND2CNT_L = gbt.ch2.instr | gbt.ch2.vol | gbt.ch2.volslide_args;
-    REG_SOUND2CNT_H = SOUND2CNT_H_RESTART | gbt.ch2.freq;
-}
-
 static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 {
     // Calculate pointer to next channel
@@ -831,8 +935,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
 
     if (note_cut)
     {
-        REG_SOUND2CNT_L = 0; // Set volume to 0
-        REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
+        channel2_silence();
     }
     else if (has_to_update_registers)
     {
@@ -842,10 +945,9 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
     return next;
 }
 
-// Returns 1 if it needed to update sound registers
-static int channel2_update_effects(void)
+static void channel2_update_effects(void)
 {
-    int ret = 0;
+    int update_registers = 0;
 
     // Cut note
     // --------
@@ -854,10 +956,7 @@ static int channel2_update_effects(void)
     {
         gbt.ch2.cut_note_tick = 0xFF; // Disable cut note
 
-        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_2_ENABLE_RIGHT | SOUNDCNT_L_PSG_2_ENABLE_LEFT);
-
-        REG_SOUND2CNT_L = 0; // Set volume to 0
-        REG_SOUND2CNT_H = SOUND2CNT_H_RESTART;
+        channel2_silence();
     }
 
     // Arpeggio
@@ -874,7 +973,7 @@ static int channel2_update_effects(void)
         uint32_t index = gbt.ch2.arpeggio_freq_index[tick];
         gbt.ch2.freq = _gbt_get_freq_from_index(index);
 
-        ret = 1;
+        update_registers = 1;
     }
 
     // Vibrato
@@ -897,10 +996,14 @@ static int channel2_update_effects(void)
             freq = 0x7FF;
         gbt.ch2.freq = freq;
 
-        ret = 1;
+        update_registers = 1;
     }
 
-    return ret;
+    // Update channel registers if needed
+    // ----------------------------------
+
+    if (update_registers)
+        channel2_refresh_registers();
 }
 
 // -----------------------------------------------------------------------------
@@ -969,62 +1072,6 @@ static int gbt_channel_3_set_effect(uint32_t effect, uint8_t data)
     return gbt_ch3_jump_table[effect](data);
 }
 
-static void channel3_refresh_registers(void)
-{
-    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
-
-    // On the GBA, the output of channel 3 is inverted. This causes the channel
-    // to output a loud spike when disabled. It’s a good idea to "remove" the
-    // channel using NR51 before refreshing wave RAM.
-
-    uint32_t instr = gbt.ch3.instr;
-
-    if (gbt.ch3.loaded_instrument != instr)
-    {
-        const uint8_t *wave = gbt.ch3.instrument[instr];
-        uint8_t flags = gbt.ch3.instrument_flags[instr];
-
-        // Disable channel and set bank 0 as writable
-        REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(1);
-
-        for (int i = 0; i < 16; i += 2)
-        {
-            uint16_t wave_lo = *wave++;
-            uint16_t wave_hi = *wave++;
-            REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
-        }
-
-        if (flags & BIT(7)) // 64 samples
-        {
-            // Disable channel and set bank 1 as writable
-            REG_SOUND3CNT_L = SOUND3CNT_L_DISABLE | SOUND3CNT_L_BANK_SET(0);
-
-            for (int i = 0; i < 16; i += 2)
-            {
-                uint16_t wave_lo = *wave++;
-                uint16_t wave_hi = *wave++;
-                REG_WAVE_RAM[i / 2] = wave_lo | (wave_hi << 8);
-            }
-
-            // Use the 64 samples mode
-            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_64 | SOUND3CNT_L_ENABLE;
-        }
-        else
-        {
-            // Set bank 0 as active and use the 32 samples mode
-            REG_SOUND3CNT_L = SOUND3CNT_L_SIZE_32 | SOUND3CNT_L_BANK_SET(0) |
-                            SOUND3CNT_L_ENABLE;
-        }
-
-
-        // Done
-        gbt.ch3.loaded_instrument = instr;
-    }
-
-    REG_SOUND3CNT_H = gbt.ch3.vol;
-    REG_SOUND3CNT_X = SOUND3CNT_X_RESTART | gbt.ch3.freq;
-}
-
 static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 {
     // Calculate pointer to next channel
@@ -1086,9 +1133,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
 
     if (note_cut)
     {
-        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
-        REG_SOUND3CNT_H = SOUND3CNT_H_VOLUME_0;
-        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+        channel3_silence();
     }
     else if (has_to_update_registers)
     {
@@ -1098,10 +1143,9 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
     return next;
 }
 
-// Returns 1 if it needed to update sound registers
-static int channel3_update_effects(void)
+static void channel3_update_effects(void)
 {
-    int ret = 0;
+    int update_registers = 0;
 
     // Cut note
     // --------
@@ -1110,11 +1154,7 @@ static int channel3_update_effects(void)
     {
         gbt.ch3.cut_note_tick = 0xFF; // Disable cut note
 
-        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_3_ENABLE_RIGHT | SOUNDCNT_L_PSG_3_ENABLE_LEFT);
-
-        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
-        REG_SOUND3CNT_H = SOUND3CNT_H_VOLUME_0;
-        REG_SOUND3CNT_X = SOUND3CNT_X_RESTART;
+        channel3_silence();
     }
 
     // Arpeggio
@@ -1131,7 +1171,7 @@ static int channel3_update_effects(void)
         uint32_t index = gbt.ch3.arpeggio_freq_index[tick];
         gbt.ch3.freq = _gbt_get_freq_from_index(index);
 
-        ret = 1;
+        update_registers = 1;
     }
 
     // Vibrato
@@ -1154,10 +1194,14 @@ static int channel3_update_effects(void)
             freq = 0x7FF;
         gbt.ch3.freq = freq;
 
-        ret = 1;
+        update_registers = 1;
     }
 
-    return ret;
+    // Update channel registers if needed
+    // ----------------------------------
+
+    if (update_registers)
+        channel3_refresh_registers();
 }
 
 // -----------------------------------------------------------------------------
@@ -1206,14 +1250,6 @@ static effect_handler gbt_ch4_jump_table[16] = {
 static int gbt_channel_4_set_effect(uint32_t effect, uint8_t data)
 {
     return gbt_ch4_jump_table[effect](data);
-}
-
-static void channel4_refresh_registers(void)
-{
-    REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
-
-    REG_SOUND4CNT_L = gbt.ch4.vol | gbt.ch4.volslide_args; // Volume slide index 2
-    REG_SOUND4CNT_H = SOUND4CNT_H_RESTART | gbt.ch4.instr;
 }
 
 static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
@@ -1269,8 +1305,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
 
     if (note_cut)
     {
-        REG_SOUND4CNT_L = 0; // Set volume to 0
-        REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
+        channel4_silence();
     }
     else if (has_to_update_registers)
     {
@@ -1280,10 +1315,9 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
     return next;
 }
 
-// Returns 1 if it needed to update sound registers
-static int channel4_update_effects(void)
+static void channel4_update_effects(void)
 {
-    int ret = 0;
+    int update_registers = 0;
 
     // Cut note
     // --------
@@ -1292,13 +1326,14 @@ static int channel4_update_effects(void)
     {
         gbt.ch4.cut_note_tick = 0xFF; // Disable cut note
 
-        REG_SOUNDCNT_L &= ~(SOUNDCNT_L_PSG_4_ENABLE_RIGHT | SOUNDCNT_L_PSG_4_ENABLE_LEFT);
-
-        REG_SOUND4CNT_L = 0; // Set volume to 0
-        REG_SOUND4CNT_H = SOUND4CNT_H_RESTART;
+        channel4_silence();
     }
 
-    return ret;
+    // Update channel registers if needed
+    // ----------------------------------
+
+    if (update_registers)
+        channel4_refresh_registers();
 }
 
 // -----------------------------------------------------------------------------
@@ -1307,17 +1342,10 @@ static int channel4_update_effects(void)
 
 static void gbt_update_effects_internal(void)
 {
-    if (channel1_update_effects())
-        channel1_refresh_registers();
-
-    if (channel2_update_effects())
-        channel2_refresh_registers();
-
-    if (channel3_update_effects())
-        channel3_refresh_registers();
-
-    if (channel4_update_effects())
-        channel4_refresh_registers();
+    channel1_update_effects();
+    channel2_update_effects();
+    channel3_update_effects();
+    channel4_update_effects();
 }
 
 static void gbt_update_refresh_panning(void)
