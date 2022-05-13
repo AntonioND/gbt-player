@@ -341,6 +341,8 @@ static void gbt_refresh_pattern_ptr(void)
 #define STARTUP_CMD_PANING              2
 #define STARTUP_CMD_CHANNEL3_INSTRUMENT 3
 
+#define SAMPLE_64_ENTRIES   BIT(7)
+
 static void gbt_run_startup_commands(const uint8_t *ptr)
 {
     if (ptr == NULL)
@@ -372,8 +374,6 @@ static void gbt_run_startup_commands(const uint8_t *ptr)
             gbt.ch3.instrument_flags[index] = flags;
 
             gbt.ch3.instrument[index] = ptr;
-
-            const int SAMPLE_64_ENTRIES = BIT(7);
 
             uint32_t len = 32 / 2;
             if (flags & SAMPLE_64_ENTRIES)
@@ -578,7 +578,7 @@ void gbt_enable_channels(int flags)
     gbt.channels_enabled = flags;
 }
 
-static uint16_t _gbt_get_freq_from_index(int index)
+static uint16_t gbt_get_freq_from_index(int index)
 {
     const uint16_t gbt_frequencies[] = {
         44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986,
@@ -745,7 +745,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
         else
         {
             gbt.ch1.arpeggio_freq_index[0] = index;
-            gbt.ch1.base_freq = _gbt_get_freq_from_index(index);
+            gbt.ch1.base_freq = gbt_get_freq_from_index(index);
             gbt.ch1.freq = gbt.ch1.base_freq;
             has_to_update_registers = 1;
         }
@@ -802,7 +802,7 @@ static void channel1_update_effects(void)
             gbt.ch1.arpeggio_tick = tick + 1;
 
         uint32_t index = gbt.ch1.arpeggio_freq_index[tick];
-        gbt.ch1.freq = _gbt_get_freq_from_index(index);
+        gbt.ch1.freq = gbt_get_freq_from_index(index);
 
         update_registers = 1;
     }
@@ -949,7 +949,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
         else
         {
             gbt.ch2.arpeggio_freq_index[0] = index;
-            gbt.ch2.base_freq = _gbt_get_freq_from_index(index);
+            gbt.ch2.base_freq = gbt_get_freq_from_index(index);
             gbt.ch2.freq = gbt.ch2.base_freq;
             has_to_update_registers = 1;
         }
@@ -1006,7 +1006,7 @@ static void channel2_update_effects(void)
             gbt.ch2.arpeggio_tick = tick + 1;
 
         uint32_t index = gbt.ch2.arpeggio_freq_index[tick];
-        gbt.ch2.freq = _gbt_get_freq_from_index(index);
+        gbt.ch2.freq = gbt_get_freq_from_index(index);
 
         update_registers = 1;
     }
@@ -1147,7 +1147,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
         else
         {
             gbt.ch3.arpeggio_freq_index[0] = index;
-            gbt.ch3.base_freq = _gbt_get_freq_from_index(index);
+            gbt.ch3.base_freq = gbt_get_freq_from_index(index);
             gbt.ch3.freq = gbt.ch3.base_freq;
             has_to_update_registers = 1;
         }
@@ -1204,7 +1204,7 @@ static void channel3_update_effects(void)
             gbt.ch3.arpeggio_tick = tick + 1;
 
         uint32_t index = gbt.ch3.arpeggio_freq_index[tick];
-        gbt.ch3.freq = _gbt_get_freq_from_index(index);
+        gbt.ch3.freq = gbt_get_freq_from_index(index);
 
         update_registers = 1;
     }
