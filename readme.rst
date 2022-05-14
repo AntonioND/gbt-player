@@ -3,7 +3,7 @@ GBT Player
 
 Music player library and converter kit for the Game Boy family of consoles. It's
 available for the Game Boy Advance as a C library. It's also avaliable for Game
-Boy and Game Boy Color as a `RGBDS <https://github.com/gbdev/rgbds>`__ library.
+Boy and Game Boy Color as a `RGBDS <https://github.com/gbdev/rgbds>`_ library.
 There is also a legacy version that uses GBDK.
 
 Introduction
