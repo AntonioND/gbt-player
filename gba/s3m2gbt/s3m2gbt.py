@@ -92,6 +92,7 @@ EFFECT_VOLUME_SLIDE     = 4
 EFFECT_PATTERN_JUMP     = 8
 EFFECT_BREAK_SET_STEP   = 9
 EFFECT_SPEED            = 10
+EFFECT_EVENT            = 15
 
 # Returns (converted_num, converted_params) if there was a valid effect. If
 # there is none, it returns (None, None). Note that it is needed to pass the
@@ -163,8 +164,14 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
             val = s3m_pan_to_gb(subeffectparams, channel)
             return (EFFECT_PAN, val)
 
-        if subeffectnum == 0xC: # Notecut
+        elif subeffectnum == 0xC: # Notecut
             return (EFFECT_NOTE_CUT, subeffectparams)
+
+        elif subeffectnum == 0xF: # Funkrepeat? Set active macro?
+            # This effect is either unused, or it's the "set active macro"
+            # command, which doesn't have any effect if you don't use the macro
+            # afterwards. It can safely be overloaded for event callbacks.
+            return (EFFECT_EVENT, subeffectparams)
 
     raise RowConversionError(f"Unsupported effect: {effectnum}{effectparams:02X}")
 

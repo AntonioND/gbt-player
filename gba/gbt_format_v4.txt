@@ -48,4 +48,11 @@ Effects:
 
     14: UNUSED
 
-    15: UNUSED
+    15: Event
+        - Arg: Event identifier
+
+        This event doesn't have any effect in the music, but it can be used to
+        trigger a callback to functions in the code of the user. For example, it
+        can be used to synchronize the movement of some element of the
+        background with the music, or to make enemies appear at some point of
+        the song.

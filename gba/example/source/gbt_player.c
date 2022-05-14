@@ -116,6 +116,8 @@ typedef struct {
     uint8_t jump_target_row;
     uint8_t jump_target_order;
 
+    gbt_event_callback event_callback;
+
 } gbt_player_info_t;
 
 EWRAM_BSS static gbt_player_info_t gbt;
@@ -417,6 +419,8 @@ void gbt_play(const void *song, int speed)
 
     gbt.channels_enabled = GBT_ENABLE_CH_ALL;
 
+    gbt.event_callback = NULL;
+
     gbt.ch1.pan = 0x11; // L and R
     gbt.ch2.pan = 0x22;
     gbt.ch3.pan = 0x44;
@@ -506,6 +510,11 @@ void gbt_play(const void *song, int speed)
     // Everything is ready
 
     gbt.playing = 1;
+}
+
+void gbt_set_event_callback_handler(gbt_event_callback callback)
+{
+    gbt.event_callback = callback;
 }
 
 void gbt_volume(unsigned int left, unsigned int right)
@@ -623,6 +632,14 @@ static int gbt_ch1234_jump_position(uint32_t args)
     return 0;
 }
 
+static int gbt_ch1234_event(uint32_t args)
+{
+    if (gbt.event_callback)
+        gbt.event_callback(args, gbt.current_order, gbt.current_row);
+
+    return 0;
+}
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -696,7 +713,7 @@ static effect_handler gbt_ch1_jump_table[16] = {
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
-    gbt_ch1234_nop,
+    gbt_ch1234_event,
 };
 
 // returns 1 if needed to update registers, 0 if not
@@ -900,7 +917,7 @@ static effect_handler gbt_ch2_jump_table[16] = {
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
-    gbt_ch1234_nop,
+    gbt_ch1234_event,
 };
 
 // returns 1 if needed to update registers, 0 if not
@@ -1098,7 +1115,7 @@ static effect_handler gbt_ch3_jump_table[16] = {
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
-    gbt_ch1234_nop,
+    gbt_ch1234_event,
 };
 
 // returns 1 if needed to update registers, 0 if not
@@ -1278,7 +1295,7 @@ static effect_handler gbt_ch4_jump_table[16] = {
     gbt_ch1234_nop,
     gbt_ch1234_nop,
     gbt_ch1234_nop,
-    gbt_ch1234_nop,
+    gbt_ch1234_event,
 };
 
 // returns 1 if needed to update registers, 0 if not
@@ -1440,6 +1457,9 @@ void gbt_update(void)
 
     if (gbt.current_row_data_ptr == NULL)
     {
+        if (gbt.event_callback)
+            gbt.event_callback(GBT_EVENT_END, -1, -1);
+
         if (gbt.loop_enabled)
         {
             // If loop is enabled, jump to pattern 0

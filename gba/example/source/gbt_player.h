@@ -52,4 +52,26 @@ void gbt_get_position(int *order, int *row, int *tick);
 // are restarted.
 void gbt_set_position(int order, int row);
 
+// Event callback system
+// ---------------------
+
+typedef void (*gbt_event_callback)(int event, int order, int row);
+
+#define GBT_EVENT_END       -1
+
+// This function sets the callback for song events (such as when the song ends)
+// as well as custom user events, that are added to the S3M file by using effect
+// SFx.
+//
+// The function "callback" gets an event identifier, as well as the pattern
+// order and row in which it happens.
+//
+// - Song end:      event = GBT_EVENT_END | order = -1 | row = -1
+// - SFx command:   event = x             | order and row = position in song
+//
+// Note: The callback can be disabled by calling this function with NULL as
+// argument. The callback is also disabled whenever gbt_play() is called, so it
+// has to be set whenever a new song starts.
+void gbt_set_event_callback_handler(gbt_event_callback callback);
+
 #endif // GBT_PLAYER_H__
