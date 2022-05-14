@@ -20,8 +20,8 @@ void gbt_sync_to_maxmod(void)
     {
         gbt_update();
 
-        int order, row, tick;
-        gbt_get_position(&order, &row, &tick);
+        int tick;
+        gbt_get_position(NULL, NULL, &tick);
 
         if (tick == mmGetPositionTick())
             break;
