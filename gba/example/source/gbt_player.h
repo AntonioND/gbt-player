@@ -42,4 +42,14 @@ void gbt_enable_channels(int flags);
 // Updates the player, must be called each VBL.
 void gbt_update(void);
 
+// Returns the current pattern order and current row inside the pattern, as well
+// as the current tick. It is possible to pass NULL as argument to tick if you
+// don't need that value.
+void gbt_get_position(int *order, int *row, int *tick);
+
+// Sets the current position in the song. This isn't normally meant to happen,
+// so some effects (like arpeggio) may be broken right after the jump until they
+// are restarted.
+void gbt_set_position(int order, int row);
+
 #endif // GBT_PLAYER_H__
