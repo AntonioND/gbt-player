@@ -166,7 +166,7 @@ def effect_s3m_to_gb(channel, effectnum, effectparams):
         if subeffectnum == 0xC: # Notecut
             return (EFFECT_NOTE_CUT, subeffectparams)
 
-    raise(f"Unsupported effect: {effectnum}{effectparams:02X}")
+    raise RowConversionError(f"Unsupported effect: {effectnum}{effectparams:02X}")
 
 HAS_VOLUME      = 1 << 4
 HAS_INSTRUMENT  = 1 << 5
