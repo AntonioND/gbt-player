@@ -11,9 +11,11 @@
 // include their own startup speed, so this value is ignored. If the speed is 0,
 // it acts as if it was 256.
 //
-// Note: This function re-enables any channels that were disabled, sets the PSG
-// global volume to the max, and silences all PSG channels in preparation for
-// the song that is going to start.
+// Note: This function sets the PSG global volume to the max.
+//
+// Note: This function won't silence any channel that is disabled in GBT Player
+// (any sound effect played by the user will keep playing even when the song
+// starts).
 void gbt_play(const void *song, int speed);
 
 // Pauses or unpauses the song. 0 pauses the song, anything else unpauses it.
@@ -42,7 +44,8 @@ void gbt_volume(unsigned int left, unsigned int right);
 
 // Enables given channels. For example: GBT_ENABLE_CH1 | GBT_ENABLE_CH2.
 // When a channel is disabled it keeps playing whatever it was playing before,
-// so it needs to be silenced manually after calling this function.
+// so it needs to be silenced manually after calling this function. The setting
+// persists across different gbt_play() calls.
 void gbt_enable_channels(int flags);
 
 // Updates the player, must be called each VBL.

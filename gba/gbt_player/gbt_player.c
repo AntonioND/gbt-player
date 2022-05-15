@@ -39,7 +39,9 @@ typedef struct {
     uint8_t current_row;
     uint8_t current_order;
 
-    uint8_t channels_enabled;
+    // This is initialized to 0 before main() is called, so all channels are
+    // enabled by default.
+    uint8_t channels_disabled;
 
     struct {
         uint16_t pan;
@@ -417,8 +419,6 @@ void gbt_play(const void *song, int speed)
 
     gbt.ch3.loaded_instrument = 0xFF;
 
-    gbt.channels_enabled = GBT_ENABLE_CH_ALL;
-
     gbt.event_callback = NULL;
 
     gbt.ch1.pan = 0x11; // L and R
@@ -489,12 +489,27 @@ void gbt_play(const void *song, int speed)
 
     REG_SOUNDCNT_X = SOUNDCNT_X_MASTER_ENABLE;
 
-    REG_SOUNDCNT_L = 0;
+    // Silence all PSG channels controlled by GBT Player
+    uint16_t enabled_ch_mask = GBT_ENABLE_CH_ALL & ~gbt.channels_disabled;
+    enabled_ch_mask = (enabled_ch_mask << 8 | enabled_ch_mask << 12);
+    REG_SOUNDCNT_L = REG_SOUNDCNT_L & ~enabled_ch_mask;
 
-    channel1_silence();
-    channel2_silence();
-    channel3_silence();
-    channel4_silence();
+    // Don't enable all channels. Maybe the user has disabled a channel before
+    // the song playback starts. This variable is set to 0 when the program
+    // starts, so it will only be modified if the user actually calls
+    // gbt_enable_channels(). If not, all channels will always be enabled.
+    //
+    // gbt.channels_disabled = 0;
+    //
+    // Only silence channels that are owned by GBT Player.
+    if ((gbt.channels_disabled & GBT_ENABLE_CH1) == 0)
+        channel1_silence();
+    if ((gbt.channels_disabled & GBT_ENABLE_CH2) == 0)
+        channel2_silence();
+    if ((gbt.channels_disabled & GBT_ENABLE_CH3) == 0)
+        channel3_silence();
+    if ((gbt.channels_disabled & GBT_ENABLE_CH4) == 0)
+        channel4_silence();
 
     gbt_volume(GBT_VOLUME_MAX, GBT_VOLUME_MAX);
 
@@ -574,8 +589,8 @@ void gbt_stop(void)
 {
     gbt.playing = 0;
 
-    // Disable all PSG channels controlled by GBT Player
-    uint16_t enabled_ch_mask = gbt.channels_enabled;
+    // Silence all PSG channels controlled by GBT Player
+    uint16_t enabled_ch_mask = GBT_ENABLE_CH_ALL & ~gbt.channels_disabled;
     enabled_ch_mask = (enabled_ch_mask << 8 | enabled_ch_mask << 12);
     REG_SOUNDCNT_L = REG_SOUNDCNT_L & ~enabled_ch_mask;
 
@@ -586,7 +601,7 @@ void gbt_stop(void)
 
 void gbt_enable_channels(int flags)
 {
-    gbt.channels_enabled = flags;
+    gbt.channels_disabled = GBT_ENABLE_CH_ALL & ~flags;
 }
 
 static uint16_t gbt_get_freq_from_index(int index)
@@ -733,7 +748,7 @@ static const uint8_t *gbt_channel_1_handle(const uint8_t *data)
     const uint8_t *next = data + sizes[bits];
 
     // If the channel is disabled, exit
-    if ((gbt.channels_enabled & GBT_ENABLE_CH1) == 0)
+    if (gbt.channels_disabled & GBT_ENABLE_CH1)
     {
         return next;
     }
@@ -937,7 +952,7 @@ static const uint8_t *gbt_channel_2_handle(const uint8_t *data)
     const uint8_t *next = data + sizes[bits];
 
     // If the channel is disabled, exit
-    if ((gbt.channels_enabled & GBT_ENABLE_CH2) == 0)
+    if (gbt.channels_disabled & GBT_ENABLE_CH2)
     {
         return next;
     }
@@ -1135,7 +1150,7 @@ static const uint8_t *gbt_channel_3_handle(const uint8_t *data)
     const uint8_t *next = data + sizes[bits];
 
     // If the channel is disabled, exit
-    if ((gbt.channels_enabled & GBT_ENABLE_CH3) == 0)
+    if (gbt.channels_disabled & GBT_ENABLE_CH3)
     {
         return next;
     }
@@ -1315,7 +1330,7 @@ static const uint8_t *gbt_channel_4_handle(const uint8_t *data)
     const uint8_t *next = data + sizes[bits];
 
     // If the channel is disabled, exit
-    if ((gbt.channels_enabled & GBT_ENABLE_CH4) == 0)
+    if (gbt.channels_disabled & GBT_ENABLE_CH4)
     {
         return next;
     }
@@ -1416,7 +1431,7 @@ static void gbt_update_refresh_panning(void)
     //   so their bits need to be preserved in case the user is modifying them
     //   manually.
 
-    uint16_t enabled_ch_mask = gbt.channels_enabled;
+    uint16_t enabled_ch_mask = GBT_ENABLE_CH_ALL & ~gbt.channels_disabled;
     enabled_ch_mask = (enabled_ch_mask << 8 | enabled_ch_mask << 12);
 
     uint16_t old_pan = REG_SOUNDCNT_L & (0xFF << 8);
