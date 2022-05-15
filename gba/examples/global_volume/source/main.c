@@ -4,6 +4,8 @@
 //
 // Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
+// Example that shows how to set the global volume of PSG channels.
+
 #include <stdio.h>
 
 #include <gba.h>
@@ -15,6 +17,7 @@ extern const uint8_t *template[];
 int main(int argc, char *argv[])
 {
     irqInit();
+    irqSet(IRQ_VBLANK, gbt_update);
     irqEnable(IRQ_VBLANK);
 
     consoleDemoInit();
@@ -34,7 +37,6 @@ int main(int argc, char *argv[])
     while (1)
     {
         VBlankIntrWait();
-        gbt_update();
 
         scanKeys();
         int keys = keysDown();

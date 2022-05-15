@@ -4,6 +4,9 @@
 //
 // Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
+// Example that shows how to play sound effects while GBT Player is playing a
+// song. It does that by disabling the channel in GBT Player.
+
 #include <stdio.h>
 
 #include <gba.h>
@@ -16,6 +19,7 @@ extern const uint8_t *template[];
 int main(int argc, char *argv[])
 {
     irqInit();
+    irqSet(IRQ_VBLANK, gbt_update);
     irqEnable(IRQ_VBLANK);
 
     consoleDemoInit();
@@ -69,6 +73,5 @@ int main(int argc, char *argv[])
             gbt_stop();
 
         VBlankIntrWait();
-        gbt_update();
     }
 }

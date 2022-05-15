@@ -4,6 +4,8 @@
 //
 // Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
+// Example that shows how to handle event callbacks in GBT Player.
+
 #include <stdio.h>
 
 #include <gba.h>
@@ -23,6 +25,7 @@ void callback(int event, int order, int row)
 int main(int argc, char *argv[])
 {
     irqInit();
+    irqSet(IRQ_VBLANK, gbt_update);
     irqEnable(IRQ_VBLANK);
 
     gbt_play(template, -1);
@@ -31,8 +34,5 @@ int main(int argc, char *argv[])
     consoleDemoInit();
 
     while (1)
-    {
         VBlankIntrWait();
-        gbt_update();
-    }
 }

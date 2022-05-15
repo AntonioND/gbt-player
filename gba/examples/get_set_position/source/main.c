@@ -17,6 +17,7 @@ extern const uint8_t *template[];
 int main(int argc, char *argv[])
 {
     irqInit();
+    irqSet(IRQ_VBLANK, gbt_update);
     irqEnable(IRQ_VBLANK);
 
     consoleDemoInit();
@@ -32,7 +33,6 @@ int main(int argc, char *argv[])
     while (1)
     {
         VBlankIntrWait();
-        gbt_update();
 
         scanKeys();
         int keys = keysDown();

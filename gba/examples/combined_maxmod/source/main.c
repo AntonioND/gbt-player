@@ -4,6 +4,9 @@
 //
 // Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
+// Example that shows how to play a song with Maxmod and GBT Player at the same
+// time and keep them in sync.
+
 #include <gba.h>
 #include <maxmod.h>
 
@@ -16,8 +19,12 @@ extern const uint8_t *template_combined_psg[];
 
 void gbt_sync_to_maxmod(void)
 {
-    while (1)
+    int tries = 5;
+
+    while (tries > 0)
     {
+        tries--;
+
         gbt_update();
 
         int tick;
@@ -28,11 +35,20 @@ void gbt_sync_to_maxmod(void)
     }
 }
 
+void vbl_handler(void)
+{
+    mmVBlank(); // This has to be called exactly at the beginning of VBL
+
+    // This can be called in the VBL handler or outside
+    mmFrame();
+    gbt_sync_to_maxmod();
+}
+
 int main(int argc, char *argv[])
 {
     irqInit();
 
-    irqSet(IRQ_VBLANK, mmVBlank);
+    irqSet(IRQ_VBLANK, vbl_handler);
     irqEnable(IRQ_VBLANK);
 
     // Initialize maxmod with soundbank and 4 channels
@@ -46,9 +62,5 @@ int main(int argc, char *argv[])
     mmStart(MOD_TEMPLATE_COMBINED_DMA, MM_PLAY_LOOP);
 
     while (1)
-    {
         VBlankIntrWait();
-        mmFrame();
-        gbt_sync_to_maxmod();
-    }
 }
