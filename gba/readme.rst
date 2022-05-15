@@ -66,12 +66,6 @@ The MOD and S3M files aren't 100% accurate. Sounds are a bit different from the
 real ones, so you should make ROMs and test them in emulators or real GBAs
 often.
 
-To Do
------
-
-- End song callback? Special effect for callback? To synchronize game events or
-  things like that.
-
 About
 -----
 
