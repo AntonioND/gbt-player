@@ -1583,10 +1583,14 @@ void gbt_set_position(int order, int row)
         return;
 
     // Silence channels until the next tick
-    channel1_silence();
-    channel2_silence();
-    channel3_silence();
-    channel4_silence();
+    if (!(gbt.channels_disabled & GBT_ENABLE_CH1))
+        channel1_silence();
+    if (!(gbt.channels_disabled & GBT_ENABLE_CH2))
+        channel2_silence();
+    if (!(gbt.channels_disabled & GBT_ENABLE_CH3))
+        channel3_silence();
+    if (!(gbt.channels_disabled & GBT_ENABLE_CH4))
+        channel4_silence();
 
     // Force refresh as soon as possible, in the next tick
     gbt.ticks_elapsed = gbt.speed - 1;
