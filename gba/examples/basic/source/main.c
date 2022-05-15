@@ -6,7 +6,7 @@
 
 #include <gba.h>
 
-#include "gbt_player.h"
+#include "gbt_player/gbt_player.h"
 
 extern const uint8_t *template[];
 

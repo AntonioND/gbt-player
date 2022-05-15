@@ -2,3 +2,5 @@
 *.elf
 *.sav
 build/
+music/
+maxmod/

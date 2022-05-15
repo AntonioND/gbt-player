@@ -22,8 +22,8 @@ include $(DEVKITARM)/gba_rules
 #---------------------------------------------------------------------------------
 TARGET		:= $(notdir $(CURDIR))
 BUILD		:= build
-SOURCES		:= source music
-INCLUDES	:= include
+SOURCES		:= source music source/gbt_player
+INCLUDES	:= source
 DATA		:=
 MUSIC		:= maxmod
 

@@ -7,7 +7,7 @@
 #include <gba.h>
 #include <maxmod.h>
 
-#include "gbt_player.h"
+#include "gbt_player/gbt_player.h"
 
 #include "soundbank.h"
 #include "soundbank_bin.h"
