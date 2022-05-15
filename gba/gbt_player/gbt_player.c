@@ -578,8 +578,15 @@ void gbt_loop(int loop)
 void gbt_stop(void)
 {
     gbt.playing = 0;
-    REG_SOUNDCNT_L = 0; // Disable all PSG channels
-    // REG_SOUNDCNT_X = SOUNDCNT_X_MASTER_DISABLE; // Don't do this!
+
+    // Disable all PSG channels controlled by GBT Player
+    uint16_t enabled_ch_mask = gbt.channels_enabled;
+    enabled_ch_mask = (enabled_ch_mask << 8 | enabled_ch_mask << 12);
+    REG_SOUNDCNT_L = REG_SOUNDCNT_L & ~enabled_ch_mask;
+
+    // Don't do this! The sound hardware should be left on in case there is
+    // something else using it.
+    // REG_SOUNDCNT_X = SOUNDCNT_X_MASTER_DISABLE;
 }
 
 void gbt_enable_channels(int flags)
@@ -1402,10 +1409,30 @@ static void gbt_update_effects_internal(void)
 
 static void gbt_update_refresh_panning(void)
 {
+    // This function needs to take care of three things:
+    //
+    // - Panning can be modified by effects in the song (saved in gbt.chX.pan).
+    //
+    // - The global volume of PSG channels can't reach 0, the only way to make
+    //   it reach 0 is by setting all the left/right enable bits to 0. This is
+    //   what gbt_volume() does.
+    //
+    // - Channels disabled by gbt_enable_channels() aren't owned by GBT Player,
+    //   so their bits need to be preserved in case the user is modifying them
+    //   manually.
+
+    uint16_t enabled_ch_mask = gbt.channels_enabled;
+    enabled_ch_mask = (enabled_ch_mask << 8 | enabled_ch_mask << 12);
+
+    uint16_t old_pan = REG_SOUNDCNT_L & (0xFF << 8);
+
     uint16_t new_pan = gbt.ch1.pan | gbt.ch2.pan | gbt.ch3.pan | gbt.ch4.pan;
     new_pan = (new_pan << 8) & gbt.pan_volume_mask;
 
-    REG_SOUNDCNT_L = gbt.global_volume | new_pan;
+    uint16_t result_pan = (old_pan & ~enabled_ch_mask)
+                        | (new_pan & enabled_ch_mask);
+
+    REG_SOUNDCNT_L = gbt.global_volume | result_pan;
 }
 
 void gbt_update(void)

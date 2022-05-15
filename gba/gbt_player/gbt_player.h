@@ -10,6 +10,10 @@
 // Starts playing a song. The speed is only used for MOD songs. S3M songs
 // include their own startup speed, so this value is ignored. If the speed is 0,
 // it acts as if it was 256.
+//
+// Note: This function re-enables any channels that were disabled, sets the PSG
+// global volume to the max, and silences all PSG channels in preparation for
+// the song that is going to start.
 void gbt_play(const void *song, int speed);
 
 // Pauses or unpauses the song. 0 pauses the song, anything else unpauses it.
@@ -36,7 +40,9 @@ void gbt_volume(unsigned int left, unsigned int right);
 #define GBT_ENABLE_CH_ALL   (GBT_ENABLE_CH1 | GBT_ENABLE_CH2 | \
                              GBT_ENABLE_CH3 | GBT_ENABLE_CH4)
 
-// Enables given channels. For example: GBT_ENABLE_CH1 | GBT_ENABLE_CH2
+// Enables given channels. For example: GBT_ENABLE_CH1 | GBT_ENABLE_CH2.
+// When a channel is disabled it keeps playing whatever it was playing before,
+// so it needs to be silenced manually after calling this function.
 void gbt_enable_channels(int flags);
 
 // Updates the player, must be called each VBL.
