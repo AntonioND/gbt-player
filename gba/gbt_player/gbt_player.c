@@ -469,14 +469,9 @@ void gbt_play(const void *song, int speed)
 
     // Default channel 3 instruments
 
-    gbt.ch3.instrument_flags[0] = 0;
-    gbt.ch3.instrument_flags[1] = 0;
-    gbt.ch3.instrument_flags[2] = 0;
-    gbt.ch3.instrument_flags[3] = 0;
-    gbt.ch3.instrument_flags[4] = 0;
-    gbt.ch3.instrument_flags[5] = 0;
-    gbt.ch3.instrument_flags[6] = 0;
-    gbt.ch3.instrument_flags[7] = 0;
+    for (int i = 0; i < 8; i++)
+        gbt.ch3.instrument_flags[i] = 0;
+
     gbt.ch3.instrument[0] = &gbt_default_wave_0[0];
     gbt.ch3.instrument[1] = &gbt_default_wave_1[0];
     gbt.ch3.instrument[2] = &gbt_default_wave_2[0];
