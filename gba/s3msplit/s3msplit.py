@@ -101,6 +101,10 @@ def s3m_split(s3m_in_path, s3m_psg_path, s3m_dma_path):
         offset = offset_para_patterns + i * 2
         offset_pattern = read_u16(s3m_in, offset) * 16
 
+        if offset_pattern == 0:
+             # Empty pattern found! Nothing to do here...
+             continue
+
         combined_len = read_u16(s3m_in, offset_pattern)
 
         psg_pattern = []
@@ -151,6 +155,7 @@ def s3m_split(s3m_in_path, s3m_psg_path, s3m_dma_path):
                 step[0] = (header & 0xE0) | (channel - 4)
                 dma_pattern.extend(step)
 
+        # The size of the length field is included in the length
         len_psg_pattern = len(psg_pattern) + 2
         len_dma_pattern = len(dma_pattern) + 2
 
