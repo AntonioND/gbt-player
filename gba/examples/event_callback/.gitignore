@@ -1,0 +1,5 @@
+*.gba
+*.elf
+*.sav
+build/
+music/
