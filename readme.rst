@@ -17,13 +17,16 @@ by:
 - **s3m2gbt**: Converts S3M files into GBT (GameBoy Tracker) format.
 - **mod2gbt**: Converts legacy MOD files into GBT (GameBoy Tracker) format.
 
-It's the same idea as the old Lemon player for Game Boy, but greatly improved.
-Because of this workflow, there are a lot of limitations that the GB/GBA
-doesn't impose, but that are needed so that the mod file and the result on the
-GB/GBA are similar.
+It's the same idea as the old Lemon player for Game Boy, but greatly improved:
+You take a MOD file that you can edit in any tracker, convert it with a special
+converter to something that the Game Boy can understand, and play it there.
+
+Because of this workflow, there are some limitations that are needed so that the
+MOD/S3M file and the result on the GB/GBA are similar.
 
 As of version 4.0.0 there is a big split between the GB/GBC version and the GBA
-version.
+version. The GB version is stuck in version 3.X, and all the new changes are
+added to the GBA because it's easier to prototype new features there.
 
 - For GBA, the code is just in C, and it doesn't depend on any library apart from
   a few standard library headers.
@@ -46,7 +49,7 @@ Copyright (C) 2009-2022 Antonio Niño Díaz
 
 All rights reserved.
 
-Email: antonio_nd@outlook.com
+Email: antonio [underscore] nd [at] outlook [dot] com
 
 Web: www.skylyrac.net
 
