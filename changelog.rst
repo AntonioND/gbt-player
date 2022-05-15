@@ -1,10 +1,22 @@
 Changelog
 =========
 
+- Version 4.3.0 (2022/5/16)
+
+  - GBA-only release.
+  - Refactor ``s3m2gbt``.
+  - Refactor the C library.
+  - Implement event callback system.
+  - Add ``s3msplit`` to split S3M files into a GBT Player template file and a
+    regular S3M file to be played by other regular S3M players.
+  - Add ``gbt_set_position()`` and ``gbt_get_position()``.
+  - Add examples, including one of using GBT Player at the same time as Maxmod.
+  - Fix code that disables channels in GBT Player.
+
 - Version 4.2.0 (2022/5/11)
 
   - GBA-only release.
-  - Refactor `s3m2gbt`, specially error handling.
+  - Refactor ``s3m2gbt``, specially error handling.
 
     - Use Python exceptions.
     - Any unknown effect causes an exception.
