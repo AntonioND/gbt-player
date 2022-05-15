@@ -72,12 +72,12 @@ channel 3 is a square wave).
 Effects
 -------
 
-- ``Ann``: Sets speed to nn (in hexadecimal). Valid values ``01`` and higher.
-  The higher the value, the slower the song.
+- ``Ann``: Sets speed to ``nn`` (in hexadecimal). Valid values are ``01`` and
+  higher. The higher the value, the slower the song.
 
-- ``Bnn``: Jump to pattern in order nn (in hexadecimal).
+- ``Bnn``: Jump to pattern in order ``nn`` (in hexadecimal).
 
-- ``Cnn``: Ends this pattern and jumps to position nn (in decimal) in next
+- ``Cnn``: Ends this pattern and jumps to position ``nn`` (in decimal) in next
   pattern.
 
 - ``Dxy``: Volume slide. Only channels 1, 2, and 4. Notes:
