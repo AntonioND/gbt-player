@@ -7,6 +7,9 @@
 #ifndef GBT_PLAYER_H__
 #define GBT_PLAYER_H__
 
+// Song playback
+// -------------
+
 // Starts playing a song. The speed is only used for MOD songs. S3M songs
 // include their own startup speed, so this value is ignored. If the speed is 0,
 // it acts as if it was 256.
@@ -28,6 +31,12 @@ void gbt_loop(int loop);
 // Stops the song.
 void gbt_stop(void);
 
+// Updates the player, must be called each VBL.
+void gbt_update(void);
+
+// Song control
+// ------------
+
 #define GBT_VOLUME_MAX      8
 
 // Sets volume for left and right speakers. Valid values are 0 to 8.
@@ -47,9 +56,6 @@ void gbt_volume(unsigned int left, unsigned int right);
 // so it needs to be silenced manually after calling this function. The setting
 // persists across different gbt_play() calls.
 void gbt_enable_channels(int flags);
-
-// Updates the player, must be called each VBL.
-void gbt_update(void);
 
 // Returns the current pattern order and current row inside the pattern, as well
 // as the current tick. It is possible to pass NULL to any argument if you don't
