@@ -34,16 +34,16 @@ Legacy songs in MOD format
 
 You can also use MOD files instead of S3M, but it is highly discouraged. This
 should only be done if you are using songs that were already in MOD format and
-don't want to convert them to S3M.
-
-You will need to compile and use ``mod2gbt``:
-
-1. Go to the ``mod2gbt`` folder in a terminal.
-
-2. Type ``make``
+don't want to convert them to S3M. You will need to use ``mod2gbt`` instead of
+``s3m2gbt``.
 
 This converter tries to imitate bugs present in v3.X (like incorrect volume
 handling when a note is set but no volume is set).
+
+Note that ``mod2gbt`` will never support any new feature as it could potentially
+break compatibility with old songs. If you want to keep working on a song and
+use any of the new features present in ``s3m2gbt``, you can easily convert your
+songs with tools like OpenMPT.
 
 Notes
 -----
