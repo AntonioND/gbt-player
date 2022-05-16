@@ -14,8 +14,8 @@ It is possible to use both libraries at the same time, if you want. GBT Player
 only uses the hardware registers associated to the PSG channels, leaving the DMA
 channels untouched and available for the user.
 
-How to compile the example
---------------------------
+How to compile the examples
+---------------------------
 
 First, install `devkitPro <https://devkitpro.org/wiki/Getting_Started>`__. This
 is needed to build ROMs. Once it's installed you can continue.
@@ -25,7 +25,7 @@ format and build a sample ROM:
 
 1. Open a terminal
 
-2. Go to the ``example`` folder.
+2. Go to the ``examples`` folder, and open any subfolder.
 
 3. Run ``sh make_rom.sh`` on your terminal.
 
