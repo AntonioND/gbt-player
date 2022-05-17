@@ -445,8 +445,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
             print(f"Pattern {pattern} not exported: Not in the order list")
             continue
 
-        fileout.write(f"static const uint8_t {song_name}_{pattern}[] = ")
-        fileout.write("{\n")
+        fileout.write(f"static const uint8_t {song_name}_{pattern}[] = {{\n")
 
         row = 0
         try:
@@ -544,8 +543,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
     print(f"Exporting initial state...")
 
-    fileout.write(f"const uint8_t {song_name}_init_state[] = ")
-    fileout.write("{\n")
+    fileout.write(f"const uint8_t {song_name}_init_state[] = {{\n")
 
     default_pan = [8, 8, 8, 8]
     if data.has_custom_pan == 252:
@@ -594,8 +592,7 @@ def convert_file(module_path, song_name, output_path, export_instruments):
 
     print(f"Exporting orders...")
 
-    fileout.write(f"const uint8_t *{song_name}[] = ")
-    fileout.write("{\n")
+    fileout.write(f"const uint8_t *{song_name}[] = {{\n")
 
     fileout.write(f"    {song_name}_init_state,")
     fileout.write("\n")
