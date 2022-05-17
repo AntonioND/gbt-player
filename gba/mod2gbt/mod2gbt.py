@@ -212,14 +212,16 @@ def effect_mod_to_gb(channel, effectnum, effectparams):
 
     elif effectnum == 0xF: # Speed
         if effectparams > 0x1F: # BPM effect - Not supported
-            raise RowConversionError("Unsupported BPM speed effect")
+            print("Unsupported BPM speed effect")
+            return (None, None)
         else: # Speed
             if effectparams == 0:
                 raise RowConversionError("Speed must not be zero")
 
             return (EFFECT_SPEED, speed_mod_to_gb(effectparams))
 
-    raise RowConversionError(f"Unsupported effect: {effectnum}{effectparams:02X}")
+    print(f"Unsupported effect: {effectnum:01X}{effectparams:02X}")
+    return (None, None)
 
 HAS_VOLUME      = 1 << 4
 HAS_INSTRUMENT  = 1 << 5
