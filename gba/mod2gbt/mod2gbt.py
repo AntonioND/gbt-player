@@ -430,36 +430,37 @@ def export_pattern(mod, fileout, label_name, index):
 
 def convert_file(mod_in_path, label_name, do_speed_conversion):
 
-    file = open(mod_in_path, "rb")
-    file_byte_array = bytearray(file.read())
+    with open(mod_in_path, "rb") as file:
+        file_byte_array = bytearray(file.read())
 
     mod = ModFile(file_byte_array)
 
     output_path = label_name + ".c"
-    fileout = open(output_path, "w")
 
-    fileout.write("// File created by mod2gbt\n\n"
-                  "#include <stddef.h>\n#include <stdint.h>\n\n")
+    with open(output_path, "w") as fileout:
 
-    print("Exporting patterns...")
+        fileout.write("// File created by mod2gbt\n\n"
+                    "#include <stddef.h>\n#include <stdint.h>\n\n")
 
-    # There are always 64 patterns in the MOD file. Check the pattern table to
-    # determine the patterns that are actually used.
-    for i in range(0, 64):
-        if i in mod.pattern_table:
-            export_pattern(mod, fileout, label_name, i)
+        print("Exporting patterns...")
 
-    print("Exporting pattern order...")
+        # There are always 64 patterns in the MOD file. Check the pattern table
+        # to determine the patterns that are actually used.
+        for i in range(0, 64):
+            if i in mod.pattern_table:
+                export_pattern(mod, fileout, label_name, i)
 
-    fileout.write(f"const uint8_t *{label_name}[] = {{\n")
-    fileout.write("    NULL,\n") # MOD files have no initial state
+        print("Exporting pattern order...")
 
-    for i in range(0, mod.song_length):
-        num = str(mod.pattern_table[i])
-        fileout.write(f"    {label_name}_{num},\n")
+        fileout.write(f"const uint8_t *{label_name}[] = {{\n")
+        fileout.write("    NULL,\n") # MOD files have no initial state
 
-    fileout.write("    NULL\n")
-    fileout.write("};")
+        for i in range(0, mod.song_length):
+            num = str(mod.pattern_table[i])
+            fileout.write(f"    {label_name}_{num},\n")
+
+        fileout.write("    NULL\n")
+        fileout.write("};")
 
 if __name__ == "__main__":
 
