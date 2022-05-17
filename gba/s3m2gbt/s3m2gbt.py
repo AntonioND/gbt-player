@@ -420,195 +420,193 @@ def convert_file(module_path, song_name, output_path, export_instruments):
     if output_path == None:
         output_path = song_name + ".c"
 
-    fileout = open(output_path, "w")
+    with open(output_path, "w") as fileout:
 
-    name = data.song_name.decode("utf-8")
-    print(f"Song Name: '{name}'")
-    print(f"Num. Orders: {data.num_orders}")
-    print(f"Num. Patterns: {data.num_patterns}")
+        name = data.song_name.decode("utf-8")
+        print(f"Song Name: '{name}'")
+        print(f"Num. Orders: {data.num_orders}")
+        print(f"Num. Patterns: {data.num_patterns}")
 
-    fileout.write("// File created by s3m2gbt\n\n"
-                  "#include <stddef.h>\n#include <stdint.h>\n\n")
+        fileout.write("// File created by s3m2gbt\n\n"
+                      "#include <stddef.h>\n#include <stdint.h>\n\n")
 
-    # Export patterns
-    # ---------------
+        # Export patterns
+        # ---------------
 
-    print(f"Exporting patterns...")
+        print(f"Exporting patterns...")
 
-    pattern = -1
-    for p in data.patterns:
-        pattern += 1
+        pattern = -1
+        for p in data.patterns:
+            pattern += 1
 
-        # Check if pattern is actually used in the order list. If it isn't used,
-        # don't export it.
-        if pattern not in data.orders:
-            print(f"Pattern {pattern} not exported: Not in the order list")
-            continue
+            # Check if pattern is actually used in the order list. If it isn't
+            # used, don't export it.
+            if pattern not in data.orders:
+                print(f"Pattern {pattern} not exported: Not in the order list")
+                continue
 
-        fileout.write(f"static const uint8_t {song_name}_{pattern}[] = {{\n")
+            fileout.write(f"static const uint8_t {song_name}_{pattern}[] = {{\n")
 
-        row = 0
-        try:
-            cmd1 = [0]
-            cmd2 = [0]
-            cmd3 = [0]
-            cmd4 = [0]
+            row = 0
+            try:
+                cmd1 = [0]
+                cmd2 = [0]
+                cmd3 = [0]
+                cmd4 = [0]
 
-            for c in p.body.body.cells:
+                for c in p.body.body.cells:
 
-                # If an end of row marker is reached, print the previous row.
-                # Trust that the S3M file is generated in a valid way and it
-                # doesn't have markers at weird positions, and that there is one
-                # marker right at the end of each pattern.
-                if c.channel_num == 0 and (not c.has_volume) and \
-                    (not c.has_fx) and (not c.has_note_and_instrument):
+                    # If an end of row marker is reached, print the previous
+                    # row. Trust that the S3M file is generated in a valid way
+                    # and it doesn't have markers at weird positions, and that
+                    # there is one marker right at the end of each pattern.
+                    if c.channel_num == 0 and (not c.has_volume) and \
+                        (not c.has_fx) and (not c.has_note_and_instrument):
 
-                    # Write row
-                    fileout.write("    ")
+                        # Write row
+                        fileout.write("    ")
 
-                    for b in cmd1:
-                        fileout.write(f"0x{b:02X},")
-                    for b in cmd2:
-                        fileout.write(f"0x{b:02X},")
-                    for b in cmd3:
-                        fileout.write(f"0x{b:02X},")
-                    for b in cmd4:
-                        fileout.write(f"0x{b:02X},")
+                        for b in cmd1:
+                            fileout.write(f"0x{b:02X},")
+                        for b in cmd2:
+                            fileout.write(f"0x{b:02X},")
+                        for b in cmd3:
+                            fileout.write(f"0x{b:02X},")
+                        for b in cmd4:
+                            fileout.write(f"0x{b:02X},")
 
-                    fileout.write("\n")
+                        fileout.write("\n")
 
-                    row = row + 1
+                        row = row + 1
 
-                    # Clear commands
-                    cmd1 = [0]
-                    cmd2 = [0]
-                    cmd3 = [0]
-                    cmd4 = [0]
+                        # Clear commands
+                        cmd1 = [0]
+                        cmd2 = [0]
+                        cmd3 = [0]
+                        cmd4 = [0]
 
-                volume = -1
-                if c.has_volume:
-                    volume = c.volume
+                    volume = -1
+                    if c.has_volume:
+                        volume = c.volume
 
-                note = -1
-                instrument = 0
-                if c.has_note_and_instrument:
-                    note = c.note
-                    instrument = c.instrument
+                    note = -1
+                    instrument = 0
+                    if c.has_note_and_instrument:
+                        note = c.note
+                        instrument = c.instrument
 
-                    # Rows with note and instrument but no volume use the
-                    # default volume of the sample.
-                    if instrument > 0 and volume == -1:
-                        this_instrument = data.instruments[instrument - 1].body
-                        volume = this_instrument.body.default_volume
+                        # Rows with note and instrument but no volume use the
+                        # default volume of the sample.
+                        if instrument > 0 and volume == -1:
+                            this_instr = data.instruments[instrument - 1].body
+                            volume = this_instr.body.default_volume
 
-                effectnum = None
-                effectparams = None
-                if c.has_fx:
-                    # Convert type to ASCII to match the documentation
-                    effectnum = chr(c.fx_type + ord('A') - 1)
-                    effectparams = c.fx_value
+                    effectnum = None
+                    effectparams = None
+                    if c.has_fx:
+                        # Convert type to ASCII to match the documentation
+                        effectnum = chr(c.fx_type + ord('A') - 1)
+                        effectparams = c.fx_value
 
-                channel = c.channel_num + 1
+                    channel = c.channel_num + 1
 
-                try:
-                    if channel == 1:
-                        cmd1 = convert_channel1(note, instrument, volume,
-                                                effectnum, effectparams)
-                    elif channel == 2:
-                        cmd2 = convert_channel2(note, instrument, volume,
-                                                effectnum, effectparams)
-                    elif channel == 3:
-                        cmd3 = convert_channel3(note, instrument, volume,
-                                                effectnum, effectparams)
-                    elif channel == 4:
-                        cmd4 = convert_channel4(note, instrument, volume,
-                                                effectnum, effectparams)
-                    else:
-                        raise S3MFormatError(f"Too many channels: {channel}")
-                except RowConversionError as e:
-                    e.row = row
-                    e.pattern = pattern
-                    e.channel = channel
-                    raise e
+                    try:
+                        if channel == 1:
+                            cmd1 = convert_channel1(note, instrument, volume,
+                                                    effectnum, effectparams)
+                        elif channel == 2:
+                            cmd2 = convert_channel2(note, instrument, volume,
+                                                    effectnum, effectparams)
+                        elif channel == 3:
+                            cmd3 = convert_channel3(note, instrument, volume,
+                                                    effectnum, effectparams)
+                        elif channel == 4:
+                            cmd4 = convert_channel4(note, instrument, volume,
+                                                    effectnum, effectparams)
+                        else:
+                            raise S3MFormatError(f"Too many channels: {channel}")
+                    except RowConversionError as e:
+                        e.row = row
+                        e.pattern = pattern
+                        e.channel = channel
+                        raise e
 
-        except kaitaistruct.ValidationNotEqualError as e:
-            info = str(vars(e))
-            raise S3MFormatError(f"Unknown error: {info}")
+            except kaitaistruct.ValidationNotEqualError as e:
+                info = str(vars(e))
+                raise S3MFormatError(f"Unknown error: {info}")
+
+            fileout.write("};\n")
+            fileout.write("\n")
+
+        # Export initial state
+        # --------------------
+
+        print(f"Exporting initial state...")
+
+        fileout.write(f"const uint8_t {song_name}_init_state[] = {{\n")
+
+        default_pan = [8, 8, 8, 8]
+        if data.has_custom_pan == 252:
+            print("Song contains custom panning values")
+            for i in range(0, 4):
+                if data.channel_pans[i].has_custom_pan:
+                    default_pan[i] = data.channel_pans[i].pan
+
+        gb_default_pan = [
+            s3m_pan_to_gb(default_pan[0], 1),
+            s3m_pan_to_gb(default_pan[1], 2),
+            s3m_pan_to_gb(default_pan[2], 3),
+            s3m_pan_to_gb(default_pan[3], 4)
+        ]
+
+        instr = None
+        if export_instruments:
+            instr = data.instruments
+
+        state_array = initial_state_array(data.initial_speed, gb_default_pan, instr)
+
+        # Write rows of 8 bytes until the end of the array
+        while True:
+            left = len(state_array)
+
+            write = []
+            if left == 0:
+                break
+            elif left <= 8:
+                write = state_array
+                state_array = []
+            else:
+                write = state_array[0:8]
+                state_array = state_array[8:]
+
+            fileout.write("    ")
+            for s in write:
+                fileout.write(f"0x{s:02X},")
+            fileout.write("\n")
 
         fileout.write("};\n")
         fileout.write("\n")
 
-    # Export initial state
-    # --------------------
+        # Export orders
+        # -------------
 
-    print(f"Exporting initial state...")
+        print(f"Exporting orders...")
 
-    fileout.write(f"const uint8_t {song_name}_init_state[] = {{\n")
+        fileout.write(f"const uint8_t *{song_name}[] = {{\n")
 
-    default_pan = [8, 8, 8, 8]
-    if data.has_custom_pan == 252:
-        print("Song contains custom panning values")
-        for i in range(0, 4):
-            if data.channel_pans[i].has_custom_pan:
-                default_pan[i] = data.channel_pans[i].pan
-
-    gb_default_pan = [
-        s3m_pan_to_gb(default_pan[0], 1),
-        s3m_pan_to_gb(default_pan[1], 2),
-        s3m_pan_to_gb(default_pan[2], 3),
-        s3m_pan_to_gb(default_pan[3], 4)
-    ]
-
-    instr = None
-    if export_instruments:
-        instr = data.instruments
-
-    state_array = initial_state_array(data.initial_speed, gb_default_pan, instr)
-
-    # Write rows of 8 bytes until the end of the array
-    while True:
-        left = len(state_array)
-
-        write = []
-        if left == 0:
-            break
-        elif left <= 8:
-            write = state_array
-            state_array = []
-        else:
-            write = state_array[0:8]
-            state_array = state_array[8:]
-
-        fileout.write("    ")
-        for s in write:
-            fileout.write(f"0x{s:02X},")
+        fileout.write(f"    {song_name}_init_state,")
         fileout.write("\n")
 
-    fileout.write("};\n")
-    fileout.write("\n")
+        for o in data.orders:
+            pattern = int(o)
+            if pattern >= data.num_patterns:
+                # TODO: Warn if the pattern goes over the limit?
+                continue
+            fileout.write(f"    {song_name}_{pattern},")
+            fileout.write("\n")
 
-    # Export orders
-    # -------------
-
-    print(f"Exporting orders...")
-
-    fileout.write(f"const uint8_t *{song_name}[] = {{\n")
-
-    fileout.write(f"    {song_name}_init_state,")
-    fileout.write("\n")
-
-    for o in data.orders:
-        pattern = int(o)
-        if pattern >= data.num_patterns:
-            # TODO: Warn if the pattern goes over the limit?
-            continue
-        fileout.write(f"    {song_name}_{pattern},")
-        fileout.write("\n")
-
-    fileout.write("    NULL\n")
-    fileout.write("};\n")
-
-    fileout.close()
+        fileout.write("    NULL\n")
+        fileout.write("};\n")
 
 if __name__ == "__main__":
 

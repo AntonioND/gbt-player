@@ -7,13 +7,13 @@
 # Copyright (c) 2022 Antonio Niño Díaz <antonio_nd@outlook.com>
 
 def read_bytes(path):
-    file = open(path, "rb")
-    file_bytes = file.read()
+    with open(path, "rb") as file:
+        file_bytes = file.read()
     return bytearray(file_bytes)
 
 def write_bytes(path, file_bytes):
-    file = open(path, "wb")
-    file.write(file_bytes)
+    with open(path, "wb") as file:
+        file.write(file_bytes)
 
 def read_u16(array, base_offset):
     return int((array[base_offset + 1] << 8) | array[base_offset])
