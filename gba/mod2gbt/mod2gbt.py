@@ -428,7 +428,11 @@ def export_pattern(mod, fileout, label_name, index):
     fileout.write("};\n")
     fileout.write("\n")
 
-def convert_file(mod_in_path, label_name, do_speed_conversion):
+def convert_file(mod_in_path, label_name, speed_conversion):
+
+    # TODO: Clean this
+    global do_speed_conversion
+    do_speed_conversion = speed_conversion
 
     with open(mod_in_path, "rb") as file:
         file_byte_array = bytearray(file.read())
@@ -467,8 +471,6 @@ if __name__ == "__main__":
     import argparse
     import sys
 
-    global do_speed_conversion
-
     print("mod2gbt v4.3.0 (part of GBT Player)")
     print("Copyright (c) 2009-2022 Antonio Niño Díaz <antonio_nd@outlook.com>")
     print("All rights reserved")
@@ -489,10 +491,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    do_speed_conversion = args.speed
-
     try:
-        convert_file(args.modfile, args.song_name, do_speed_conversion)
+        convert_file(args.modfile, args.song_name, args.speed)
     except RowConversionError as e:
         print("ERROR: " + str(e))
         sys.exit(1)
