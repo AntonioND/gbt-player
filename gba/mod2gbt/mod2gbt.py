@@ -443,8 +443,11 @@ def convert_file(mod_in_path, label_name, do_speed_conversion):
 
     print("Exporting patterns...")
 
-    for i in range(0, mod.song_length):
-        export_pattern(mod, fileout, label_name, i)
+    # There are always 64 patterns in the MOD file. Check the pattern table to
+    # determine the patterns that are actually used.
+    for i in range(0, 64):
+        if i in mod.pattern_table:
+            export_pattern(mod, fileout, label_name, i)
 
     print("Exporting pattern order...")
 
