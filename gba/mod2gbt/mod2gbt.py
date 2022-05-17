@@ -57,7 +57,7 @@ class ModFile:
         read_ptr += 4
 
         self.patterns = []
-        for i in range(0, self.song_length):
+        for i in range(0, 64):
             self.patterns.append(data[read_ptr:read_ptr + 64 * 4 * 4])
             read_ptr += 64 * 4 * 4
 
