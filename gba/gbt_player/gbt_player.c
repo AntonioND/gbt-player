@@ -558,6 +558,11 @@ void gbt_volume(unsigned int left, unsigned int right)
     }
 }
 
+int gbt_is_playing(void)
+{
+    return gbt.playing;
+}
+
 void gbt_pause(int play)
 {
     gbt.playing = play;
