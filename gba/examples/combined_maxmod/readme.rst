@@ -44,10 +44,16 @@ libraries you can use. Two options are:
 - `Krawall <https://github.com/sebknzl/krawall>`_
 - `Maxmod <https://maxmod.devkitpro.org/>`_: Included with devkitPro.
 
-In this example I've used a modified version of Maxmod. You need an additional
-patch that adds functions to get the current row and tick of the song being
-played. Check the branch ``get-row-tick`` in my fork of Maxmod, located `here
-<https://github.com/AntonioND/maxmod/commits/get-row-tick>`_.
+In this example I've used the upstream version of Maxmod. It's not enough to use
+the package that comes with devkitPro. You need to download the code from `this
+repository <https://github.com/devkitPro/maxmod>`_. Then, on Linux:
+
+.. code:: sh
+
+    sudo DEVKITPRO=/opt/devkitpro DEVKITARM=/opt/devkitpro/devkitARM \
+        make install-gba
+
+After that you will be able to build this example.
 
 The reason why you can't just start Maxmod and GBT Player at the same time is
 that timing is slightly different, and that is very noticeable as time passes
