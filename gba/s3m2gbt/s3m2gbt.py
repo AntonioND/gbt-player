@@ -114,6 +114,15 @@ class S3MFilePatternCell():
 class S3MFilePattern(S3MFormatReader):
 
     def __init__(self, data, offset):
+
+        # Check if we have asked to generate an empty pattern
+        if data == None:
+            cell = S3MFilePatternCell(0, 0, 0, 0, 0, 0, 0)
+            self.cells = []
+            for i in range(0, 64):
+                self.cells.append(cell)
+            return
+
         self.data = data
         self.read_ptr = offset
 
@@ -241,7 +250,8 @@ class S3MFile(S3MFormatReader):
             if offset != 0:
                 self.patterns[i] = S3MFilePattern(self.data, offset)
             else:
-                raise S3MFormatError(f"Empty pattern: {i}")
+                # A NULL pointer means that the pattern is empty
+                self.patterns[i] = S3MFilePattern(None, 0)
 
         # The file data is no longer needed
 
