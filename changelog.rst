@@ -1,6 +1,14 @@
 Changelog
 =========
 
+- Version 4.4.0 (2022/5/20)
+
+  - GBA-only release.
+  - Rewrite ``mod2gbt`` in Python.
+  - Remove external dependencies of ``s3m2gbt``.
+  - Add ``gbt_is_playing()``.
+  - Update documentation.
+
 - Version 4.3.0 (2022/5/16)
 
   - GBA-only release.
