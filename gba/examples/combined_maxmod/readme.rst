@@ -44,9 +44,10 @@ libraries you can use. Two options are:
 - `Krawall <https://github.com/sebknzl/krawall>`_
 - `Maxmod <https://maxmod.devkitpro.org/>`_: Included with devkitPro.
 
-In this example I've used the upstream version of Maxmod, which can be installed
-as a devkitPro package.
+In this example I've used the version of Maxmod that comes with devkitPro. It
+should be at least version ``1.0.15``. If you don't have that version, update
+your packages.
 
-Note: The reason why you can't just start Maxmod and GBT Player at the same time
-is that timing is slightly different, and that is very noticeable as time passes
-after the beginning of the song.
+IMPORTANT: The reason why you can't just start Maxmod and GBT Player at the same
+time is that timing is slightly different, and that is very noticeable as time
+passes after the beginning of the song.

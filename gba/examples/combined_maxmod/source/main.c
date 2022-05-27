@@ -5,6 +5,8 @@
 // Example that shows how to play a song with Maxmod and GBT Player at the same
 // time and keep them in sync.
 
+#include <stdio.h>
+
 #include <gba.h>
 #include <maxmod.h>
 
@@ -17,6 +19,12 @@ extern const uint8_t *template_combined_psg[];
 
 void gbt_sync_to_maxmod(void)
 {
+    if (!gbt_is_playing())
+        return;
+
+    if (!mmActive())
+        return;
+
     int tries = 5;
 
     while (tries > 0)
@@ -25,12 +33,22 @@ void gbt_sync_to_maxmod(void)
 
         gbt_update();
 
-        int tick;
-        gbt_get_position(NULL, NULL, &tick);
+        int order, row, tick;
+        gbt_get_position(&order, &row, &tick);
 
-        if (tick == mmGetPositionTick())
-            break;
+        if (order != mmGetPosition())
+            continue;
+
+        if (row != mmGetPositionRow())
+            continue;
+
+        if (tick != mmGetPositionTick())
+            continue;
+
+        break;
     }
+
+    // Something went wrong somehow!
 }
 
 void vbl_handler(void)
@@ -40,11 +58,22 @@ void vbl_handler(void)
     // This can be called in the VBL handler or outside
     mmFrame();
     gbt_sync_to_maxmod();
+
+    // Print some debug information
+    int order, row, tick;
+    gbt_get_position(&order, &row, &tick);
+    iprintf("(%s) %d %2d %d | (%s) %d %2d %d\n",
+            gbt_is_playing() ? "ON" : "OFF",
+            order, row, tick,
+            mmActive() ? "ON" : "OFF",
+            mmGetPosition(), mmGetPositionRow(), mmGetPositionTick());
 }
 
 int main(int argc, char *argv[])
 {
     irqInit();
+
+    consoleDemoInit();
 
     irqSet(IRQ_VBLANK, vbl_handler);
     irqEnable(IRQ_VBLANK);
