@@ -1,6 +1,12 @@
 Changelog
 =========
 
+- Version 4.4.1 (2022/5/28)
+
+  - GBA-only release.
+  - Fix ``gbt_get_position()``.
+  - Improve example that combines GBT Player and Maxmod.
+
 - Version 4.4.0 (2022/5/20)
 
   - GBA-only release.
