@@ -55,7 +55,7 @@ void vbl_handler(void)
 {
     mmVBlank(); // This has to be called exactly at the beginning of VBL
 
-    // This can be called in the VBL handler or outside
+    // This must be called in the VBL handler, but with lower priority
     mmFrame();
     gbt_sync_to_maxmod();
 
