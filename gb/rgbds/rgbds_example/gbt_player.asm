@@ -539,10 +539,10 @@ ENDC
     ; Change to bank with song data
 
 IF DEF(GBT_USE_MBC5_512BANKS)
-    ld      a,[gbt_pattern_array_bank+1]
+    ld      a,[gbt_current_step_data_bank+1]
     ld      [$3000],a ; MBC5
 ENDC
-    ld      a,[gbt_pattern_array_bank+0]
+    ld      a,[gbt_current_step_data_bank+0]
     ld      [$2000],a ; MBC1, MBC3, MBC5
 
     ld      a,[gbt_current_step_data_ptr]
