@@ -34,6 +34,7 @@ gbt_noise: ; 16 sounds
     DB  $90,$80,$70,$50,$00
     DB  $67,$63,$53
 
+    DS ALIGN[8]
 gbt_frequencies:
     DW    44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986
     DW  1046, 1102, 1155, 1205, 1253, 1297, 1339, 1379, 1417, 1452, 1486, 1517
@@ -44,16 +45,15 @@ gbt_frequencies:
 
 ;-------------------------------------------------------------------------------
 
-_gbt_get_freq_from_index: ; a = index, bc = returned freq
-    ld      hl,gbt_frequencies
-    ld      c,a
-    ld      b,$00
-    add     hl,bc
-    add     hl,bc
-    ld      c,[hl]
-    inc     hl
-    ld      b,[hl]
-    ret
+MACRO _GBT_GET_FREQ_FROM_INDEX ; a = index, \1 = channel index
+    add     a,a
+    ld      l,a
+    ld      h,HIGH(gbt_frequencies)
+    ld      a,[hl+] 
+    ld      [gbt_freq + \1*2],a
+    ld      a,[hl]
+    ld      [gbt_freq + \1*2+1],a
+ENDM
 
 ;-------------------------------------------------------------------------------
 ; ---------------------------------- Channel 1 ---------------------------------
@@ -150,13 +150,8 @@ gbt_channel_1_handle:: ; de = info
 
     and     a,$7F
     ld      [gbt_arpeggio_freq_index+0*3],a
-    ; This destroys hl and     a. Returns freq in bc
-    call    _gbt_get_freq_from_index
 
-    ld      a,c
-    ld      [gbt_freq+0*2+0],a
-    ld      a,b
-    ld      [gbt_freq+0*2+1],a ; Get frequency
+    _GBT_GET_FREQ_FROM_INDEX 0
 
     ld      a,[de]
     inc     de
@@ -233,7 +228,7 @@ channel1_update_effects: ; returns 1 in a if it needed to update sound registers
     ld      a,[gbt_cut_note_tick+0]
     ld      hl,gbt_ticks_elapsed
     cp      a,[hl]
-    jp      nz,.dont_cut
+    jr      nz,.dont_cut
 
     dec     a ; a = $FF
     ld      [gbt_cut_note_tick+0],a ; disable cut note
@@ -262,12 +257,7 @@ channel1_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+0*3+0]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+0*2+0],a
-    ld      a,b
-    ld      [gbt_freq+0*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 0
 
     ld      a,1
     ld      [gbt_arpeggio_tick+0],a
@@ -283,12 +273,7 @@ channel1_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+0*3+1]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+0*2+0],a
-    ld      a,b
-    ld      [gbt_freq+0*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 0
 
     ld      a,2
     ld      [gbt_arpeggio_tick+0],a
@@ -302,12 +287,7 @@ channel1_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+0*3+2]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+0*2+0],a
-    ld      a,b
-    ld      [gbt_freq+0*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 0
 
     xor     a,a
     ld      [gbt_arpeggio_tick+0],a
@@ -485,13 +465,8 @@ gbt_channel_2_handle:: ; de = info
 
     and     a,$7F
     ld      [gbt_arpeggio_freq_index+1*3],a
-    ; This destroys hl and a. Returns freq in bc
-    call    _gbt_get_freq_from_index
 
-    ld      a,c
-    ld      [gbt_freq+1*2+0],a
-    ld      a,b
-    ld      [gbt_freq+1*2+1],a ; Get frequency
+    _GBT_GET_FREQ_FROM_INDEX 1
 
     ld      a,[de]
     inc     de
@@ -566,7 +541,7 @@ channel2_update_effects: ; returns 1 in a if it needed to update sound registers
     ld      a,[gbt_cut_note_tick+1]
     ld      hl,gbt_ticks_elapsed
     cp      a,[hl]
-    jp      nz,.dont_cut
+    jr      nz,.dont_cut
 
     dec     a ; a = $FF
     ld      [gbt_cut_note_tick+1],a ; disable cut note
@@ -595,12 +570,7 @@ channel2_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+1*3+0]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+1*2+0],a
-    ld      a,b
-    ld      [gbt_freq+1*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 1
 
     ld      a,1
     ld      [gbt_arpeggio_tick+1],a
@@ -616,12 +586,7 @@ channel2_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+1*3+1]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+1*2+0],a
-    ld      a,b
-    ld      [gbt_freq+1*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 1
 
     ld      a,2
     ld      [gbt_arpeggio_tick+1],a
@@ -635,12 +600,7 @@ channel2_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+1*3+2]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+1*2+0],a
-    ld      a,b
-    ld      [gbt_freq+1*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 1
 
     xor     a,a
     ld      [gbt_arpeggio_tick+1],a
@@ -811,13 +771,8 @@ gbt_channel_3_handle:: ; de = info
 
     and     a,$7F
     ld      [gbt_arpeggio_freq_index+2*3],a
-    ; This destroys hl and     a. Returns freq in bc
-    call    _gbt_get_freq_from_index
 
-    ld      a,c
-    ld      [gbt_freq+2*2+0],a
-    ld      a,b
-    ld      [gbt_freq+2*2+1],a ; Get frequency
+    _GBT_GET_FREQ_FROM_INDEX 2
 
     ld      a,[de]
     inc     de
@@ -923,7 +878,7 @@ channel3_update_effects: ; returns 1 in a if it needed to update sound registers
     ld      a,[gbt_cut_note_tick+2]
     ld      hl,gbt_ticks_elapsed
     cp      a,[hl]
-    jp      nz,.dont_cut
+    jr      nz,.dont_cut
 
     dec     a ; a = $FF
     ld      [gbt_cut_note_tick+2],a ; disable cut note
@@ -955,12 +910,7 @@ channel3_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+2*3+0]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+2*2+0],a
-    ld      a,b
-    ld      [gbt_freq+2*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 2
 
     ld      a,1
     ld      [gbt_arpeggio_tick+2],a
@@ -976,12 +926,7 @@ channel3_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+2*3+1]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+2*2+0],a
-    ld      a,b
-    ld      [gbt_freq+2*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 2
 
     ld      a,2
     ld      [gbt_arpeggio_tick+2],a
@@ -995,12 +940,7 @@ channel3_update_effects: ; returns 1 in a if it needed to update sound registers
 
     ld      a,[gbt_arpeggio_freq_index+2*3+2]
 
-    call    _gbt_get_freq_from_index
-
-    ld      a,c
-    ld      [gbt_freq+2*2+0],a
-    ld      a,b
-    ld      [gbt_freq+2*2+1],a ; Set frequency
+    _GBT_GET_FREQ_FROM_INDEX 2
 
     xor     a,a
     ld      [gbt_arpeggio_tick+2],a
@@ -1232,7 +1172,7 @@ channel4_update_effects: ; returns 1 in a if it needed to update sound registers
     ld      a,[gbt_cut_note_tick+3]
     ld      hl,gbt_ticks_elapsed
     cp      a,[hl]
-    jp      nz,.dont_cut
+    jr      nz,.dont_cut
 
     dec     a ; a = $FF
     ld      [gbt_cut_note_tick+3],a ; disable cut note
