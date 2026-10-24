@@ -538,7 +538,7 @@ def convert_channel4(note_index, samplenum, volume, effectnum, effectparams):
         if samplenum > 0:
             # This limitation is only for channel 4. It should never happen in a
             # regular song.
-            raise("Note cut + Sample in same row: Not supported in channel 4")
+            raise RowConversionError("Note cut + Sample in same row: Not supported in channel 4")
         samplenum = 0xFE
 
     # Check if there is a sample defined
