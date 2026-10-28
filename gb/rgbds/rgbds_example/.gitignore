@@ -1,4 +1,5 @@
-gbt_test.gb
-gbt_test.map
-gbt_test.sym
+*.gb
+*.sav
+*.map
+*.sym
 song.asm
